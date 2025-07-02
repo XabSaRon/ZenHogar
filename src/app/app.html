@@ -1,7 +1,26 @@
-<h1>🏠 {{ title }}</h1>
+<!-- Barra superior ------------------------------------------------ -->
+<header class="header">
+  <h1>🏠 {{ title }}</h1>
+
+  <ng-container *ngIf="user$ | async as usuario; else loginBtn">
+    <button class="btn-google" (click)="auth.logout()">
+      Cerrar sesión ({{ usuario.displayName || usuario.email }})
+    </button>
+  </ng-container>
+
+  <ng-template #loginBtn>
+    <button class="btn-google" (click)="auth.loginGoogle()">
+      <img src="assets/google-icon.png" alt="Google" class="google-icon" />
+      Iniciar sesión con Google
+    </button>
+  </ng-template>
+</header>
+
+<hr />
 
 <p>Prueba sencilla: {{ (tareas$ | async)?.length || 0 }} tareas cargadas</p>
 
+<!-- LISTADO DE TAREAS --------------------------------------------- -->
 <ng-container *ngIf="tareas$ | async as tareas; else noTareas">
   <ng-container *ngFor="let tarea of tareas">
     <app-tarjeta-tarea [titulo]="tarea.titulo" [asignadoA]="tarea.asignadoA">
