@@ -1,0 +1,19 @@
+.tarjeta-tarea {
+  background-color: #f1f1f1;
+  border-left: 6px solid #4caf50;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+
+  h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+  }
+
+  p {
+    margin: 0;
+    color: #555;
+    font-size: 0.9rem;
+  }
+}
