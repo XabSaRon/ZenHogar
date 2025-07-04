@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TarjetaTareaComponent } from '../tarjeta-tarea/tarjeta-tarea.component';
+import { DialogCrearHogarComponent } from './dialog-crear-hogar';
 
-describe('TarjetaTarea', () => {
-  let component: TarjetaTareaComponent;
-  let fixture: ComponentFixture<TarjetaTareaComponent>;
+describe('DialogCrearHogar', () => {
+  let component: DialogCrearHogarComponent;
+  let fixture: ComponentFixture<DialogCrearHogarComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TarjetaTareaComponent]
+      imports: [DialogCrearHogarComponent]
     })
       .compileComponents();
 
-    fixture = TestBed.createComponent(TarjetaTareaComponent);
+    fixture = TestBed.createComponent(DialogCrearHogarComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -20,3 +20,4 @@ describe('TarjetaTarea', () => {
     expect(component).toBeTruthy();
   });
 });
+

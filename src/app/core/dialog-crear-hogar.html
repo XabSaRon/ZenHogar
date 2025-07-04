@@ -1,0 +1,17 @@
+<div class="dialog-container">
+  <h1 class="titulo-modal">
+    <mat-icon>home</mat-icon> Crear hogar
+  </h1>
+
+  <form #f="ngForm" (ngSubmit)="crear()" class="dialog-body">
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre del hogar</mat-label>
+      <input matInput [(ngModel)]="nombre" name="nombre" required />
+    </mat-form-field>
+
+    <div mat-dialog-actions>
+      <button mat-button (click)="cancelar()">Cancelar</button>
+      <button mat-flat-button color="primary" [disabled]="f.invalid">Crear</button>
+    </div>
+  </form>
+</div>

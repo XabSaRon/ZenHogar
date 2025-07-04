@@ -1,8 +1,88 @@
+/* --------------------------
+   Estructura general
+--------------------------- */
+body {
+  font-family: 'Quicksand', sans-serif;
+  background: linear-gradient(to bottom right, #f0f4f8, #e8f5e9);
+  color: #333;
+  margin: 0;
+  padding: 1rem;
+}
+
+/* --------------------------
+   Encabezado
+--------------------------- */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
+  padding: 1rem 2rem;
+  margin: 1.5rem auto;
+  border-radius: 16px;
+
+  background: linear-gradient(90deg, #e0f7fa, #f1f8e9);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+
+  position: relative;
+  backdrop-filter: blur(4px); // sutil efecto glass moderno
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+
+  // animación de entrada
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: fadeSlideDown 0.6s ease-out forwards;
+}
+
+.header-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo {
+  width: 60px;
+  height: 60px;
+}
+
+.brand {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* --------------------------
+   Botón Google
+--------------------------- */
+.google-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.avatar:hover {
+  transform: scale(1.1);
 }
 
 .btn-google {
@@ -10,19 +90,82 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 999px;
   border: 1px solid #ccc;
   background-color: white;
-  border-radius: 6px;
-  font-weight: 500;
+  color: #333;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, box-shadow 0.2s;
+
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .btn-google:hover {
   background-color: #f1f1f1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-.google-icon {
-  width: 24px;
-  height: 24px;
+/* --------------------------
+   Sección del hogar
+--------------------------- */
+
+.hogar-titulo {
+  font-size: 1.3rem;
+  font-weight: 600;
+
+  background: linear-gradient(to right, #c8e6c9, #a5d6a7);
+  color: #1b5e20;
+
+  padding: 0.5rem 1.5rem;
+  border-radius: 50px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: fadeSlideDown 0.6s ease-out forwards;
+  // opcional: retrasa la animación
+  // animation-delay: 100ms;
+
+  transition: background 0.3s ease,
+    color 0.3s ease,
+    transform 0.3s ease;
+}
+
+.hogar-titulo:hover {
+  background: #81c784;
+  color: white;
+  transform: scale(1.06);
+}
+
+/* --------------------------
+   Lista de tareas
+--------------------------- */
+.lista-tareas {
+  margin-top: 1rem;
+  background: white;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.lista-tareas p {
+  color: #777;
+  font-style: italic;
+}
+
+/* --------------------------
+   Anuimaciones
+--------------------------- */
+@keyframes fadeSlideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

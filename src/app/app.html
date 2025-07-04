@@ -1,33 +1,47 @@
-<!-- Barra superior ------------------------------------------------ -->
 <header class="header">
-  <h1>🏠 {{ title }}</h1>
+  <div class="header-left">
+    <img src="assets/home-icon.png" class="logo" alt="Logo" />
+  </div>
 
-  <ng-container *ngIf="user$ | async as usuario; else loginBtn">
-    <button class="btn-google" (click)="auth.logout()">
-      Cerrar sesión ({{ usuario.displayName || usuario.email }})
-    </button>
+  <ng-container *ngIf="user$ | async as usuario">
+    <ng-container *ngIf="hogar$ | async as hogar">
+      <div class="header-center">
+        <span class="hogar-titulo">{{ hogar.nombre }}</span>
+      </div>
+    </ng-container>
   </ng-container>
 
-  <ng-template #loginBtn>
-    <button class="btn-google" (click)="auth.loginGoogle()">
-      <img src="assets/google-icon.png" alt="Google" class="google-icon" />
-      Iniciar sesión con Google
-    </button>
-  </ng-template>
+  <div class="header-right">
+    <ng-container *ngIf="user$ | async as usuario; else loginBtn">
+      <div class="user-info">
+        <img class="avatar" [src]="usuario?.photoURL || 'assets/default-avatar.png'" (error)="onImageError($event)"
+          [alt]="usuario?.displayName" />
+        <button class="btn-google" (click)="auth.logout()">
+          Cerrar sesión ({{ usuario.displayName || usuario.email }})
+        </button>
+      </div>
+    </ng-container>
+
+    <ng-template #loginBtn>
+      <button class="btn-google" (click)="auth.loginGoogle()">
+        <img src="assets/google-icon.png" class="google-icon" alt="Google" />
+        Iniciar sesión con Google
+      </button>
+    </ng-template>
+  </div>
+
 </header>
 
-<hr />
+<ng-container *ngIf="user$ | async as usuario">
+  <ng-container *ngIf="hogar$ | async as hogar">
+    <!-- LISTA DE TAREAS -->
+    <div class="lista-tareas">
+      <p *ngIf="(tareas$ | async)?.length === 0">Hay 0 tareas</p>
 
-<p>Prueba sencilla: {{ (tareas$ | async)?.length || 0 }} tareas cargadas</p>
-
-<!-- LISTADO DE TAREAS --------------------------------------------- -->
-<ng-container *ngIf="tareas$ | async as tareas; else noTareas">
-  <ng-container *ngFor="let tarea of tareas">
-    <app-tarjeta-tarea [titulo]="tarea.titulo" [asignadoA]="tarea.asignadoA">
-    </app-tarjeta-tarea>
+      <ng-container *ngFor="let tarea of tareas$ | async">
+        <app-tarjeta-tarea [titulo]="tarea.titulo" [asignadoNombre]="tarea.asignadoNombre">
+        </app-tarjeta-tarea>
+      </ng-container>
+    </div>
   </ng-container>
 </ng-container>
-
-<ng-template #noTareas>
-  <p>No hay tareas para mostrar.</p>
-</ng-template>

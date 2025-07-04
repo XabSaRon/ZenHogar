@@ -8,6 +8,6 @@ import { Component, Input } from '@angular/core';
 })
 export class TarjetaTareaComponent {
   @Input() titulo = '';
-  @Input() asignadoA = '';
+  @Input() asignadoNombre?: string;
 }
 

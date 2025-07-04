@@ -1,1 +1,43 @@
-/* You can add global styles to this file, and also import other style files */
+html,
+body {
+  height: 100%;
+}
+
+/* -------------  Diálogo “Crear hogar”  ------------- */
+.crear-hogar-dialog {
+  width: 500px !important;
+  max-width: 90vw !important;
+  padding: 0 !important;
+  border-radius: 16px !important;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  background: #f9f9fb;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25) !important;
+  overflow: visible !important;
+
+  .mat-mdc-dialog-surface {
+    width: 100% !important;
+    border-radius: 16px !important;
+    overflow: visible !important;
+    padding: 2rem !important;
+    box-shadow: none !important;
+
+    animation: zoomInFade 0.25s ease-out;
+  }
+}
+
+@keyframes zoomInFade {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
+  backdrop-filter: blur(2px);
+  background-color: rgba(0, 0, 0, 0.3);
+}
