@@ -6,7 +6,9 @@
   <ng-container *ngIf="user$ | async as usuario">
     <ng-container *ngIf="hogar$ | async as hogar">
       <div class="header-center">
-        <span class="hogar-titulo">{{ hogar.nombre }}</span>
+        <button class="hogar-titulo" type="button" (click)="abrirInvitar(hogar)">
+          {{ hogar.nombre }}
+        </button>
       </div>
     </ng-container>
   </ng-container>

@@ -45,3 +45,7 @@ Thumbs.db
 .firebase
 *-debug.log
 .runtimeconfig.json
+
+# Mantén los placeholders, ignora tu copia local con claves reales
+src/environments/environment.local.ts
+/src/environments/environment.prod.ts

@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { Hogar } from './hogar.model';
 import {
   Firestore,
   collection,
@@ -11,15 +12,7 @@ import {
   DocumentData,
 } from '@angular/fire/firestore';
 import { Auth, authState, User } from '@angular/fire/auth';
-import { Observable, of, switchMap, map } from 'rxjs';
-
-export interface Hogar {
-  id?: string;
-  nombre: string;
-  adminUid: string;
-  miembros: string[];
-  creadoEn: any;
-}
+import { Observable, of, switchMap, map, firstValueFrom } from 'rxjs';
 
 const hogarConverter: FirestoreDataConverter<Hogar> = {
   toFirestore: (hogar: Hogar): DocumentData => hogar,
@@ -62,8 +55,8 @@ export class HogarService {
   async getOrCreateHogar(nombre = 'Mi hogar'): Promise<string> {
     const user = this.auth.currentUser!;
     if (!user) throw new Error('No hay usuario autenticado');
-    const existente = await this.getHogar$().pipe(map((h) => h)).toPromise();
+
+    const existente = await firstValueFrom(this.getHogar$());
     return existente ? existente.id! : (await this.crearHogar(nombre, user)).id;
   }
 }
-

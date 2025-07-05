@@ -1,0 +1,20 @@
+<div class="dialog-container">
+  <h1 class="titulo-modal">
+    <mat-icon>person_add</mat-icon>
+    Invitar a personas
+  </h1>
+
+  <form #f="ngForm" (ngSubmit)="enviar(f)" class="dialog-body">
+    <mat-form-field appearance="outline">
+      <mat-label>Email de la persona</mat-label>
+      <input matInput type="email" name="email" required [(ngModel)]="email" email />
+    </mat-form-field>
+
+    <div mat-dialog-actions>
+      <button mat-button mat-dialog-close>Cancelar</button>
+      <button mat-flat-button color="primary" [disabled]="f.invalid">
+        Enviar
+      </button>
+    </div>
+  </form>
+</div>

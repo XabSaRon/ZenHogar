@@ -112,6 +112,9 @@ body {
 --------------------------- */
 
 .hogar-titulo {
+  all: unset;
+  cursor: pointer;
+  display: inline-block;
   font-size: 1.3rem;
   font-weight: 600;
 
@@ -125,18 +128,22 @@ body {
   opacity: 0;
   transform: translateY(-10px);
   animation: fadeSlideDown 0.6s ease-out forwards;
-  // opcional: retrasa la animación
-  // animation-delay: 100ms;
+  animation-delay: 100ms;
 
   transition: background 0.3s ease,
     color 0.3s ease,
     transform 0.3s ease;
-}
 
-.hogar-titulo:hover {
-  background: #81c784;
-  color: white;
-  transform: scale(1.06);
+  &:hover {
+    background: #81c784;
+    color: white;
+    transform: scale(1.06);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(129, 199, 132, 0.5);
+  }
 }
 
 /* --------------------------
