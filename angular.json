@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "ordena-tu-casa": {
+    "zenhogar": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -61,10 +61,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "ordena-tu-casa:build:production"
+              "buildTarget": "zenhogar:build:production"
             },
             "development": {
-              "buildTarget": "ordena-tu-casa:build:development"
+              "buildTarget": "zenhogar:build:development"
             }
           },
           "defaultConfiguration": "development"
