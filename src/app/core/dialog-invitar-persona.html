@@ -7,13 +7,21 @@
   <form #f="ngForm" (ngSubmit)="enviar(f)" class="dialog-body">
     <mat-form-field appearance="outline">
       <mat-label>Email de la persona</mat-label>
-      <input matInput type="email" name="email" required [(ngModel)]="email" email />
+      <input matInput type="email" name="email" required [(ngModel)]="email" email [disabled]="loading" />
     </mat-form-field>
 
     <div mat-dialog-actions>
-      <button mat-button mat-dialog-close>Cancelar</button>
-      <button mat-flat-button color="primary" [disabled]="f.invalid">
-        Enviar
+      <button mat-button (click)="cancelar()" [disabled]="loading">
+        Cancelar
+      </button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="f.invalid || loading">
+        <ng-container *ngIf="!loading; else enviando">
+          Enviar
+        </ng-container>
+        <ng-template #enviando>
+          <mat-progress-spinner diameter="18" mode="indeterminate" color="accent">
+          </mat-progress-spinner>
+        </ng-template>
       </button>
     </div>
   </form>

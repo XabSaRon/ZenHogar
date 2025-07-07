@@ -86,7 +86,8 @@ export class App implements OnInit {
       width: 'auto',
       maxWidth: '480px',
       panelClass: 'crear-hogar-dialog',
-      data: hogar.id
+      data: hogar.id,
+      disableClose: true
     });
 
     ref.afterClosed()
