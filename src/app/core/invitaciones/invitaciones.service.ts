@@ -9,13 +9,18 @@ import {
   getDocs,
   updateDoc,
   doc,
+  runTransaction,
+  arrayUnion,
+  FirestoreError,
 } from '@angular/fire/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import { Invitacion } from './invitacion.model';
+import { Auth } from '@angular/fire/auth';
 
 @Injectable({ providedIn: 'root' })
 export class InvitacionesService {
   private fs = inject(Firestore);
+  private auth = inject(Auth);
 
   async crearInvitacion(hogarId: string, email: string): Promise<string> {
     const codigo = uuidv4().slice(0, 8);
@@ -26,6 +31,8 @@ export class InvitacionesService {
       codigo,
       creadoEn: serverTimestamp(),
       usado: false,
+      usadoPorUid: null,
+      usadoEn: null
     });
 
     return codigo;
@@ -43,7 +50,29 @@ export class InvitacionesService {
       : { id: snap.docs[0].id, ...(snap.docs[0].data() as Invitacion) };
   }
 
-  async marcarUsado(invId: string) {
-    await updateDoc(doc(this.fs, 'invitaciones', invId), { usado: true });
+  async aceptarCodigo(codigo: string): Promise<void> {
+    const user = this.auth.currentUser;
+    if (!user) throw new Error('Debes iniciar sesión');
+
+    const invit = await this.validarCodigo(codigo);
+    if (!invit) throw new Error('Código inválido o ya usado');
+
+    const invRef = doc(this.fs, 'invitaciones', invit.id!);
+    const hogarRef = doc(this.fs, 'hogares', invit.hogarId);
+
+    await runTransaction(this.fs, async (trx) => {
+      trx.update(invRef, {
+        usado: true,
+        usadoPorUid: user.uid,
+        usadoEn: serverTimestamp()
+      });
+
+      trx.update(hogarRef, {
+        miembros: arrayUnion(user.uid)
+      });
+    }).catch((err: FirestoreError) => {
+      throw new Error('No se pudo completar la invitación: ' + err.message);
+    });
   }
+
 }

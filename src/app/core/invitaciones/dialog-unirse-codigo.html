@@ -1,0 +1,25 @@
+<div class="dialog-container">
+  <h1 class="titulo-modal">
+    <mat-icon>vpn_key</mat-icon>
+    Unirme con código
+  </h1>
+
+  <form #f="ngForm" (ngSubmit)="unir(f)" class="dialog-body">
+    <mat-form-field appearance="outline">
+      <mat-label>Código de invitación</mat-label>
+      <input matInput name="codigo" required [(ngModel)]="codigo" />
+    </mat-form-field>
+
+    <div mat-dialog-actions>
+      <button mat-button (click)="cancelar()" [disabled]="loading">Cancelar</button>
+
+      <button mat-flat-button color="primary" type="submit" [disabled]="f.invalid || loading">
+
+        <ng-container *ngIf="!loading; else esperando">Unirme</ng-container>
+        <ng-template #esperando>
+          <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
+        </ng-template>
+      </button>
+    </div>
+  </form>
+</div>

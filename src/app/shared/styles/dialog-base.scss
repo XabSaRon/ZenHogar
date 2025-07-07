@@ -1,0 +1,125 @@
+@mixin dialog-base {
+  background: linear-gradient(135deg, #f5fefc, #e3f2fd);
+  border-radius: 20px;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  padding: 2rem;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.15);
+  animation: slideFadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 1.2rem;
+    color: #2e7d32;
+  }
+
+  .dialog-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+
+    @media (max-width: 480px) {
+      gap: 0.5rem;
+    }
+  }
+
+  mat-form-field {
+    width: 100%;
+
+    .mat-mdc-form-field-outline {
+      border-radius: 12px;
+    }
+
+    .mat-mdc-text-field-wrapper {
+      background: white;
+      transition: border 0.3s ease;
+    }
+
+    &.ng-invalid.ng-touched .mat-mdc-text-field-wrapper {
+      border: 1px solid #ef5350;
+      border-radius: 12px;
+    }
+
+    .mat-mdc-form-field-subscript-wrapper {
+      margin-top: 0.2rem !important;
+      padding: 0 !important;
+      min-height: 0 !important;
+    }
+
+    mat-error {
+      font-size: 0.75rem;
+      color: #e53935;
+      margin: 0;
+    }
+  }
+
+  [mat-dialog-actions] {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+
+    button {
+      border-radius: 999px;
+      padding: 0.5rem 1.5rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+
+      &:hover {
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+
+      &:not([color='primary']) {
+        background-color: #ffffff;
+        color: #1565c0;
+        border-color: #d4d4d4;
+
+        &:hover {
+          background-color: #f0f4f8;
+          border-color: #90caf9;
+        }
+      }
+
+      &[color='primary'] {
+        background-color: #4caf50;
+        color: white;
+
+        &:hover {
+          background-color: #43a047;
+        }
+      }
+
+      &[disabled] {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 1.2rem;
+  }
+}
+
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+mat-progress-spinner {
+  margin: 0;
+  vertical-align: middle;
+}

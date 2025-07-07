@@ -4,13 +4,21 @@
   </div>
 
   <ng-container *ngIf="user$ | async as usuario">
-    <ng-container *ngIf="hogar$ | async as hogar">
+    <ng-container *ngIf="hogar$ | async as hogar; else noHogar">
       <div class="header-center">
         <button class="hogar-titulo" type="button" (click)="abrirInvitar(hogar)">
           {{ hogar.nombre }}
         </button>
       </div>
     </ng-container>
+
+    <ng-template #noHogar>
+      <div class="header-center">
+        <button class="hogar-titulo" type="button" (click)="abrirUnirme()">
+          Unirme
+        </button>
+      </div>
+    </ng-template>
   </ng-container>
 
   <div class="header-right">
@@ -36,7 +44,6 @@
 
 <ng-container *ngIf="user$ | async as usuario">
   <ng-container *ngIf="hogar$ | async as hogar">
-    <!-- LISTA DE TAREAS -->
     <div class="lista-tareas">
       <p *ngIf="(tareas$ | async)?.length === 0">Hay 0 tareas</p>
 

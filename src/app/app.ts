@@ -10,6 +10,7 @@ import { HogarService } from './core/hogar/hogar.service';
 import { AuthService } from './core/auth/auth.service';
 import { DialogCrearHogarComponent } from './core/hogar/dialog-crear-hogar';
 import { DialogInvitarPersona } from './core/invitaciones/dialog-invitar-persona';
+import { DialogUnirseCodigo } from './core/invitaciones/dialog-unirse-codigo';
 import { Auth } from '@angular/fire/auth';
 import { Hogar } from './core/hogar/hogar.model';
 
@@ -98,5 +99,14 @@ export class App implements OnInit {
         }
       });
   }
-}
 
+  abrirUnirme() {
+    this.dialog.open(DialogUnirseCodigo, {
+      width: 'auto',
+      maxWidth: '400px',
+      panelClass: 'crear-hogar-dialog',
+      disableClose: true
+    });
+  }
+
+}
