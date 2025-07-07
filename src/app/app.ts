@@ -4,14 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { filter, switchMap, take } from 'rxjs/operators';
 
-import { TarjetaTareaComponent } from './shared/tarjeta-tarea/tarjeta-tarea.component';
-import { TareasService } from './core/tareas.service';
-import { HogarService } from './core/hogar.service';
-import { AuthService } from './core/auth.service';
-import { DialogCrearHogarComponent } from './core/dialog-crear-hogar';
-import { DialogInvitarPersona } from './core/dialog-invitar-persona';
+import { TarjetaTareaComponent } from './core/tareas/tarjeta-tarea.component';
+import { TareasService } from './core/tareas/tareas.service';
+import { HogarService } from './core/hogar/hogar.service';
+import { AuthService } from './core/auth/auth.service';
+import { DialogCrearHogarComponent } from './core/hogar/dialog-crear-hogar';
+import { DialogInvitarPersona } from './core/invitaciones/dialog-invitar-persona';
 import { Auth } from '@angular/fire/auth';
-import { Hogar } from './core/hogar.model';
+import { Hogar } from './core/hogar/hogar.model';
 
 @Component({
   selector: 'app-root',

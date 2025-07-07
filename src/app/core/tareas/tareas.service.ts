@@ -7,7 +7,7 @@ import {
 } from '@angular/fire/firestore';
 import { Observable, defer, switchMap } from 'rxjs';
 import { Tarea } from './tarea.model';
-import { HogarService } from './hogar.service';
+import { HogarService } from '../hogar/hogar.service';
 
 @Injectable({ providedIn: 'root' })
 export class TareasService {
