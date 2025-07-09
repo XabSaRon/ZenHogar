@@ -1,0 +1,6 @@
+<div class="contenedor-tareas">
+  <div class="grid-tareas">
+    <app-tarjeta-tarea *ngFor="let tarea of tareas$ | async" [tarea]="tarea"
+      [uidActual]="(usuario$ | async)?.uid || ''"></app-tarjeta-tarea>
+  </div>
+</div>

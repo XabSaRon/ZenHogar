@@ -23,26 +23,25 @@ body {
   background: linear-gradient(90deg, #e0f7fa, #f1f8e9);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
 
-  position: relative;
-  backdrop-filter: blur(4px); // sutil efecto glass moderno
+  backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
 
-  // animación de entrada
+  animation: fadeSlideDown 0.6s ease-out forwards;
   opacity: 0;
   transform: translateY(-10px);
-  animation: fadeSlideDown 0.6s ease-out forwards;
-}
-
-.header-center {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
 }
 
 .header-left {
   display: flex;
   align-items: center;
+  gap: 1rem;
+}
+
+.header-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 1rem;
 }
 
@@ -55,6 +54,62 @@ body {
   font-size: 2rem;
   font-weight: 600;
   color: #333;
+}
+
+.sin-hogar-botones {
+  display: flex;
+  gap: 1rem;
+}
+
+/* --------------------------
+   Botones "Crear" y "Unirme"
+--------------------------- */
+.boton-hogar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.4rem;
+  border-radius: 999px;
+  border: none;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  background-color: white;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+  }
+
+  &.crear {
+    background: linear-gradient(to right, #c8e6c9, #a5d6a7);
+    color: #1b5e20;
+
+    &:hover {
+      background: linear-gradient(to right, #a5d6a7, #81c784);
+    }
+
+    &::before {
+      content: '🏠';
+      font-size: 1.2rem;
+    }
+  }
+
+  &.unirse {
+    background: linear-gradient(to right, #b3e5fc, #81d4fa);
+    color: #01579b;
+
+    &:hover {
+      background: linear-gradient(to right, #81d4fa, #4fc3f7);
+    }
+
+    &::before {
+      content: '🤝';
+      font-size: 1.2rem;
+    }
+  }
 }
 
 /* --------------------------
@@ -79,10 +134,10 @@ body {
   flex-shrink: 0;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease;
-}
 
-.avatar:hover {
-  transform: scale(1.1);
+  &:hover {
+    transform: scale(1.1);
+  }
 }
 
 .btn-google {
@@ -100,17 +155,16 @@ body {
   transition: background-color 0.2s, box-shadow 0.2s;
 
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
 
-.btn-google:hover {
-  background-color: #f1f1f1;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  &:hover {
+    background-color: #f1f1f1;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
 }
 
 /* --------------------------
    Sección del hogar
 --------------------------- */
-
 .hogar-titulo {
   all: unset;
   cursor: pointer;
@@ -130,9 +184,7 @@ body {
   animation: fadeSlideDown 0.6s ease-out forwards;
   animation-delay: 100ms;
 
-  transition: background 0.3s ease,
-    color 0.3s ease,
-    transform 0.3s ease;
+  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
 
   &:hover {
     background: #81c784;
@@ -150,21 +202,79 @@ body {
    Lista de tareas
 --------------------------- */
 .lista-tareas {
-  margin-top: 1rem;
-  background: white;
-  border-radius: 10px;
-  padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 1rem 0;
 }
 
-.lista-tareas p {
-  color: #777;
-  font-style: italic;
+.tarjeta-tarea {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  animation: fadeInCard 0.3s ease-out;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  h3 {
+    margin: 0;
+    color: #2e7d32;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0;
+    color: #555;
+    font-size: 0.95rem;
+  }
+
+  em {
+    color: #aaa;
+    font-size: 0.9rem;
+  }
+
+  .estado {
+    align-self: flex-start;
+    margin-top: 0.2rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: #f1f8e9;
+    color: #33691e;
+
+    &.no-asignada {
+      background-color: #fbe9e7;
+      color: #d84315;
+    }
+  }
 }
 
 /* --------------------------
-   Anuimaciones
+   Animaciones
 --------------------------- */
+@keyframes fadeInCard {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes fadeSlideDown {
   0% {
     opacity: 0;
@@ -174,5 +284,66 @@ body {
   100% {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* --------------------------
+   Responsive (móvil/tablet)
+--------------------------- */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .header-left,
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .header-center {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  .hogar-titulo,
+  .boton-hogar {
+    font-size: 1rem;
+    padding: 0.6rem 1rem;
+  }
+
+  .user-info {
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  .btn-google {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .lista-tareas {
+    gap: 0.8rem;
+  }
+
+  .tarjeta-tarea {
+    padding: 0.8rem 1rem;
+
+    h3 {
+      font-size: 1.1rem;
+    }
+
+    p {
+      font-size: 0.9rem;
+    }
+
+    .estado {
+      font-size: 0.7rem;
+    }
   }
 }

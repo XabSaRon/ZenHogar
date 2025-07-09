@@ -1,4 +1,23 @@
 <div class="tarjeta-tarea">
-  <h3>{{ titulo }}</h3>
-  <p>Asignada a: {{ asignadoNombre }}</p>
+  <div class="tarea-header">
+    <div class="emoji-icon">{{ emoji }}</div>
+    <h3 class="titulo-tarea">{{ tarea.nombre }}</h3>
+  </div>
+
+  <hr class="divider" />
+
+  <div class="asignacion">
+    <ng-container *ngIf="tarea.asignadA; else sinAsignar">
+      <img class="avatar-small" [src]="tarea.asignadoFotoURL || 'assets/default-avatar.png'" alt="Avatar"
+        (error)="onImageError($event)" />
+      <span>
+        Asignada a <strong>{{ tarea.asignadoNombre }}</strong>
+      </span>
+    </ng-container>
+
+    <ng-template #sinAsignar>
+      <span class="no-asignada">🔓 Sin asignar</span>
+    </ng-template>
+  </div>
+
 </div>

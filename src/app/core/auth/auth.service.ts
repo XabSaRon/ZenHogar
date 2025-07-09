@@ -33,6 +33,7 @@ export class AuthService {
     await setDoc(
       ref,
       {
+        nombre: user.displayName ?? '',
         displayName: user.displayName ?? '',
         email: user.email ?? '',
         photoURL: user.photoURL ?? '',
@@ -47,5 +48,3 @@ export class AuthService {
     return signOut(this.auth);
   }
 }
-
-

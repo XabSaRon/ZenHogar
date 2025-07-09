@@ -13,8 +13,11 @@
     </ng-container>
 
     <ng-template #noHogar>
-      <div class="header-center">
-        <button class="hogar-titulo" type="button" (click)="abrirUnirme()">
+      <div class="header-center sin-hogar-botones">
+        <button class="boton-hogar crear" type="button" (click)="abrirCrearHogar()">
+          Crear hogar
+        </button>
+        <button class="boton-hogar unirse" type="button" (click)="abrirUnirme()">
           Unirme
         </button>
       </div>
@@ -39,18 +42,10 @@
       </button>
     </ng-template>
   </div>
-
 </header>
 
-<ng-container *ngIf="user$ | async as usuario">
-  <ng-container *ngIf="hogar$ | async as hogar">
-    <div class="lista-tareas">
-      <p *ngIf="(tareas$ | async)?.length === 0">Hay 0 tareas</p>
-
-      <ng-container *ngFor="let tarea of tareas$ | async">
-        <app-tarjeta-tarea [titulo]="tarea.titulo" [asignadoNombre]="tarea.asignadoNombre">
-        </app-tarjeta-tarea>
-      </ng-container>
-    </div>
-  </ng-container>
+<ng-container *ngIf="hogar$ | async as hogar">
+  <main class="contenido-principal">
+    <app-lista-tareas></app-lista-tareas>
+  </main>
 </ng-container>

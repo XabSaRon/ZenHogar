@@ -13,6 +13,7 @@ import {
 } from '@angular/fire/firestore';
 import { Auth, authState, User } from '@angular/fire/auth';
 import { Observable, of, switchMap, map, firstValueFrom } from 'rxjs';
+import { TareasService } from '../tareas/tareas.service';
 
 const hogarConverter: FirestoreDataConverter<Hogar> = {
   toFirestore: (hogar: Hogar): DocumentData => hogar,
@@ -24,10 +25,11 @@ const hogarConverter: FirestoreDataConverter<Hogar> = {
 export class HogarService {
   private fs = inject(Firestore);
   private auth = inject(Auth);
+  private tareasSvc = inject(TareasService);
 
   getHogar$(): Observable<Hogar | null> {
     return authState(this.auth).pipe(
-      switchMap((user) => {
+      switchMap(user => {
         if (!user) return of(null);
 
         const q = query(
@@ -36,19 +38,25 @@ export class HogarService {
         );
 
         return collectionData<Hogar>(q).pipe(
-          map((arr) => (arr.length ? arr[0] : null))
+          map(arr => (arr.length ? arr[0] : null))
         );
       })
     );
   }
 
-  async crearHogar(nombre: string, user: User): Promise<{ id: string }> {
+  async crearHogar(
+    nombre: string,
+    user: User
+  ): Promise<{ id: string }> {
     const ref = await addDoc(collection(this.fs, 'hogares'), {
       nombre,
       adminUid: user.uid,
       miembros: [user.uid],
       creadoEn: serverTimestamp(),
     });
+
+    await this.tareasSvc.crearTareasPorDefecto(ref.id, user.uid);
+
     return { id: ref.id };
   }
 
