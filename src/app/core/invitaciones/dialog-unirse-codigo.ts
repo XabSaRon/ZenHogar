@@ -42,10 +42,14 @@ export class DialogUnirseCodigo {
 
     try {
       await this.invit.aceptarCodigo(this.codigo.trim());
+
       this.snack.open('¡Te has unido al hogar! 🎉', 'Cerrar', { duration: 4000 });
+      f.resetForm();
       this.ref.close(true);
+
     } catch (err: any) {
-      this.snack.open(err.message || 'Código inválido 😕', 'Cerrar', { duration: 5000 });
+      this.snack.open(this.getFriendlyError(err), 'Cerrar', { duration: 5000 });
+      f.controls['codigo']?.reset();
     } finally {
       this.loading = false;
     }
@@ -54,4 +58,23 @@ export class DialogUnirseCodigo {
   cancelar() {
     if (!this.loading) this.ref.close();
   }
+
+  private getFriendlyError(err: any): string {
+    const msg = (err?.message ?? '').toLowerCase();
+
+    if (msg.includes('no corresponde con tu email')) {
+      return 'El código no está asociado a tu correo 😕';
+    }
+    if (msg.includes('hogar no encontrado')) {
+      return 'El hogar ya no existe 🙈';
+    }
+    if (msg.includes('ya usado')) {
+      return 'Este código ya se utilizó';
+    }
+    if (msg.includes('debes iniciar sesión')) {
+      return 'Inicia sesión antes de unirte';
+    }
+    return 'No se pudo usar el código 😕';
+  }
+
 }

@@ -1,16 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import {
   Firestore,
-  addDoc,
-  collection,
-  serverTimestamp,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-  doc,
-  runTransaction,
-  arrayUnion,
+  addDoc, collection, serverTimestamp,
+  query, where, getDocs,
+  doc, runTransaction, arrayUnion,
   FirestoreError,
 } from '@angular/fire/firestore';
 import { v4 as uuidv4 } from 'uuid';
@@ -32,7 +25,7 @@ export class InvitacionesService {
       creadoEn: serverTimestamp(),
       usado: false,
       usadoPorUid: null,
-      usadoEn: null
+      usadoEn: null,
     });
 
     return codigo;
@@ -53,26 +46,32 @@ export class InvitacionesService {
   async aceptarCodigo(codigo: string): Promise<void> {
     const user = this.auth.currentUser;
     if (!user) throw new Error('Debes iniciar sesión');
+    if (!user.email) throw new Error('Tu cuenta no tiene email');
 
     const invit = await this.validarCodigo(codigo);
     if (!invit) throw new Error('Código inválido o ya usado');
+
+    if (invit.email.toLowerCase() !== user.email.toLowerCase()) {
+      throw new Error('Este código no corresponde con tu email');
+    }
 
     const invRef = doc(this.fs, 'invitaciones', invit.id!);
     const hogarRef = doc(this.fs, 'hogares', invit.hogarId);
 
     await runTransaction(this.fs, async (trx) => {
+      const hogarSnap = await trx.get(hogarRef);
+      if (!hogarSnap.exists()) throw new Error('Hogar no encontrado');
+
+      trx.update(hogarRef, { miembros: arrayUnion(user.uid) });
+
       trx.update(invRef, {
         usado: true,
         usadoPorUid: user.uid,
-        usadoEn: serverTimestamp()
-      });
-
-      trx.update(hogarRef, {
-        miembros: arrayUnion(user.uid)
+        usadoEn: serverTimestamp(),
       });
     }).catch((err: FirestoreError) => {
       throw new Error('No se pudo completar la invitación: ' + err.message);
     });
   }
-
 }
+

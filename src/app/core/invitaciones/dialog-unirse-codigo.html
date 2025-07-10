@@ -7,11 +7,13 @@
   <form #f="ngForm" (ngSubmit)="unir(f)" class="dialog-body">
     <mat-form-field appearance="outline">
       <mat-label>Código de invitación</mat-label>
-      <input matInput name="codigo" required [(ngModel)]="codigo" />
+      <input matInput name="codigo" required [(ngModel)]="codigo" [disabled]="loading" (keydown.enter)="unir(f)" />
     </mat-form-field>
 
     <div mat-dialog-actions>
-      <button mat-button (click)="cancelar()" [disabled]="loading">Cancelar</button>
+      <button mat-button type="button" (click)="cancelar()" [disabled]="loading">
+        Cancelar
+      </button>
 
       <button mat-flat-button color="primary" type="submit" [disabled]="f.invalid || loading">
 
@@ -19,6 +21,7 @@
         <ng-template #esperando>
           <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
         </ng-template>
+
       </button>
     </div>
   </form>
