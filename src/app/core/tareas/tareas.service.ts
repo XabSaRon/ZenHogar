@@ -7,7 +7,8 @@ import {
   doc,
   docData,
   DocumentData,
-  addDoc,
+  updateDoc,
+  getDoc,
   writeBatch,
   serverTimestamp
 } from '@angular/fire/firestore';
@@ -17,6 +18,7 @@ import { switchMap, map } from 'rxjs/operators';
 import { Tarea, TareaDTO } from './tarea.model';
 import { tareaConverter } from './tarea.converter';
 import { TAREAS_POR_DEFECTO } from './utilidades/tareas-default';
+import { Usuario } from '../usuarios/usuario.model';
 
 @Injectable({ providedIn: 'root' })
 export class TareasService {
@@ -83,5 +85,52 @@ export class TareasService {
     });
 
     return batch.commit();
+  }
+
+  asignarTarea(tareaId: string, nuevoUid: string): Promise<void> {
+    const tareaRef = doc(this.fs, 'tareas', tareaId);
+
+    return getDoc(tareaRef).then(async (tareaSnap) => {
+      const tareaActual = tareaSnap.data() as Tarea;
+      const historialActual = tareaActual.historial ?? [];
+
+      if (!nuevoUid) {
+        // Solo desasignar y guardar en historial quién fue el último
+        if (tareaActual.asignadA && tareaActual.asignadoNombre) {
+          const nuevaEntrada = {
+            uid: tareaActual.asignadA,
+            nombre: tareaActual.asignadoNombre,
+            fotoURL: tareaActual.asignadoFotoURL || '',
+            fecha: new Date().toISOString(),
+            completada: tareaActual.completada || false,
+          };
+
+          return updateDoc(tareaRef, {
+            asignadA: null,
+            asignadoNombre: null,
+            asignadoFotoURL: null,
+            historial: [...historialActual, nuevaEntrada],
+          });
+        } else {
+          return updateDoc(tareaRef, {
+            asignadA: null,
+            asignadoNombre: null,
+            asignadoFotoURL: null,
+          });
+        }
+      }
+
+      const usuarioRef = doc(this.fs, 'usuarios', nuevoUid);
+      const snap = await getDoc(usuarioRef);
+      if (!snap.exists()) throw new Error('Usuario no encontrado');
+
+      const user = snap.data() as Usuario;
+
+      return updateDoc(tareaRef, {
+        asignadA: nuevoUid,
+        asignadoNombre: user.nombre,
+        asignadoFotoURL: user.photoURL || null,
+      });
+    });
   }
 }

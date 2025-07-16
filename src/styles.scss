@@ -1,6 +1,6 @@
 html,
 body {
-  height: 100%;
+  height: auto;
 }
 
 /* -------------  Diálogo “Crear hogar”  ------------- */
@@ -40,4 +40,55 @@ body {
 .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
   backdrop-filter: blur(2px);
   background-color: rgba(0, 0, 0, 0.3);
+}
+
+::ng-deep .mat-menu-panel {
+  z-index: 1000 !important;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+
+/* --- Personalización del menú desplegable (mat-menu) --- */
+.mat-mdc-menu-panel {
+  max-width: 240px !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+.mat-mdc-menu-content {
+  padding: 4px 0 !important;
+}
+
+.mat-mdc-menu-item {
+  min-height: 36px !important;
+  padding: 6px 12px !important;
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem;
+}
+
+.mat-mdc-menu-item img.avatar-inline {
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.mat-mdc-menu-item .mat-icon {
+  font-size: 18px !important;
+  margin-right: 0.5rem;
+  color: #555;
+}
+
+.mat-mdc-menu-item {
+  line-height: 1.4 !important;
+}
+
+.menu-text {
+  display: flex;
+  align-items: center;
+  line-height: 1.2;
 }

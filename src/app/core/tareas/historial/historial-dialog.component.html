@@ -1,0 +1,28 @@
+<div class="dialog-container">
+  <h1 class="titulo-modal">
+    <mat-icon color="primary">history</mat-icon>
+    Última asignación
+  </h1>
+
+  <div class="dialog-body">
+    <div class="asignado-info">
+      <img [src]="data.fotoURL || 'assets/default-avatar.png'" (error)="onImageError($event)" class="avatar" />
+
+      <div class="info-texto">
+        <strong class="nombre">{{ data.nombre }}</strong>
+        <div class="fecha">
+          <mat-icon>calendar_today</mat-icon>
+          {{ data.fecha | date : 'dd/MM/yyyy, HH:mm:ss' }}
+        </div>
+        <div class="completada">
+          <mat-icon [color]="data.completada ? 'primary' : 'warn'">
+            {{ data.completada ? 'check_circle' : 'cancel' }}
+          </mat-icon>
+          ¿Completada?: <span [style.color]="data.completada ? 'green' : 'red'">
+            {{ data.completada ? 'Sí' : 'No' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

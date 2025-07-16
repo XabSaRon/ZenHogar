@@ -1,6 +1,11 @@
 <div class="contenedor-tareas">
   <div class="grid-tareas">
-    <app-tarjeta-tarea *ngFor="let tarea of tareas$ | async" [tarea]="tarea"
-      [uidActual]="(usuario$ | async)?.uid || ''"></app-tarjeta-tarea>
+    <ng-container *ngIf="(tareas$ | async) as tareas">
+      <ng-container *ngIf="(miembros$ | async) as miembros">
+        <app-tarjeta-tarea *ngFor="let tarea of tareas" [tarea]="tarea" [uidActual]="(usuario$ | async)?.uid || ''"
+          [miembros]="miembros" (asignadoCambio)="reasignarTarea(tarea.id, $event)">
+        </app-tarjeta-tarea>
+      </ng-container>
+    </ng-container>
   </div>
 </div>

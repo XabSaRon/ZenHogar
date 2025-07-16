@@ -7,6 +7,16 @@ export interface Tarea {
   asignadA?: string;
   hogarId: string;
   createdAt?: Timestamp;
+  asignadoNombre?: string;
+  asignadoFotoURL?: string;
+
+  historial?: {
+    uid: string;
+    nombre: string;
+    fotoURL?: string;
+    fecha: Timestamp;
+    completada: boolean;
+  }[];
 }
 
 export interface TareaDTO extends Tarea {

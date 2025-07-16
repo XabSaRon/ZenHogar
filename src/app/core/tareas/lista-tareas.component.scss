@@ -1,14 +1,16 @@
+.contenedor-tareas {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4rem;
+}
+
 .grid-tareas {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2.5rem;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5rem 5rem;
   padding: 2.5rem 1.5rem;
-
-  /*  👇  estas dos líneas fuerzan que cada ítem estire el 1fr completo  */
-  justify-items: stretch;
-  /* antes: center */
-  align-items: stretch;
-  /* opcional, para altura uniforme */
+  justify-items: center;
+  align-items: start;
 }
 
 @media (max-width: 1600px) {

@@ -10,9 +10,7 @@
     <ng-container *ngIf="tarea.asignadA; else sinAsignar">
       <img class="avatar-small" [src]="tarea.asignadoFotoURL || 'assets/default-avatar.png'" alt="Avatar"
         (error)="onImageError($event)" />
-      <span>
-        Asignada a <strong>{{ tarea.asignadoNombre }}</strong>
-      </span>
+      <span>Asignada a <strong>{{ tarea.asignadoNombre }}</strong></span>
     </ng-container>
 
     <ng-template #sinAsignar>
@@ -20,4 +18,28 @@
     </ng-template>
   </div>
 
+  <hr class="divider" />
+
+  <div class="boton-asignar">
+    <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Asignar tarea">
+      <mat-icon>person_add</mat-icon>
+    </button>
+
+    <button *ngIf="tarea.historial?.length" mat-icon-button class="historial-btn" (click)="verHistorial()"
+      matTooltip="Ver historial">
+      <mat-icon>history</mat-icon>
+    </button>
+  </div>
+
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="asignarAMiembro('')">
+      <mat-icon>lock_open</mat-icon>
+      <span class="menu-text">Sin asignar</span>
+    </button>
+
+    <button mat-menu-item *ngFor="let miembro of miembros" (click)="asignarAMiembro(miembro.uid)">
+      <img class="avatar-small avatar-inline" [src]="miembro.fotoURL || 'assets/default-avatar.png'" />
+      <span class="menu-text">{{ miembro.nombre }}</span>
+    </button>
+  </mat-menu>
 </div>

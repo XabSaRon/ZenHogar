@@ -1,0 +1,57 @@
+@use 'app/shared/styles/dialog-base' as base;
+
+.dialog-container {
+  @include base.dialog-base;
+
+  & {
+    animation: slideFadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+.asignado-info {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+  padding-top: 0.8rem;
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+}
+
+.info-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.nombre {
+  font-weight: 600;
+  font-size: 1.1rem;
+  word-break: break-word;
+}
+
+.fecha,
+.completada {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  word-break: break-word;
+}
+
+::ng-deep .dialog-historial .mat-mdc-dialog-container {
+  @include base.dialog-base;
+
+  & {
+    min-height: 100%;
+    box-sizing: border-box;
+  }
+}
