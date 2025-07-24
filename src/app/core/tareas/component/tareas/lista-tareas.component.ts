@@ -6,10 +6,6 @@ import { AsyncPipe } from '@angular/common';
 
 import {
   Firestore,
-  collection,
-  getDocs,
-  query,
-  where,
   doc,
   docData,
   DocumentData,
@@ -42,6 +38,8 @@ export class ListaTareasComponent implements OnInit {
   usuario$ = this.auth.user$;
   usuarioActual: User | null = null;
 
+  miembros: { uid: string; nombre: string; fotoURL?: string }[] = [];
+
   tareas$ = combineLatest([this.usuario$, this.hogar.getHogar$()]).pipe(
     switchMap(([usuario, hogar]) => {
       if (!hogar) return of([] as TareaDTO[]);
@@ -72,12 +70,22 @@ export class ListaTareasComponent implements OnInit {
     this.usuario$.subscribe(usuario => {
       this.usuarioActual = usuario;
     });
+
+    this.miembros$.subscribe(lista => {
+      this.miembros = lista;
+    });
   }
 
   reasignarTarea(tareaId: string | undefined, nuevoUid: string) {
     if (!tareaId) return;
 
     this.tareas.asignarTarea(tareaId, nuevoUid).catch((err) => {
+      const msg =
+        err?.message === 'No se puede asignar esta tarea hasta que se complete la valoración.'
+          ? '❌ No se puede asignar esta tarea hasta que todos valoren cómo se ha hecho.'
+          : '❌ Error al asignar tarea';
+
+      this.snackBar.open(msg, 'Cerrar', { duration: 3000 });
       console.error('Error al asignar tarea', err);
     });
   }
@@ -98,6 +106,10 @@ export class ListaTareasComponent implements OnInit {
 
     const tareaRef = doc(this.fs, 'tareas', tarea.id!);
 
+    const valoracionesPendientes = this.miembros
+      .filter(m => m.uid !== tarea.asignadA)
+      .map(m => m.uid);
+
     try {
       await updateDoc(tareaRef, {
         completada: true,
@@ -105,11 +117,23 @@ export class ListaTareasComponent implements OnInit {
         asignadA: null,
         asignadoNombre: null,
         asignadoFotoURL: null,
+        valoraciones: [],
+        valoracionesPendientes,
+        bloqueadaHastaValoracion: true,
       });
 
-      this.snackBar.open('✅ Tarea completada', 'Cerrar', { duration: 3000 });
+      this.snackBar.open('✅ Tarea completada, pendiente de valoración', 'Cerrar', { duration: 3000 });
     } catch {
       this.snackBar.open('❌ Error al marcar como completada', 'Cerrar', { duration: 3000 });
     }
   }
+
+  tareasParaValorar$ = combineLatest([this.tareas$, this.usuario$]).pipe(
+    map(([tareas, usuario]) => {
+      if (!usuario) return [];
+      return tareas.filter(t =>
+        t.valoracionesPendientes?.includes(usuario.uid)
+      );
+    })
+  );
 }

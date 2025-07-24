@@ -1,4 +1,4 @@
-<div class="tarjeta-tarea">
+<div class="tarjeta-tarea" [ngClass]="{ 'valoracion-pendiente': tieneValoracionPendiente }">
   <div class="tarea-header">
     <div class="emoji-icon">{{ emoji }}</div>
     <h3 class="titulo-tarea">{{ tarea.nombre }}</h3>
@@ -7,21 +7,26 @@
   <hr class="divider" />
 
   <div class="asignacion">
-    <ng-container *ngIf="tarea.asignadA; else sinAsignar">
+    <ng-container *ngIf="tarea.asignadA; else estadoTareaNoAsignada">
       <img class="avatar-small" [src]="tarea.asignadoFotoURL || 'assets/default-avatar.png'" alt="Avatar"
         (error)="onImageError($event)" />
       <span>Asignada a <strong>{{ tarea.asignadoNombre }}</strong></span>
     </ng-container>
 
-    <ng-template #sinAsignar>
-      <span class="no-asignada">🔓 Sin asignar</span>
+    <ng-template #estadoTareaNoAsignada>
+      <div *ngIf="tieneValoracionPendiente && ultimaPersonaHistorial" class="info-ultimo-completador">
+        🧹 Realizada por <strong>{{ ultimaPersonaHistorial.nombre }}</strong>
+        el {{ ultimaPersonaHistorial.fecha | date: 'dd/MM/yyyy HH:mm' }}
+      </div>
+      <span *ngIf="!tieneValoracionPendiente" class="no-asignada">🔓 Sin asignar</span>
     </ng-template>
   </div>
 
   <hr class="divider" />
 
   <div class="boton-asignar">
-    <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Asignar tarea">
+    <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Asignar tarea"
+      [disabled]="tarea.bloqueadaHastaValoracion">
       <mat-icon>person_add</mat-icon>
     </button>
 
@@ -30,19 +35,20 @@
       <mat-icon>history</mat-icon>
     </button>
 
-    <button *ngIf="tarea.asignadA && !tarea.completada" class="boton-realizada-lateral" mat-icon-button color="primary"
-      (click)="marcarComoRealizada()" matTooltip="Marcar como realizada">
+    <button *ngIf="tarea.asignadA && !tarea.completada && tarea.asignadA === uidActual" class="boton-realizada-lateral"
+      mat-icon-button color="primary" (click)="marcarComoRealizada()" matTooltip="Marcar como realizada">
       <mat-icon>check_circle</mat-icon>
     </button>
   </div>
 
   <mat-menu #menu="matMenu">
-    <button mat-menu-item (click)="asignarAMiembro('')">
+    <button mat-menu-item (click)="asignarAMiembro('')" [disabled]="tarea.bloqueadaHastaValoracion">
       <mat-icon>lock_open</mat-icon>
       <span class="menu-text">Sin asignar</span>
     </button>
 
-    <button mat-menu-item *ngFor="let miembro of miembros" (click)="asignarAMiembro(miembro.uid)">
+    <button mat-menu-item *ngFor="let miembro of miembros" (click)="asignarAMiembro(miembro.uid)"
+      [disabled]="tarea.bloqueadaHastaValoracion">
       <img class="avatar-small avatar-inline" [src]="miembro.fotoURL || 'assets/default-avatar.png'" />
       <span class="menu-text">{{ miembro.nombre }}</span>
     </button>

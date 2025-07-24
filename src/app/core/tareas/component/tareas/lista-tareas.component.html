@@ -1,3 +1,9 @@
+<ng-container *ngIf="(tareasParaValorar$ | async)?.length as pendientes">
+  <div *ngIf="pendientes > 0" class="aviso-valoracion">
+    🔔 Tienes {{ pendientes }} tarea{{ pendientes > 1 ? 's' : '' }} pendiente{{ pendientes > 1 ? 's' : '' }} de valorar
+  </div>
+</ng-container>
+
 <div class="contenedor-tareas">
   <div class="grid-tareas">
     <ng-container *ngIf="(tareas$ | async) as tareas">

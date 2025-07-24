@@ -1,4 +1,5 @@
 import { Timestamp } from '@angular/fire/firestore';
+
 export interface Tarea {
   id?: string;
   nombre: string;
@@ -14,12 +15,23 @@ export interface Tarea {
     uid: string;
     nombre: string;
     fotoURL?: string;
-    fecha: Timestamp;
+    fecha: string;
     completada: boolean;
   }[];
+
+  valoraciones?: {
+    uid: string;
+    puntos: number;
+    comentario?: string;
+  }[];
+
+  valoracionesPendientes?: string[];
+
+  bloqueadaHastaValoracion?: boolean;
 }
 
 export interface TareaDTO extends Tarea {
   asignadoNombre: string;
   asignadoFotoURL?: string;
 }
+

@@ -93,6 +93,24 @@
     display: inline-block;
   }
 
+
+  .info-ultimo-completador {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #6d4c41;
+    background-color: #fbe9e7;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 0 0 2px #ffccbc;
+    display: inline-block;
+    margin-top: 0.3rem;
+
+    strong {
+      font-weight: 600;
+      color: #4e342e;
+    }
+  }
+
   .boton-asignar {
     margin-top: 0.75rem;
     display: flex;
@@ -162,4 +180,23 @@
     border-radius: 50%;
     object-fit: cover;
   }
+}
+
+.valoracion-pendiente {
+  background-color: #fffde7;
+  border: 2px solid #fbc02d;
+
+  .titulo-tarea {
+    color: #f57f17;
+  }
+}
+
+.mat-menu-item[disabled] {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: default;
+}
+
+button[disabled] mat-icon {
+  opacity: 0.4;
 }

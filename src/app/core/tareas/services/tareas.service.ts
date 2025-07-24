@@ -10,7 +10,8 @@ import {
   updateDoc,
   getDoc,
   writeBatch,
-  serverTimestamp
+  serverTimestamp,
+  Timestamp
 } from '@angular/fire/firestore';
 import { inject, Injectable } from '@angular/core';
 import { Observable, combineLatest, of } from 'rxjs';
@@ -95,7 +96,6 @@ export class TareasService {
       const historialActual = tareaActual.historial ?? [];
 
       if (!nuevoUid) {
-        // Solo desasignar y guardar en historial quién fue el último
         if (tareaActual.asignadA && tareaActual.asignadoNombre) {
           const nuevaEntrada = {
             uid: tareaActual.asignadA,
@@ -120,6 +120,17 @@ export class TareasService {
         }
       }
 
+      if (tareaActual.asignadA && tareaActual.asignadoNombre) {
+        const nuevaEntrada = {
+          uid: tareaActual.asignadA,
+          nombre: tareaActual.asignadoNombre,
+          fotoURL: tareaActual.asignadoFotoURL || '',
+          fecha: new Date().toISOString(),
+          completada: tareaActual.completada || false,
+        };
+        historialActual.push(nuevaEntrada);
+      }
+
       const usuarioRef = doc(this.fs, 'usuarios', nuevoUid);
       const snap = await getDoc(usuarioRef);
       if (!snap.exists()) throw new Error('Usuario no encontrado');
@@ -130,7 +141,11 @@ export class TareasService {
         asignadA: nuevoUid,
         asignadoNombre: user.nombre,
         asignadoFotoURL: user.photoURL || null,
+        historial: historialActual,
       });
     });
   }
 }
+
+
+

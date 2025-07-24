@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { MatSelectModule } from '@angular/material/select';
@@ -23,7 +23,7 @@ import { HistorialDialogComponent } from '../historial/historial-dialog.componen
   templateUrl: './tarjeta-tarea.component.html',
   styleUrls: ['./tarjeta-tarea.component.scss'],
 })
-export class TarjetaTareaComponent {
+export class TarjetaTareaComponent implements OnChanges {
   @Input() tarea!: TareaDTO;
   @Input() uidActual = '';
   @Input() miembros: { uid: string; nombre: string; fotoURL?: string }[] = [];
@@ -31,7 +31,23 @@ export class TarjetaTareaComponent {
   @Output() asignadoCambio = new EventEmitter<string>();
   @Output() tareaCompletada = new EventEmitter<void>();
 
+  ultimaPersonaHistorial: {
+    uid: string;
+    nombre: string;
+    fotoURL?: string;
+    fecha: any;
+    completada: boolean;
+  } | null = null;
+
   constructor(private dialog: MatDialog) { }
+
+  ngOnChanges(): void {
+    if (this.tarea?.historial?.length) {
+      this.ultimaPersonaHistorial = this.tarea.historial[this.tarea.historial.length - 1];
+    } else {
+      this.ultimaPersonaHistorial = null;
+    }
+  }
 
   onImageError(event: Event) {
     (event.target as HTMLImageElement).src = 'assets/default-avatar.png';
@@ -48,6 +64,10 @@ export class TarjetaTareaComponent {
     if (nombre.includes('limpiar')) return '🧽';
     if (nombre.includes('hacer la cama')) return '🛏️';
     return '🏠';
+  }
+
+  get tieneValoracionPendiente(): boolean {
+    return Array.isArray(this.tarea.valoracionesPendientes) && this.tarea.valoracionesPendientes.length > 0;
   }
 
   asignarAMiembro(uid: string) {

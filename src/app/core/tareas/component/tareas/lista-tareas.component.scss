@@ -13,6 +13,19 @@
   align-items: start;
 }
 
+.aviso-valoracion {
+  background-color: #fff8e1;
+  color: #e65100;
+  border: 1px solid #ffe0b2;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  margin: 1rem auto;
+  text-align: center;
+  max-width: 480px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
 @media (max-width: 1600px) {
   .grid-tareas {
     grid-template-columns: repeat(3, 1fr);
