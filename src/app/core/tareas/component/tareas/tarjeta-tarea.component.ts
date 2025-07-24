@@ -7,8 +7,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog } from '@angular/material/dialog';
 
-import { TareaDTO } from './tarea.model';
-import { HistorialDialogComponent } from './historial/historial-dialog.component';
+import { TareaDTO } from '../../models/tarea.model';
+import { HistorialDialogComponent } from '../historial/historial-dialog.component';
 
 @Component({
   selector: 'app-tarjeta-tarea',

@@ -14,12 +14,11 @@ import {
   DocumentData
 } from '@angular/fire/firestore';
 
-import { AuthService } from '../auth/auth.service';
-import { HogarService } from '../hogar/hogar.service';
-import { TareasService } from './tareas.service';
-import { TareaDTO } from './tarea.model';
+import { AuthService } from '../../../auth/auth.service';
+import { HogarService } from '../../../hogar/services/hogar.service';
+import { TareasService } from '../../services/tareas.service';
+import { TareaDTO } from '../../models/tarea.model';
 import { TarjetaTareaComponent } from './tarjeta-tarea.component';
-import { Usuario } from '../usuarios/usuario.model';
 
 @Component({
   selector: 'app-lista-tareas',
@@ -70,4 +69,3 @@ export class ListaTareasComponent {
     });
   }
 }
-

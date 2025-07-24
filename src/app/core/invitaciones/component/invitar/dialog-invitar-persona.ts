@@ -11,9 +11,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-import { InvitacionesService } from './invitaciones.service';
-import { EmailService } from '../../shared/email/email.service';
-import { HogarService } from '../hogar/hogar.service';
+import { InvitacionesService } from '../../services/invitaciones.service';
+import { EmailService } from '../../../../shared/email/email.service';
+import { HogarService } from '../../../hogar/services/hogar.service';
 
 @Component({
   standalone: true,

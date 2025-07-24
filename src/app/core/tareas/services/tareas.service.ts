@@ -15,10 +15,10 @@ import {
 import { inject, Injectable } from '@angular/core';
 import { Observable, combineLatest, of } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
-import { Tarea, TareaDTO } from './tarea.model';
-import { tareaConverter } from './tarea.converter';
-import { TAREAS_POR_DEFECTO } from './utilidades/tareas-default';
-import { Usuario } from '../usuarios/usuario.model';
+import { Tarea, TareaDTO } from '../models/tarea.model';
+import { tareaConverter } from '../utilidades/tarea.converter';
+import { TAREAS_POR_DEFECTO } from '../utilidades/tareas-default';
+import { Usuario } from '../../usuarios/models/usuario.model';
 
 @Injectable({ providedIn: 'root' })
 export class TareasService {

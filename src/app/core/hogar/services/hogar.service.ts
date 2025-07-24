@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Hogar } from './hogar.model';
+import { Hogar } from '../models/hogar.model';
 import {
   Firestore,
   collection,
@@ -13,7 +13,7 @@ import {
 } from '@angular/fire/firestore';
 import { Auth, authState, User } from '@angular/fire/auth';
 import { Observable, of, switchMap, map, firstValueFrom } from 'rxjs';
-import { TareasService } from '../tareas/tareas.service';
+import { TareasService } from '../../tareas/services/tareas.service';
 
 const hogarConverter: FirestoreDataConverter<Hogar> = {
   toFirestore: (hogar: Hogar): DocumentData => hogar,

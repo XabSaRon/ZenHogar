@@ -1,4 +1,4 @@
-@use 'app/shared/styles/dialog-base' as base;
+@use '../../../shared/styles/dialog-base' as base;
 
 .dialog-container {
   @include base.dialog-base;

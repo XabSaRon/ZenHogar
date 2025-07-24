@@ -1,8 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
-import { HogarService } from './hogar.service';
-import { Auth } from '@angular/fire/auth';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -36,4 +34,3 @@ export class DialogCrearHogarComponent {
     this.ref.close(null);
   }
 }
-

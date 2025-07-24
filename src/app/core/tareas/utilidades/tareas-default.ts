@@ -1,5 +1,5 @@
 import { serverTimestamp } from '@angular/fire/firestore';
-import { Tarea } from '../tarea.model';
+import { Tarea } from '../models/tarea.model';
 
 export const TAREAS_POR_DEFECTO: Omit<Tarea, 'id'>[] = [
   {

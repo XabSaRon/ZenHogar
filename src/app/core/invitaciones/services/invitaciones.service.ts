@@ -7,7 +7,7 @@ import {
   FirestoreError,
 } from '@angular/fire/firestore';
 import { v4 as uuidv4 } from 'uuid';
-import { Invitacion } from './invitacion.model';
+import { Invitacion } from '../models/invitacion.model';
 import { Auth } from '@angular/fire/auth';
 
 @Injectable({ providedIn: 'root' })

@@ -1,19 +1,18 @@
+
 import { Injectable, inject } from '@angular/core';
 import {
   Auth,
   GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
   authState,
   User,
 } from '@angular/fire/auth';
 import {
   Firestore,
-  doc,
-  setDoc,
   serverTimestamp,
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
+import { firebaseAuthWrapper } from './firebase-auth-wrapper';
+import { firestoreWrapper } from './firestore-wrapper';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -27,10 +26,10 @@ export class AuthService {
   }
 
   async loginGoogle() {
-    const { user } = await signInWithPopup(this.auth, new GoogleAuthProvider());
+    const { user } = await firebaseAuthWrapper.signInWithPopup(this.auth, new GoogleAuthProvider());
 
-    const ref = doc(this.fs, 'usuarios', user.uid);
-    await setDoc(
+    const ref = firestoreWrapper.doc(this.fs, `usuarios/${user.uid}`);
+    await firestoreWrapper.setDoc(
       ref,
       {
         nombre: user.displayName ?? '',
@@ -45,6 +44,6 @@ export class AuthService {
   }
 
   logout() {
-    return signOut(this.auth);
+    return firebaseAuthWrapper.signOut(this.auth);
   }
 }

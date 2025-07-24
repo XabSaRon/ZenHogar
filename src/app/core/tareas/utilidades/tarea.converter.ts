@@ -4,7 +4,7 @@ import {
   QueryDocumentSnapshot,
   SnapshotOptions,
 } from '@angular/fire/firestore';
-import { Tarea } from './tarea.model';
+import { Tarea } from '../models/tarea.model';
 
 export const tareaConverter: FirestoreDataConverter<Tarea> = {
   toFirestore(t: Tarea): DocumentData {
