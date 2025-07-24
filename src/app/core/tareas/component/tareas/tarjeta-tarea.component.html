@@ -29,6 +29,11 @@
       matTooltip="Ver historial">
       <mat-icon>history</mat-icon>
     </button>
+
+    <button *ngIf="tarea.asignadA && !tarea.completada" class="boton-realizada-lateral" mat-icon-button color="primary"
+      (click)="marcarComoRealizada()" matTooltip="Marcar como realizada">
+      <mat-icon>check_circle</mat-icon>
+    </button>
   </div>
 
   <mat-menu #menu="matMenu">

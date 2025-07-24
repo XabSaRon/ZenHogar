@@ -29,6 +29,7 @@ export class TarjetaTareaComponent {
   @Input() miembros: { uid: string; nombre: string; fotoURL?: string }[] = [];
 
   @Output() asignadoCambio = new EventEmitter<string>();
+  @Output() tareaCompletada = new EventEmitter<void>();
 
   constructor(private dialog: MatDialog) { }
 
@@ -63,5 +64,9 @@ export class TarjetaTareaComponent {
       height: '314px',
       panelClass: 'dialog-historial'
     });
+  }
+
+  marcarComoRealizada() {
+    this.tareaCompletada.emit();
   }
 }

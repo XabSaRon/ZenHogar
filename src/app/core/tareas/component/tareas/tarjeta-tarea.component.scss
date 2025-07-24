@@ -127,6 +127,32 @@
     .historial-btn mat-icon {
       color: #607d8b;
     }
+
+    .boton-realizada-lateral {
+      margin-left: auto;
+      background-color: white;
+      border-radius: 999px;
+      padding: 0.4rem;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      border: none;
+      color: #4caf50;
+      transition: background-color 0.2s ease, transform 0.2s ease;
+
+      mat-icon {
+        font-size: 20px;
+        color: #4caf50;
+      }
+
+      &:hover {
+        background-color: #f1f1f1;
+        transform: scale(1.05);
+      }
+    }
   }
 
   .avatar-inline {

@@ -3,7 +3,8 @@
     <ng-container *ngIf="(tareas$ | async) as tareas">
       <ng-container *ngIf="(miembros$ | async) as miembros">
         <app-tarjeta-tarea *ngFor="let tarea of tareas" [tarea]="tarea" [uidActual]="(usuario$ | async)?.uid || ''"
-          [miembros]="miembros" (asignadoCambio)="reasignarTarea(tarea.id, $event)">
+          [miembros]="miembros" (asignadoCambio)="reasignarTarea(tarea.id, $event)"
+          (tareaCompletada)="finalizarTarea(tarea)">
         </app-tarjeta-tarea>
       </ng-container>
     </ng-container>
