@@ -39,6 +39,12 @@
       mat-icon-button color="primary" (click)="marcarComoRealizada()" matTooltip="Marcar como realizada">
       <mat-icon>check_circle</mat-icon>
     </button>
+
+    <button *ngIf="tieneValoracionPendiente && ultimaPersonaHistorial?.uid !== uidActual" mat-icon-button
+      class="boton-valorar-lateral boton-realizada-lateral" (click)="abrirDialogoValoracion()"
+      matTooltip="Valorar tarea">
+      <mat-icon>star_rate</mat-icon>
+    </button>
   </div>
 
   <mat-menu #menu="matMenu">

@@ -11,7 +11,7 @@ import {
   getDoc,
   writeBatch,
   serverTimestamp,
-  Timestamp
+  deleteField
 } from '@angular/fire/firestore';
 import { inject, Injectable } from '@angular/core';
 import { Observable, combineLatest, of } from 'rxjs';
@@ -20,10 +20,12 @@ import { Tarea, TareaDTO } from '../models/tarea.model';
 import { tareaConverter } from '../utilidades/tarea.converter';
 import { TAREAS_POR_DEFECTO } from '../utilidades/tareas-default';
 import { Usuario } from '../../usuarios/models/usuario.model';
+import { AuthService } from '../../auth/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class TareasService {
   private fs = inject(Firestore);
+  private authService = inject(AuthService);
 
   getTareasPorHogar(hogarId: string): Observable<TareaDTO[]> {
     const tareasRef = collection(this.fs, 'tareas')
@@ -145,7 +147,42 @@ export class TareasService {
       });
     });
   }
+
+  valorarTarea(tareaId: string, puntuacion: number, comentario: string, uidActual: string): Promise<void> {
+    const tareaRef = doc(this.fs, 'tareas', tareaId);
+
+    return getDoc(tareaRef).then((snap) => {
+      if (!snap.exists()) throw new Error('Tarea no encontrada');
+      if (!uidActual) throw new Error('Usuario no autenticado');
+
+      const tarea = snap.data() as Tarea;
+      const valoraciones = tarea.valoraciones ?? [];
+      const pendientes = tarea.valoracionesPendientes ?? [];
+
+      valoraciones.push({
+        uid: uidActual,
+        puntos: puntuacion,
+        comentario,
+        fecha: new Date().toISOString(),
+      });
+
+      const nuevasPendientes = pendientes.filter(uid => uid !== uidActual);
+
+      const actualizaciones: Partial<Tarea> = {
+        valoraciones,
+        valoracionesPendientes: nuevasPendientes,
+        bloqueadaHastaValoracion: false,
+      };
+
+      if (nuevasPendientes.length === 0) {
+        (actualizaciones as any).asignadA = deleteField();
+        (actualizaciones as any).asignadoNombre = deleteField();
+        (actualizaciones as any).asignadoFotoURL = deleteField();
+        actualizaciones.completada = false;
+      }
+
+      return updateDoc(tareaRef, actualizaciones);
+    });
+  }
+
 }
-
-
-

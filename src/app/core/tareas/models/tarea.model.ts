@@ -23,6 +23,7 @@ export interface Tarea {
     uid: string;
     puntos: number;
     comentario?: string;
+    fecha: string;
   }[];
 
   valoracionesPendientes?: string[];

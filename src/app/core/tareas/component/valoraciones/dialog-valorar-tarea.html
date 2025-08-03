@@ -1,0 +1,32 @@
+<div class="dialog-container">
+  <h1 class="titulo-modal">
+    <mat-icon>star_rate</mat-icon>
+    Valorar tarea
+  </h1>
+
+  <form #form="ngForm" (ngSubmit)="guardarValoracion()" class="dialog-body">
+    <div class="valoracion-estrellas">
+      <ng-container *ngFor="let estrella of estrellas">
+        <button mat-icon-button type="button" (click)="seleccionarEstrella(estrella.valor)"
+          [class.seleccionada]="estrella.valor <= valorSeleccionado" matTooltip="{{ estrella.etiqueta }}">
+          <mat-icon>star</mat-icon>
+        </button>
+      </ng-container>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Comentario (opcional)</mat-label>
+      <textarea matInput name="comentario" [(ngModel)]="comentario" rows="3"
+        placeholder="Escribe un comentario sobre la tarea..."></textarea>
+    </mat-form-field>
+
+    <div mat-dialog-actions>
+      <button mat-button (click)="cerrarDialogo()" type="button">
+        Cancelar
+      </button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="valorSeleccionado === 0">
+        Guardar valoración
+      </button>
+    </div>
+  </form>
+</div>

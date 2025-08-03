@@ -9,6 +9,7 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { TareaDTO } from '../../models/tarea.model';
 import { HistorialDialogComponent } from '../historial/historial-dialog.component';
+import { DialogValorarTarea } from '../valoraciones/dialog-valorar-tarea';
 
 @Component({
   selector: 'app-tarjeta-tarea',
@@ -88,5 +89,13 @@ export class TarjetaTareaComponent implements OnChanges {
 
   marcarComoRealizada() {
     this.tareaCompletada.emit();
+  }
+
+  abrirDialogoValoracion() {
+    this.dialog.open(DialogValorarTarea, {
+      data: { tareaId: this.tarea.id },
+      width: '500px',
+      panelClass: 'dialog-valorar'
+    });
   }
 }

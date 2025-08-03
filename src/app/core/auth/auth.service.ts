@@ -20,6 +20,13 @@ export class AuthService {
   private fs = inject(Firestore);
 
   user$: Observable<User | null> = authState(this.auth);
+  public uidActual: string | null = null;
+
+  constructor() {
+    this.user$.subscribe(user => {
+      this.uidActual = user?.uid ?? null;
+    });
+  }
 
   get currentUser(): User | null {
     return this.auth.currentUser;

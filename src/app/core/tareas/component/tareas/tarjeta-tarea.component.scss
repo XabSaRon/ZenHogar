@@ -171,6 +171,16 @@
         transform: scale(1.05);
       }
     }
+
+    .boton-valorar-lateral mat-icon {
+      color: #fbc02d;
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    .boton-valorar-lateral:hover mat-icon {
+      transform: scale(1.2);
+      color: #ffa000;
+    }
   }
 
   .avatar-inline {
@@ -188,6 +198,14 @@
 
   .titulo-tarea {
     color: #f57f17;
+  }
+}
+
+.boton-valorar-lateral {
+  margin-left: 0.5rem;
+
+  mat-icon {
+    color: #ff9800;
   }
 }
 
