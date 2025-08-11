@@ -3,6 +3,10 @@ body {
   height: auto;
 }
 
+:root {
+  --i: 0;
+}
+
 /* -------------  Diálogo “Crear hogar”  ------------- */
 .crear-hogar-dialog {
   width: 500px !important;

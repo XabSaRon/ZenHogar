@@ -1,4 +1,4 @@
-<div class="tarjeta-tarea" [ngClass]="{ 'valoracion-pendiente': tieneValoracionPendiente }">
+<div class="tarjeta-tarea" [ngStyle]="styleDelay" [ngClass]="{ 'valoracion-pendiente': tieneValoracionPendiente }">
   <div class="tarea-header">
     <div class="emoji-icon">{{ emoji }}</div>
     <h3 class="titulo-tarea">{{ tarea.nombre }}</h3>
@@ -7,19 +7,20 @@
   <hr class="divider" />
 
   <div class="asignacion">
-    <ng-container *ngIf="tarea.asignadA; else estadoTareaNoAsignada">
-      <img class="avatar-small" [src]="tarea.asignadoFotoURL || 'assets/default-avatar.png'" alt="Avatar"
-        (error)="onImageError($event)" />
-      <span>Asignada a <strong>{{ tarea.asignadoNombre }}</strong></span>
-    </ng-container>
-
-    <ng-template #estadoTareaNoAsignada>
-      <div *ngIf="tieneValoracionPendiente && ultimaPersonaHistorial" class="info-ultimo-completador">
-        🧹 Realizada por <strong>{{ ultimaPersonaHistorial.nombre }}</strong>
-        el {{ ultimaPersonaHistorial.fecha | date: 'dd/MM/yyyy HH:mm' }}
-      </div>
-      <span *ngIf="!tieneValoracionPendiente" class="no-asignada">🔓 Sin asignar</span>
-    </ng-template>
+    @if (tarea.asignadA) {
+    <img class="avatar-small" [src]="tarea.asignadoFotoURL || 'assets/default-avatar.png'" alt="Avatar"
+      (error)="onImageError($event)" />
+    <span>Asignada a <strong>{{ tarea.asignadoNombre }}</strong></span>
+    } @else {
+    @if (tieneValoracionPendiente && ultimaPersonaHistorial) {
+    <div class="info-ultimo-completador">
+      🧹 Realizada por <strong>{{ ultimaPersonaHistorial.nombre }}</strong>
+      el {{ ultimaPersonaHistorial.fecha | date: 'dd/MM/yyyy HH:mm' }}
+    </div>
+    } @else {
+    <span class="no-asignada">🔓 Sin asignar</span>
+    }
+    }
   </div>
 
   <hr class="divider" />
@@ -27,36 +28,42 @@
   <div class="boton-asignar">
     <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Asignar tarea"
       [disabled]="tarea.bloqueadaHastaValoracion">
-      <mat-icon>person_add</mat-icon>
+      <mat-icon [fontIcon]="'person_add'"></mat-icon>
     </button>
 
-    <button *ngIf="tarea.historial?.length" mat-icon-button class="historial-btn" (click)="verHistorial()"
-      matTooltip="Ver historial">
-      <mat-icon>history</mat-icon>
+    @if (tarea.historial?.length) {
+    <button mat-icon-button class="historial-btn" (click)="verHistorial()" matTooltip="Ver historial">
+      <mat-icon [fontIcon]="'history'"></mat-icon>
     </button>
+    }
 
-    <button *ngIf="tarea.asignadA && !tarea.completada && tarea.asignadA === uidActual" class="boton-realizada-lateral"
-      mat-icon-button color="primary" (click)="marcarComoRealizada()" matTooltip="Marcar como realizada">
-      <mat-icon>check_circle</mat-icon>
+    @if (tarea.asignadA && !tarea.completada && tarea.asignadA === uidActual) {
+    <button class="boton-realizada-lateral" mat-icon-button color="primary" (click)="marcarComoRealizada()"
+      matTooltip="Marcar como realizada">
+      <mat-icon [fontIcon]="'check_circle'"></mat-icon>
     </button>
+    }
 
-    <button *ngIf="tieneValoracionPendiente && ultimaPersonaHistorial?.uid !== uidActual" mat-icon-button
-      class="boton-valorar-lateral boton-realizada-lateral" (click)="abrirDialogoValoracion()"
+    @if (tieneValoracionPendiente && ultimaPersonaHistorial?.uid !== uidActual) {
+    <button mat-icon-button class="boton-valorar-lateral boton-realizada-lateral" (click)="abrirDialogoValoracion()"
       matTooltip="Valorar tarea">
-      <mat-icon>star_rate</mat-icon>
+      <mat-icon [fontIcon]="'star_rate'"></mat-icon>
     </button>
+    }
   </div>
 
   <mat-menu #menu="matMenu">
     <button mat-menu-item (click)="asignarAMiembro('')" [disabled]="tarea.bloqueadaHastaValoracion">
-      <mat-icon>lock_open</mat-icon>
+      <mat-icon [fontIcon]="'lock_open'"></mat-icon>
       <span class="menu-text">Sin asignar</span>
     </button>
 
-    <button mat-menu-item *ngFor="let miembro of miembros" (click)="asignarAMiembro(miembro.uid)"
-      [disabled]="tarea.bloqueadaHastaValoracion">
-      <img class="avatar-small avatar-inline" [src]="miembro.fotoURL || 'assets/default-avatar.png'" />
+    @for (miembro of miembros; track miembro.uid) {
+    <button mat-menu-item (click)="asignarAMiembro(miembro.uid)" [disabled]="tarea.bloqueadaHastaValoracion">
+      <img class="avatar-small avatar-inline" [src]="miembro.fotoURL || 'assets/default-avatar.png'"
+        alt="Avatar de {{ miembro.nombre }}" (error)="onImageError($event)" />
       <span class="menu-text">{{ miembro.nombre }}</span>
     </button>
+    }
   </mat-menu>
 </div>

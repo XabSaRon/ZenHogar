@@ -32,6 +32,7 @@ export class App {
   dialog = inject(MatDialog);
 
   user$ = this.auth.user$;
+  usuarioCompleto$ = this.auth.usuarioCompleto$;
   hogar$ = this.hogarSvc.getHogar$();
 
   onImageError(e: Event) {

@@ -1,4 +1,3 @@
-
 import { Injectable, inject } from '@angular/core';
 import {
   Auth,
@@ -9,8 +8,12 @@ import {
 import {
   Firestore,
   serverTimestamp,
+  doc,
+  docData,
 } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Observable, of, switchMap } from 'rxjs';
+import { Usuario } from '../usuarios/models/usuario.model';
+
 import { firebaseAuthWrapper } from './firebase-auth-wrapper';
 import { firestoreWrapper } from './firestore-wrapper';
 
@@ -20,12 +23,22 @@ export class AuthService {
   private fs = inject(Firestore);
 
   user$: Observable<User | null> = authState(this.auth);
+  usuarioCompleto$: Observable<Usuario | null>;
+
   public uidActual: string | null = null;
 
   constructor() {
     this.user$.subscribe(user => {
       this.uidActual = user?.uid ?? null;
     });
+
+    this.usuarioCompleto$ = this.user$.pipe(
+      switchMap(user => {
+        if (!user) return of(null);
+        const ref = doc(this.fs, 'usuarios', user.uid);
+        return docData(ref) as Observable<Usuario>;
+      })
+    );
   }
 
   get currentUser(): User | null {

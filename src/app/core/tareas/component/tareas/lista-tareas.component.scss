@@ -13,6 +13,46 @@
   align-items: start;
 }
 
+@media (max-width: 1920px) {
+  .grid-tareas {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4rem 4rem;
+    padding: 2rem 1rem;
+  }
+}
+
+@media (max-width: 1600px) {
+  .grid-tareas {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem 3rem;
+    padding: 1.8rem 1rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .grid-tareas {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem 2.5rem;
+    padding: 1.5rem 0.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-tareas {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem 1.5rem;
+    padding: 1.2rem 0.6rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .grid-tareas {
+    grid-template-columns: 1fr;
+    gap: 1.5rem 0;
+    padding: 1rem 0.5rem;
+  }
+}
+
 .aviso-valoracion {
   background-color: #fff8e1;
   color: #e65100;
@@ -20,11 +60,213 @@
   padding: 0.75rem 1rem;
   border-radius: 0.75rem;
   font-weight: 600;
-  margin: 1rem auto;
+  margin: 2rem auto 1rem;
   text-align: center;
   max-width: 480px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
+
+.selector-filtro {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 1.5rem 1rem 0;
+
+  .btn-filtro {
+    background: linear-gradient(to right, #e3f2fd, #f1f8e9);
+    border: none;
+    border-radius: 999px;
+    padding: 1.5rem 1.5rem 2rem;
+    margin-top: 1.5rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    transition: all 0.25s ease;
+    font-family: inherit;
+    font-size: 1rem;
+    color: #2e7d32;
+
+    .avatar-mini {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .icono-texto {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .emoji-icon {
+      font-size: 1rem;
+      display: inline-block;
+      line-height: 1;
+      transform: translateY(1px);
+    }
+
+    .chevron {
+      font-size: 0.75rem;
+      margin-left: 0.25rem;
+    }
+
+    &:hover {
+      transform: scale(1.03);
+      background: linear-gradient(to right, #c8e6c9, #e3f2fd);
+    }
+  }
+
+  .dropdown-filtro {
+    position: absolute;
+    right: 0;
+    top: 110%;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    padding: 0.5rem 0;
+    min-width: 190px;
+    z-index: 99;
+
+    opacity: 0;
+    transform: translateY(-8px);
+    animation: fadeInDropdown 0.25s forwards;
+
+    .opcion {
+      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      font-weight: 500;
+      color: #333;
+
+      img {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      &:hover {
+        background: #f1f8e9;
+      }
+    }
+  }
+}
+
+.fila-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1.5rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.info-usuario {
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: #2e7d32;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .emoji {
+    font-size: 1.2rem;
+  }
+
+  .resumen-tareas {
+    color: #555;
+    font-weight: 400;
+  }
+}
+
+.fila-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 1.5rem;
+  margin: 18px 0 8px;
+}
+
+.saludo-card {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .65rem 1rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, .75), rgba(255, 255, 255, .55));
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+  animation: popIn .25s ease-out both;
+
+  .emoji {
+    font-size: 1.15rem;
+    transform: translateY(1px);
+  }
+
+  .texto-bienvenida {
+    color: #2e7d32;
+    font-weight: 700;
+  }
+
+  .pipe {
+    color: #9aa19c;
+    padding: 0 .25rem;
+    user-select: none;
+  }
+
+  .resumen-tareas {
+    font-weight: 600;
+    color: #2e7d32;
+  }
+
+  .muted {
+    color: #6b6b6b;
+    font-weight: 500;
+  }
+
+  .badge-puntos {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    background: linear-gradient(90deg, #fff3cd, #e8f5e9);
+    border: 1px solid rgba(0, 0, 0, .05);
+    padding: .25rem .6rem;
+    border-radius: 999px;
+    font-size: .92rem;
+    color: #2e7d32;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .04);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeInDropdown {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 
 @media (max-width: 1600px) {
   .grid-tareas {
@@ -41,5 +283,10 @@
 @media (max-width: 640px) {
   .grid-tareas {
     grid-template-columns: 1fr;
+  }
+
+  .selector-filtro .btn-filtro {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.9rem;
   }
 }

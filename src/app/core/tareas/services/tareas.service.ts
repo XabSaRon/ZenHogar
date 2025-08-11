@@ -11,7 +11,8 @@ import {
   getDoc,
   writeBatch,
   serverTimestamp,
-  deleteField
+  deleteField,
+  increment
 } from '@angular/fire/firestore';
 import { inject, Injectable } from '@angular/core';
 import { Observable, combineLatest, of } from 'rxjs';
@@ -27,9 +28,33 @@ export class TareasService {
   private fs = inject(Firestore);
   private authService = inject(AuthService);
 
+  private getWeekStart(d = new Date()): Date {
+    const weekStart = new Date(d);
+    const day = weekStart.getDay() || 7;
+    if (day !== 1) weekStart.setDate(weekStart.getDate() - (day - 1));
+    weekStart.setHours(0, 0, 0, 0);
+    return weekStart;
+  }
+
+  private puntosBaseFromRating(rating: number): number {
+    switch (rating) {
+      case 5: return 10;
+      case 4: return 5;
+      case 3: return 0;
+      case 2: return -5;
+      case 1: return -10;
+      default: return 0;
+    }
+  }
+
+  private mediaValoraciones(valoraciones: { puntos: number }[]): number {
+    if (!valoraciones.length) return 0;
+    const sum = valoraciones.reduce((s, v) => s + (v.puntos ?? 0), 0);
+    return Math.round(sum / valoraciones.length);
+  }
+
   getTareasPorHogar(hogarId: string): Observable<TareaDTO[]> {
-    const tareasRef = collection(this.fs, 'tareas')
-      .withConverter(tareaConverter);
+    const tareasRef = collection(this.fs, 'tareas').withConverter(tareaConverter);
     const q = query(tareasRef, where('hogarId', '==', hogarId));
 
     return collectionData(q, { idField: 'id' }).pipe(
@@ -61,15 +86,41 @@ export class TareasService {
         return combineLatest(perfiles$).pipe(
           map(perfiles => {
             const mapa = Object.fromEntries(perfiles.map(p => [p.uid, p]));
-
             return tareas.map<TareaDTO>(t => ({
               ...t,
-              asignadoNombre: t.asignadA ? mapa[t.asignadA]?.nombre ?? '' : '',
-              asignadoFotoURL: t.asignadA ? mapa[t.asignadA]?.fotoURL ?? '' : '',
+              asignadoNombre: t.asignadA ? (mapa[t.asignadA]?.nombre ?? '') : '',
+              asignadoFotoURL: t.asignadA ? (mapa[t.asignadA]?.fotoURL ?? '') : '',
             }));
           })
         );
+      })
+    );
+  }
 
+  getTareasAsignadasUsuario(hogarId: string, uid: string): Observable<TareaDTO[]> {
+    return this.getTareasPorHogar(hogarId).pipe(
+      map(tareas => tareas.filter(t => t.asignadA === uid))
+    );
+  }
+
+  getPuntosSemana(hogarId: string, uid: string): Observable<number> {
+    const weekStart = this.getWeekStart();
+
+    return this.getTareasPorHogar(hogarId).pipe(
+      map((tareas) => {
+        return (tareas || []).reduce((acc, t) => {
+          if (!Array.isArray(t.historial) || t.historial.length === 0) return acc;
+
+          const puntos = t.historial.reduce((sum, h) => {
+            if (h.uid !== uid) return sum;
+            if (typeof h.puntosOtorgados !== 'number') return sum;
+            const fecha = new Date(h.fechaOtorgados ?? h.fecha);
+            if (isNaN(+fecha) || fecha < weekStart) return sum;
+            return sum + h.puntosOtorgados;
+          }, 0);
+
+          return acc + puntos;
+        }, 0);
       })
     );
   }
@@ -95,7 +146,7 @@ export class TareasService {
 
     return getDoc(tareaRef).then(async (tareaSnap) => {
       const tareaActual = tareaSnap.data() as Tarea;
-      const historialActual = tareaActual.historial ?? [];
+      const historialActual = [...(tareaActual.historial ?? [])];
 
       if (!nuevoUid) {
         if (tareaActual.asignadA && tareaActual.asignadoNombre) {
@@ -105,8 +156,8 @@ export class TareasService {
             fotoURL: tareaActual.asignadoFotoURL || '',
             fecha: new Date().toISOString(),
             completada: tareaActual.completada || false,
+            hogarId: tareaActual.hogarId,
           };
-
           return updateDoc(tareaRef, {
             asignadA: null,
             asignadoNombre: null,
@@ -123,14 +174,14 @@ export class TareasService {
       }
 
       if (tareaActual.asignadA && tareaActual.asignadoNombre) {
-        const nuevaEntrada = {
+        historialActual.push({
           uid: tareaActual.asignadA,
           nombre: tareaActual.asignadoNombre,
           fotoURL: tareaActual.asignadoFotoURL || '',
           fecha: new Date().toISOString(),
           completada: tareaActual.completada || false,
-        };
-        historialActual.push(nuevaEntrada);
+          hogarId: tareaActual.hogarId,
+        });
       }
 
       const usuarioRef = doc(this.fs, 'usuarios', nuevoUid);
@@ -148,16 +199,20 @@ export class TareasService {
     });
   }
 
+  /**
+   * Registra una valoración. Si con esta valoración ya no quedan pendientes,
+   * calcula la puntuación final, otorga puntos una sola vez, y guarda un snapshot en el historial.
+   */
   valorarTarea(tareaId: string, puntuacion: number, comentario: string, uidActual: string): Promise<void> {
     const tareaRef = doc(this.fs, 'tareas', tareaId);
 
-    return getDoc(tareaRef).then((snap) => {
+    return getDoc(tareaRef).then(async (snap) => {
       if (!snap.exists()) throw new Error('Tarea no encontrada');
       if (!uidActual) throw new Error('Usuario no autenticado');
 
       const tarea = snap.data() as Tarea;
-      const valoraciones = tarea.valoraciones ?? [];
-      const pendientes = tarea.valoracionesPendientes ?? [];
+      const valoraciones = [...(tarea.valoraciones ?? [])];
+      const pendientes = [...(tarea.valoracionesPendientes ?? [])];
 
       valoraciones.push({
         uid: uidActual,
@@ -171,10 +226,33 @@ export class TareasService {
       const actualizaciones: Partial<Tarea> = {
         valoraciones,
         valoracionesPendientes: nuevasPendientes,
-        bloqueadaHastaValoracion: false,
+        bloqueadaHastaValoracion: nuevasPendientes.length > 0,
       };
 
       if (nuevasPendientes.length === 0) {
+        const media = this.mediaValoraciones(valoraciones);
+        const pesoUsado = tarea.peso ?? 1;
+        const base = this.puntosBaseFromRating(media);
+        const puntosOtorgados = base * pesoUsado;
+
+        const historial = [...(tarea.historial ?? [])];
+        const ultimo = historial[historial.length - 1];
+
+        if (ultimo?.uid) {
+          const usuarioRef = doc(this.fs, 'usuarios', ultimo.uid);
+          await updateDoc(usuarioRef, { puntos: increment(puntosOtorgados) });
+
+          historial[historial.length - 1] = {
+            ...ultimo,
+            puntosOtorgados,
+            pesoUsado,
+            puntuacionFinal: media,
+            fechaOtorgados: new Date().toISOString(),
+          };
+
+          (actualizaciones as any).historial = historial;
+        }
+
         (actualizaciones as any).asignadA = deleteField();
         (actualizaciones as any).asignadoNombre = deleteField();
         (actualizaciones as any).asignadoFotoURL = deleteField();
@@ -184,5 +262,4 @@ export class TareasService {
       return updateDoc(tareaRef, actualizaciones);
     });
   }
-
 }

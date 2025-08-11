@@ -1,51 +1,67 @@
-<header class="header">
-  <div class="header-left">
-    <img src="assets/home-icon.png" class="logo" alt="Logo" />
-  </div>
+<div class="app-wrapper">
+  <header class="header">
+    <div class="header-left">
+      <img src="assets/home-icon.png" class="logo" alt="Logo" />
+    </div>
 
-  <ng-container *ngIf="user$ | async as usuario">
-    <ng-container *ngIf="hogar$ | async as hogar; else noHogar">
-      <div class="header-center">
-        <button class="hogar-titulo" type="button" (click)="abrirInvitar(hogar)">
-          {{ hogar.nombre }}
-        </button>
-      </div>
-    </ng-container>
+    @if (user$ | async; as usuario) {
+    @if (hogar$ | async; as hogar) {
+    <div class="header-center">
+      <button class="hogar-titulo" type="button" (click)="abrirInvitar(hogar)">
+        {{ hogar.nombre }}
+      </button>
+    </div>
+    } @else {
+    <div class="header-center sin-hogar-botones">
+      <button class="boton-hogar crear" type="button" (click)="abrirCrearHogar()">
+        Crear hogar
+      </button>
+      <button class="boton-hogar unirse" type="button" (click)="abrirUnirme()">
+        Unirme
+      </button>
+    </div>
+    }
+    }
 
-    <ng-template #noHogar>
-      <div class="header-center sin-hogar-botones">
-        <button class="boton-hogar crear" type="button" (click)="abrirCrearHogar()">
-          Crear hogar
-        </button>
-        <button class="boton-hogar unirse" type="button" (click)="abrirUnirme()">
-          Unirme
-        </button>
-      </div>
-    </ng-template>
-  </ng-container>
-
-  <div class="header-right">
-    <ng-container *ngIf="user$ | async as usuario; else loginBtn">
+    <div class="header-right">
+      @if (usuarioCompleto$ | async; as usuario) {
       <div class="user-info">
+        <div class="puntos-usuario-wrapper">
+          <div class="puntos-usuario" [ngClass]="{
+                'positivo': (usuario?.puntos ?? 0) >= 0,
+                'negativo': (usuario?.puntos ?? 0) < 0
+              }">
+            {{ usuario?.puntos ?? 0 }}
+          </div>
+          <img src="assets/coin.png" alt="Moneda" class="moneda-animada" />
+        </div>
+
         <img class="avatar" [src]="usuario?.photoURL || 'assets/default-avatar.png'" (error)="onImageError($event)"
-          [alt]="usuario?.displayName" />
+          [alt]="usuario?.nombre" />
+
         <button class="btn-google" (click)="auth.logout()">
-          Cerrar sesión ({{ usuario.displayName || usuario.email }})
+          Cerrar sesión ({{ usuario.nombre || usuario.email }})
         </button>
       </div>
-    </ng-container>
-
-    <ng-template #loginBtn>
+      } @else {
       <button class="btn-google" (click)="auth.loginGoogle()">
         <img src="assets/google-icon.png" class="google-icon" alt="Google" />
         Iniciar sesión con Google
       </button>
-    </ng-template>
-  </div>
-</header>
+      }
+    </div>
+  </header>
 
-<ng-container *ngIf="hogar$ | async as hogar">
+  @if (hogar$ | async; as hogar) {
   <main class="contenido-principal">
     <app-lista-tareas></app-lista-tareas>
   </main>
-</ng-container>
+  }
+
+  <footer class="footer">
+    <div class="footer-content">
+      <span>🧘 ZenHogar — La armonía empieza en casa</span>
+      <span>v1.0 · Hecho con 💚 por Xabi</span>
+    </div>
+  </footer>
+</div>

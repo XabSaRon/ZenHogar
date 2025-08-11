@@ -1,8 +1,20 @@
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DatePipe } from '@angular/common';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { DatePipe, CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+
+interface UltimaAsignacionData {
+  uid: string;
+  nombre: string;
+  fotoURL?: string;
+  fecha: string;
+  completada: boolean;
+
+  puntuacionFinal?: number;
+  puntosOtorgados?: number;
+  pesoUsado?: number;
+  fechaOtorgados?: string;
+}
 
 @Component({
   selector: 'app-historial-dialog',
@@ -10,16 +22,29 @@ import { MatIconModule } from '@angular/material/icon';
   templateUrl: './historial-dialog.component.html',
   styleUrls: ['./historial-dialog.component.scss'],
   imports: [
+    CommonModule,
     MatDialogModule,
     DatePipe,
     MatIconModule
   ]
 })
 export class HistorialDialogComponent {
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any) { }
+  readonly stars = [1, 2, 3, 4, 5];
+
+  constructor(
+    @Inject(MAT_DIALOG_DATA)
+    public data: UltimaAsignacionData
+  ) { }
+
+  get tieneSnapshot(): boolean {
+    return typeof this.data?.puntuacionFinal === 'number'
+      || typeof this.data?.puntosOtorgados === 'number'
+      || typeof this.data?.pesoUsado === 'number';
+  }
 
   onImageError(event: Event) {
     (event.target as HTMLImageElement).src = 'assets/default-avatar.png';
   }
 }
+
 

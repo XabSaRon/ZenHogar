@@ -5,11 +5,12 @@ export interface Tarea {
   nombre: string;
   descripcion?: string;
   completada: boolean;
-  asignadA?: string;
+  asignadA?: string | null;
   hogarId: string;
   createdAt?: Timestamp;
-  asignadoNombre?: string;
-  asignadoFotoURL?: string;
+  asignadoNombre?: string | null;
+  asignadoFotoURL?: string | null;
+  peso?: number;
 
   historial?: {
     uid: string;
@@ -17,6 +18,12 @@ export interface Tarea {
     fotoURL?: string;
     fecha: string;
     completada: boolean;
+
+    puntosOtorgados?: number;
+    pesoUsado?: number;
+    puntuacionFinal?: number;
+    fechaOtorgados?: string;
+    hogarId?: string;
   }[];
 
   valoraciones?: {
@@ -27,12 +34,10 @@ export interface Tarea {
   }[];
 
   valoracionesPendientes?: string[];
-
   bloqueadaHastaValoracion?: boolean;
 }
 
 export interface TareaDTO extends Tarea {
   asignadoNombre: string;
-  asignadoFotoURL?: string;
+  asignadoFotoURL?: string | null;
 }
-

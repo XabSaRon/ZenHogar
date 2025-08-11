@@ -1,26 +1,62 @@
 <div class="dialog-container">
   <h1 class="titulo-modal">
-    <mat-icon color="primary">history</mat-icon>
+    <span class="icon-pill"><mat-icon fontIcon="history"></mat-icon></span>
     Última asignación
+
   </h1>
 
   <div class="dialog-body">
     <div class="asignado-info">
-      <img [src]="data.fotoURL || 'assets/default-avatar.png'" (error)="onImageError($event)" class="avatar" />
+      <img [src]="data.fotoURL || 'assets/default-avatar.png'" (error)="onImageError($event)" class="avatar"
+        alt="Avatar" />
 
       <div class="info-texto">
         <strong class="nombre">{{ data.nombre }}</strong>
+
         <div class="fecha">
-          <mat-icon>calendar_today</mat-icon>
-          {{ data.fecha | date : 'dd/MM/yyyy, HH:mm:ss' }}
+          <mat-icon fontIcon="calendar_today"></mat-icon>
+          {{ data.fecha | date: 'dd/MM/yyyy, HH:mm:ss' }}
         </div>
-        <div class="completada">
-          <mat-icon [color]="data.completada ? 'primary' : 'warn'">
-            {{ data.completada ? 'check_circle' : 'cancel' }}
-          </mat-icon>
-          ¿Completada?: <span [style.color]="data.completada ? 'green' : 'red'">
-            {{ data.completada ? 'Sí' : 'No' }}
+
+        <div class="chips">
+          <span class="chip" [class.success]="data.completada" [class.warn]="!data.completada">
+            <mat-icon [fontIcon]="data.completada ? 'check_circle' : 'cancel'"></mat-icon>
+            {{ data.completada ? 'Completada' : 'Pendiente' }}
           </span>
+        </div>
+
+        <div class="resultado">
+          <div class="media" matTooltip="Media de valoraciones">
+            <mat-icon fontIcon="star"></mat-icon>
+            <span class="label">Media:</span>
+
+            @if (data.puntuacionFinal != null) {
+            <span class="stars">
+              @for (s of [1,2,3,4,5]; track s) {
+              <mat-icon [fontIcon]="s <= data.puntuacionFinal ? 'star' : 'star_border'"></mat-icon>
+              }
+            </span>
+            <span class="media-num">({{ data.puntuacionFinal }}/5)</span>
+            } @else {
+            <span class="muted">sin valoraciones</span>
+            }
+          </div>
+
+          @if (data.puntosOtorgados != null) {
+          <div class="puntos">
+            <mat-icon fontIcon="paid"></mat-icon>
+            <span class="label">Puntos:</span>
+            <strong>{{ data.puntosOtorgados }}</strong>
+          </div>
+          }
+
+          @if (data.pesoUsado != null) {
+          <div class="peso">
+            <mat-icon fontIcon="fitness_center"></mat-icon>
+            <span class="label">Peso:</span>
+            <span>{{ data.pesoUsado }}</span>
+          </div>
+          }
         </div>
       </div>
     </div>

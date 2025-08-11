@@ -1,18 +1,78 @@
-<ng-container *ngIf="(tareasParaValorar$ | async)?.length as pendientes">
-  <div *ngIf="pendientes > 0" class="aviso-valoracion">
-    🔔 Tienes {{ pendientes }} tarea{{ pendientes > 1 ? 's' : '' }} pendiente{{ pendientes > 1 ? 's' : '' }} de valorar
-  </div>
-</ng-container>
+@if (tareasParaValorar$ | async; as porValorar) {
+@if ((porValorar?.length ?? 0) > 0) {
+<div class="aviso-valoracion">
+  🔔 Tienes {{ porValorar.length }} tarea{{ porValorar.length > 1 ? 's' : '' }} pendiente{{ porValorar.length > 1 ? 's'
+  : '' }} de valorar
+</div>
+}
+}
 
-<div class="contenedor-tareas">
-  <div class="grid-tareas">
-    <ng-container *ngIf="(tareas$ | async) as tareas">
-      <ng-container *ngIf="(miembros$ | async) as miembros">
-        <app-tarjeta-tarea *ngFor="let tarea of tareas" [tarea]="tarea" [uidActual]="(usuario$ | async)?.uid || ''"
-          [miembros]="miembros" (asignadoCambio)="reasignarTarea(tarea.id, $event)"
-          (tareaCompletada)="finalizarTarea(tarea)">
-        </app-tarjeta-tarea>
-      </ng-container>
-    </ng-container>
+@if (usuario$ | async; as usuario) {
+@if (tareas$ | async; as tareas) {
+<div class="fila-header">
+
+  <div class="info-usuario saludo-card">
+    <span class="emoji">👋</span>
+    <span class="texto-bienvenida">Hola {{ usuario.displayName || usuario.email }}</span>
+
+    @if (tareasAsignadas$ | async; as asignadas) {
+    <span class="pipe">|</span>
+    <span class="resumen-tareas">
+      🧹 {{ asignadas.length }}
+      <span class="muted">
+        tarea{{ asignadas.length === 1 ? '' : 's' }} asignada{{ asignadas.length === 1 ? '' : 's' }}
+      </span>
+    </span>
+    }
+
+    <span class="pipe">|</span>
+    <span class="badge-puntos">
+      ⭐ <strong>{{ (puntosSemana$ | async) ?? 0 }}</strong> esta semana
+    </span>
+  </div>
+
+  <div class="selector-filtro">
+    <button #trigger class="btn-filtro" (click)="toggleFiltro($event)">
+      @if (uidSeleccionadoNombre) {
+      <span class="icono-texto">
+        @if (uidSeleccionadoFoto) {
+        <img [src]="uidSeleccionadoFoto" class="avatar-mini" alt="avatar" />
+        }
+        {{ uidSeleccionadoNombre }}
+      </span>
+      } @else {
+      <span class="icono-texto"><span class="emoji-icon">👥</span> Todos</span>
+      }
+      <span class="chevron">▾</span>
+    </button>
+
+    @if (mostrarFiltro) {
+    <div #dropdown class="dropdown-filtro" (click)="$event.stopPropagation()">
+      <div class="opcion" (click)="filtrarPorUsuario(null)">👥 Todos</div>
+
+      @for (miembro of miembros; track miembro.uid) {
+      <div class="opcion" (click)="filtrarPorUsuario(miembro.uid)">
+        @if (miembro.fotoURL) {
+        <img [src]="miembro.fotoURL" alt="avatar" />
+        }
+        {{ miembro.nombre }}
+      </div>
+      }
+    </div>
+    }
   </div>
 </div>
+
+@if (miembros$ | async; as miembros) {
+<div class="contenedor-tareas">
+  <div class="grid-tareas">
+    @for (tarea of tareas; track tarea.id; let i = $index) {
+    <app-tarjeta-tarea [tarea]="tarea" [uidActual]="usuario?.uid || ''" [miembros]="miembros" [delay]="i"
+      (asignadoCambio)="reasignarTarea(tarea.id, $event)" (tareaCompletada)="finalizarTarea(tarea)">
+    </app-tarjeta-tarea>
+    }
+  </div>
+</div>
+}
+}
+}

@@ -1,6 +1,6 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { combineLatest, of } from 'rxjs';
+import { combineLatest, of, BehaviorSubject } from 'rxjs';
 import { switchMap, map, filter } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';
 
@@ -34,16 +34,32 @@ export class ListaTareasComponent implements OnInit {
   private tareas = inject(TareasService);
   private fs = inject(Firestore);
   private snackBar = inject(MatSnackBar);
+  private usuarioSeleccionado$ = new BehaviorSubject<string | null>(null);
+
+  @ViewChild('dropdown') dropdown?: ElementRef<HTMLElement>;
+  @ViewChild('trigger') trigger?: ElementRef<HTMLElement>;
 
   usuario$ = this.auth.user$;
   usuarioActual: User | null = null;
+  uidSeleccionado: string | null = null;
+  mostrarFiltro = false;
+  uidSeleccionadoNombre: string | null = null;
+  uidSeleccionadoFoto: string | null = null;
 
   miembros: { uid: string; nombre: string; fotoURL?: string }[] = [];
 
-  tareas$ = combineLatest([this.usuario$, this.hogar.getHogar$()]).pipe(
-    switchMap(([usuario, hogar]) => {
+  tareas$ = combineLatest([
+    this.hogar.getHogar$(),
+    this.usuarioSeleccionado$
+  ]).pipe(
+    switchMap(([hogar, uidSeleccionado]) => {
       if (!hogar) return of([] as TareaDTO[]);
-      return this.tareas.getTareasPorHogar(hogar.id!);
+      return this.tareas.getTareasPorHogar(hogar.id!).pipe(
+        map(tareas => {
+          if (!uidSeleccionado) return tareas;
+          return tareas.filter(t => t.asignadA === uidSeleccionado);
+        })
+      );
     })
   );
 
@@ -76,6 +92,27 @@ export class ListaTareasComponent implements OnInit {
     });
   }
 
+  toggleFiltro(ev: MouseEvent) {
+    ev.stopPropagation();
+    this.mostrarFiltro = !this.mostrarFiltro;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(ev: MouseEvent) {
+    if (!this.mostrarFiltro) return;
+    const target = ev.target as Node;
+    const insideDropdown = this.dropdown?.nativeElement.contains(target) ?? false;
+    const insideTrigger = this.trigger?.nativeElement.contains(target) ?? false;
+    if (!insideDropdown && !insideTrigger) {
+      this.mostrarFiltro = false;
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEsc() {
+    this.mostrarFiltro = false;
+  }
+
   reasignarTarea(tareaId: string | undefined, nuevoUid: string) {
     if (!tareaId) return;
 
@@ -88,6 +125,42 @@ export class ListaTareasComponent implements OnInit {
       this.snackBar.open(msg, 'Cerrar', { duration: 3000 });
       console.error('Error al asignar tarea', err);
     });
+  }
+
+  tareasAsignadas$ = combineLatest([this.hogar.getHogar$(), this.usuario$]).pipe(
+    switchMap(([hogar, usuario]) =>
+      hogar && usuario ? this.tareas.getTareasAsignadasUsuario(hogar.id!, usuario.uid) : of([])
+    )
+  );
+
+  puntosSemana$ = combineLatest([this.hogar.getHogar$(), this.usuario$]).pipe(
+    switchMap(([hogar, usuario]) =>
+      hogar && usuario ? this.tareas.getPuntosSemana(hogar.id!, usuario.uid) : of(0)
+    )
+  );
+
+  filtrarPorUsuario(uid: string | null) {
+    this.uidSeleccionado = uid;
+    this.mostrarFiltro = false;
+
+    if (uid === null) {
+      this.uidSeleccionadoNombre = null;
+      this.uidSeleccionadoFoto = null;
+    } else {
+      const user = this.miembros.find(m => m.uid === uid);
+      this.uidSeleccionadoNombre = user?.nombre || null;
+      this.uidSeleccionadoFoto = user?.fotoURL || null;
+    }
+
+    this.tareas$ = combineLatest([this.usuario$, this.hogar.getHogar$()]).pipe(
+      switchMap(([usuario, hogar]) => {
+        if (!hogar) return of([] as TareaDTO[]);
+        return this.tareas.getTareasPorHogar(hogar.id!);
+      }),
+      map(tareas =>
+        uid === null ? tareas : tareas.filter(t => t.asignadA === uid)
+      )
+    );
   }
 
   async finalizarTarea(tarea: TareaDTO) {

@@ -3,4 +3,5 @@ export interface Usuario {
   nombre: string;
   email: string;
   photoURL?: string;
+  puntos?: number;
 }

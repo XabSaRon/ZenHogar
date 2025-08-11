@@ -7,6 +7,22 @@ body {
   color: #333;
   margin: 0;
   padding: 1rem;
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.contenido-principal {
+  flex: 1;
+  padding: 0 1.5rem;
 }
 
 /* --------------------------
@@ -17,34 +33,48 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  margin: 1.5rem auto;
+  margin: 1.5rem 0 1rem 0;
   border-radius: 16px;
-
+  position: relative;
+  top: 0;
+  z-index: 10;
   background: linear-gradient(90deg, #e0f7fa, #f1f8e9);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
-
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
-
   animation: fadeSlideDown 0.6s ease-out forwards;
   opacity: 0;
   transform: translateY(-10px);
 }
 
 .header-left {
+  justify-self: start;
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
 .header-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 1rem;
 }
 
+.header-right {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* --------------------------
+   Botones hogar
+--------------------------- */
 .logo {
   width: 60px;
   height: 60px;
@@ -61,9 +91,6 @@ body {
   gap: 1rem;
 }
 
-/* --------------------------
-   Botones "Crear" y "Unirme"
---------------------------- */
 .boton-hogar {
   display: flex;
   align-items: center;
@@ -113,7 +140,7 @@ body {
 }
 
 /* --------------------------
-   Botón Google
+   Botón Google y usuario
 --------------------------- */
 .google-icon {
   width: 24px;
@@ -124,6 +151,64 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+.puntos-usuario-wrapper {
+  position: relative;
+  display: inline-block;
+
+  .moneda-animada {
+    position: absolute;
+    top: -40px;
+    left: 45%;
+    transform: translateX(-50%);
+    width: 24px;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+
+  &:hover .moneda-animada {
+    animation: caerMoneda 1s linear infinite;
+    opacity: 1;
+  }
+}
+
+@keyframes caerMoneda {
+  0% {
+    transform: translateX(-50%) translateY(-40px) scale(1);
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(-50%) translateY(30px) scale(1.1);
+    opacity: 0;
+  }
+}
+
+.puntos-usuario {
+  font-weight: bold;
+  font-size: 1rem;
+  background-color: #4caf50;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 50px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 5;
+}
+
+.positivo {
+  background-color: #43a047;
+}
+
+.negativo {
+  background-color: #e53935;
 }
 
 .avatar {
@@ -153,7 +238,6 @@ body {
   color: #333;
   cursor: pointer;
   transition: background-color 0.2s, box-shadow 0.2s;
-
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 
   &:hover {
@@ -169,21 +253,19 @@ body {
   all: unset;
   cursor: pointer;
   display: inline-block;
-  font-size: 1.3rem;
   font-weight: 600;
-
   background: linear-gradient(to right, #c8e6c9, #a5d6a7);
   color: #1b5e20;
-
-  padding: 0.5rem 1.5rem;
-  border-radius: 50px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 0.45rem 1.25rem;
+  border-radius: 999px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.15rem;
 
   opacity: 0;
   transform: translateY(-10px);
   animation: fadeSlideDown 0.6s ease-out forwards;
   animation-delay: 100ms;
-
   transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
 
   &:hover {
@@ -198,6 +280,7 @@ body {
   }
 }
 
+
 /* --------------------------
    Lista de tareas
 --------------------------- */
@@ -206,58 +289,6 @@ body {
   flex-direction: column;
   gap: 1.2rem;
   padding: 1rem 0;
-}
-
-.tarjeta-tarea {
-  background: white;
-  border-radius: 12px;
-  padding: 1rem 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  animation: fadeInCard 0.3s ease-out;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-  }
-
-  h3 {
-    margin: 0;
-    color: #2e7d32;
-    font-size: 1.2rem;
-    font-weight: 600;
-  }
-
-  p {
-    margin: 0;
-    color: #555;
-    font-size: 0.95rem;
-  }
-
-  em {
-    color: #aaa;
-    font-size: 0.9rem;
-  }
-
-  .estado {
-    align-self: flex-start;
-    margin-top: 0.2rem;
-    padding: 0.2rem 0.6rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    background-color: #f1f8e9;
-    color: #33691e;
-
-    &.no-asignada {
-      background-color: #fbe9e7;
-      color: #d84315;
-    }
-  }
 }
 
 /* --------------------------
@@ -288,7 +319,28 @@ body {
 }
 
 /* --------------------------
-   Responsive (móvil/tablet)
+   Footer
+--------------------------- */
+.footer {
+  margin-top: 3rem;
+  padding: 1.2rem 2rem;
+  text-align: center;
+  background: linear-gradient(to right, #e0f7fa, #f1f8e9);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  color: #444;
+  font-size: 0.95rem;
+  animation: fadeSlideDown 0.6s ease-out;
+
+  .footer-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+}
+
+/* --------------------------
+   Responsive
 --------------------------- */
 @media (max-width: 768px) {
   .header {
@@ -331,19 +383,8 @@ body {
     gap: 0.8rem;
   }
 
-  .tarjeta-tarea {
-    padding: 0.8rem 1rem;
-
-    h3 {
-      font-size: 1.1rem;
-    }
-
-    p {
-      font-size: 0.9rem;
-    }
-
-    .estado {
-      font-size: 0.7rem;
-    }
+  .footer {
+    font-size: 0.85rem;
+    padding: 1rem;
   }
 }
