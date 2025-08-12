@@ -21,7 +21,7 @@
         <div class="chips">
           <span class="chip" [class.success]="data.completada" [class.warn]="!data.completada">
             <mat-icon [fontIcon]="data.completada ? 'check_circle' : 'cancel'"></mat-icon>
-            {{ data.completada ? 'Completada' : 'Pendiente' }}
+            {{ data.completada ? 'Completada' : 'No completada' }}
           </span>
         </div>
 

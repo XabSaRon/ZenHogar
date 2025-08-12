@@ -53,18 +53,27 @@ export class TareasService {
     return Math.round(sum / valoraciones.length);
   }
 
-  getTareasPorHogar(hogarId: string): Observable<TareaDTO[]> {
+  getTareasPorHogar(hogarId: string, enrich: boolean = true): Observable<TareaDTO[]> {
     const tareasRef = collection(this.fs, 'tareas').withConverter(tareaConverter);
     const q = query(tareasRef, where('hogarId', '==', hogarId));
 
     return collectionData(q, { idField: 'id' }).pipe(
       switchMap((tareas: Tarea[]) => {
-        const uids = [...new Set(tareas.map(t => t.asignadA).filter(Boolean))];
+        if (!enrich) {
+          return of(tareas.map<TareaDTO>(t => ({
+            ...t,
+            asignadoNombre: t.asignadoNombre ?? '',
+            asignadoFotoURL: t.asignadoFotoURL ?? ''
+          })));
+        }
 
+        const uids = [...new Set(tareas.map(t => t.asignadA).filter(Boolean))];
         if (uids.length === 0) {
-          return of(
-            tareas.map<TareaDTO>(t => ({ ...t, asignadoNombre: '' }))
-          );
+          return of(tareas.map<TareaDTO>(t => ({
+            ...t,
+            asignadoNombre: '',
+            asignadoFotoURL: ''
+          })));
         }
 
         const perfiles$ = uids
@@ -73,11 +82,7 @@ export class TareasService {
             docData<DocumentData>(doc(this.fs, 'usuarios', uid)).pipe(
               map(perfil => ({
                 uid,
-                nombre:
-                  perfil?.['displayName'] ??
-                  perfil?.['nombre'] ??
-                  perfil?.['email'] ??
-                  'Desconocido',
+                nombre: perfil?.['displayName'] ?? perfil?.['nombre'] ?? perfil?.['email'] ?? 'Desconocido',
                 fotoURL: perfil?.['photoURL'] ?? '',
               }))
             )
@@ -98,12 +103,14 @@ export class TareasService {
   }
 
   getTareasAsignadasUsuario(hogarId: string, uid: string): Observable<TareaDTO[]> {
+    if (!uid) return of([]);
     return this.getTareasPorHogar(hogarId).pipe(
       map(tareas => tareas.filter(t => t.asignadA === uid))
     );
   }
 
   getPuntosSemana(hogarId: string, uid: string): Observable<number> {
+    if (!uid) return of(0);
     const weekStart = this.getWeekStart();
 
     return this.getTareasPorHogar(hogarId).pipe(
@@ -142,6 +149,11 @@ export class TareasService {
   }
 
   asignarTarea(tareaId: string, nuevoUid: string): Promise<void> {
+    const currentUser = this.authService.currentUser;
+    if (!currentUser) {
+      return Promise.reject(new Error('Modo demo: no se puede asignar tarea.'));
+    }
+
     const tareaRef = doc(this.fs, 'tareas', tareaId);
 
     return getDoc(tareaRef).then(async (tareaSnap) => {
@@ -199,16 +211,15 @@ export class TareasService {
     });
   }
 
-  /**
-   * Registra una valoración. Si con esta valoración ya no quedan pendientes,
-   * calcula la puntuación final, otorga puntos una sola vez, y guarda un snapshot en el historial.
-   */
   valorarTarea(tareaId: string, puntuacion: number, comentario: string, uidActual: string): Promise<void> {
+    if (!uidActual) {
+      return Promise.reject(new Error('Modo demo: no se puede valorar tarea.'));
+    }
+
     const tareaRef = doc(this.fs, 'tareas', tareaId);
 
     return getDoc(tareaRef).then(async (snap) => {
       if (!snap.exists()) throw new Error('Tarea no encontrada');
-      if (!uidActual) throw new Error('Usuario no autenticado');
 
       const tarea = snap.data() as Tarea;
       const valoraciones = [...(tarea.valoraciones ?? [])];

@@ -90,10 +90,12 @@ export class TarjetaTareaComponent implements OnChanges {
     if (!this.tarea.historial?.length) return;
 
     const ultima = this.tarea.historial[this.tarea.historial.length - 1];
+    const tieneValoraciones = (this.tarea.valoraciones?.length ?? 0) > 0;
+
     this.dialog.open(HistorialDialogComponent, {
       data: ultima,
-      width: '520px',
-      height: '418px',
+      width: tieneValoraciones ? '520px' : '450px',
+      height: tieneValoraciones ? '417px' : '345px',
       panelClass: 'dialog-historial',
       scrollStrategy: this.overlay.scrollStrategies.noop()
     });

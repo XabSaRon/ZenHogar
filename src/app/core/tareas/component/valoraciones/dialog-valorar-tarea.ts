@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { TareasService } from '../../services/tareas.service';
 import { AuthService } from '../../../auth/auth.service';
@@ -43,8 +44,13 @@ export class DialogValorarTarea {
     private dialogRef: MatDialogRef<DialogValorarTarea>,
     @Inject(MAT_DIALOG_DATA) public data: { tareaId: string },
     private tareasService: TareasService,
-    private authService: AuthService
+    private authService: AuthService,
+    private snackBar: MatSnackBar
   ) { }
+
+  get isDemoMode(): boolean {
+    return !this.authService.uidActual;
+  }
 
   seleccionarEstrella(valor: number) {
     this.valorSeleccionado = valor;
@@ -59,15 +65,17 @@ export class DialogValorarTarea {
 
     const uid = this.authService.uidActual;
     if (!uid) {
-      console.error('Usuario no autenticado');
+      this.snackBar.open('👀 Demo: aquí se guardaría tu valoración.', 'Cerrar', { duration: 3000 });
+      this.dialogRef.close({ ok: true, demo: true });
       return;
     }
 
     this.tareasService
       .valorarTarea(this.data.tareaId, this.valorSeleccionado, this.comentario.trim(), uid)
-      .then(() => this.dialogRef.close(true))
+      .then(() => this.dialogRef.close({ ok: true }))
       .catch((err) => {
         console.error('Error al guardar valoración:', err);
+        this.snackBar.open('❌ Error al guardar la valoración', 'Cerrar', { duration: 3000 });
       });
   }
 }

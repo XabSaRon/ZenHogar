@@ -10,6 +10,8 @@
   display: flex;
   flex-direction: column;
   padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
 
   animation: fadeInStaggered 0.4s ease-out;
   animation-fill-mode: both;
@@ -18,6 +20,31 @@
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
+  }
+
+  .hover-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) translateX(-120%);
+    padding: .35rem .8rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: .9rem;
+    white-space: nowrap;
+    color: #0f3d91;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .12);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &.tarea-en-curso:hover .hover-loader {
+    animation: moveAcross 1.5s ease-in-out infinite;
+  }
+
+  &.valoracion-pendiente:hover .hover-loader {
+    animation: moveAcross 2s ease-in-out 1;
   }
 
   h3 {
@@ -96,7 +123,6 @@
     box-shadow: 0 0 0 2px #ffe0b2;
     display: inline-block;
   }
-
 
   .info-ultimo-completador {
     font-size: 0.85rem;
@@ -203,6 +229,29 @@
   .titulo-tarea {
     color: #f57f17;
   }
+
+  .hover-loader {
+    color: #b28900;
+    background: rgba(255, 249, 196, 0.95);
+  }
+}
+
+.tarea-en-curso {
+  background: #dfefff;
+  border: 2px solid #9cc4ff;
+
+  .titulo-tarea {
+    color: #0f3d91;
+  }
+
+  .asignacion {
+    color: #1a5fb4;
+  }
+
+  .emoji-icon {
+    background-color: #e6f0ff;
+    box-shadow: 0 2px 4px rgba(16, 78, 139, 0.08);
+  }
 }
 
 .boton-valorar-lateral {
@@ -223,6 +272,7 @@ button[disabled] mat-icon {
   opacity: 0.4;
 }
 
+/* Animaciones */
 @keyframes fadeInStaggered {
   from {
     opacity: 0;
@@ -232,5 +282,30 @@ button[disabled] mat-icon {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes moveAcross {
+  0% {
+    transform: translate(-50%, -50%) translateX(-120%);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  50% {
+    transform: translate(-50%, -50%) translateX(0);
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) translateX(120%);
+    opacity: 0;
   }
 }

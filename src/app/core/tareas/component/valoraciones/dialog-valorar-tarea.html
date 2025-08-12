@@ -4,6 +4,12 @@
     Valorar tarea
   </h1>
 
+  @if (isDemoMode) {
+  <div class="aviso-demo">
+    👀 Estás en modo demo — la valoración no se guardará realmente.
+  </div>
+  }
+
   <form #form="ngForm" (ngSubmit)="guardarValoracion()" class="dialog-body">
     <div class="valoracion-estrellas">
       <ng-container *ngFor="let estrella of estrellas">

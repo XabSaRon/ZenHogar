@@ -1,4 +1,7 @@
-<div class="tarjeta-tarea" [ngStyle]="styleDelay" [ngClass]="{ 'valoracion-pendiente': tieneValoracionPendiente }">
+<div class="tarjeta-tarea" [ngStyle]="styleDelay" [ngClass]="{
+    'valoracion-pendiente': tieneValoracionPendiente,
+    'tarea-en-curso': !tieneValoracionPendiente && tarea.asignadA && !tarea.completada
+  }">
   <div class="tarea-header">
     <div class="emoji-icon">{{ emoji }}</div>
     <h3 class="titulo-tarea">{{ tarea.nombre }}</h3>
@@ -66,4 +69,15 @@
     </button>
     }
   </mat-menu>
+
+  @if (tarea.asignadA && !tarea.completada && !tieneValoracionPendiente) {
+  <div class="hover-loader">
+    ⏳ En curso
+  </div>
+  }
+
+  @if (tieneValoracionPendiente) {
+  <div class="hover-loader">⭐ Pendiente de valorar</div>
+  }
+
 </div>

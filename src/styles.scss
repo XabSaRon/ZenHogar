@@ -1,6 +1,10 @@
 html,
 body {
   height: auto;
+  background: linear-gradient(-45deg, #f0f9f9, #e6f7f7, #f8fdfa, #f3fbfb);
+  background-size: 400% 400%;
+  animation: gradientBG 20s ease infinite;
+  overflow-x: hidden;
 }
 
 :root {
@@ -53,7 +57,6 @@ body {
 }
 
 
-/* --- Personalización del menú desplegable (mat-menu) --- */
 .mat-mdc-menu-panel {
   max-width: 240px !important;
   border-radius: 10px !important;
@@ -95,4 +98,18 @@ body {
   display: flex;
   align-items: center;
   line-height: 1.2;
+}
+
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }

@@ -8,7 +8,7 @@
     @if (hogar$ | async; as hogar) {
     <div class="header-center">
       <button class="hogar-titulo" type="button" (click)="abrirInvitar(hogar)">
-        {{ hogar.nombre }}
+        🏠 {{ hogar.nombre }}
       </button>
     </div>
     } @else {
@@ -21,6 +21,10 @@
       </button>
     </div>
     }
+    } @else {
+    <div class="header-center">
+      <span class="hogar-titulo demo">🏠 Demo Hogar</span>
+    </div>
     }
 
     <div class="header-right">
@@ -28,9 +32,9 @@
       <div class="user-info">
         <div class="puntos-usuario-wrapper">
           <div class="puntos-usuario" [ngClass]="{
-                'positivo': (usuario?.puntos ?? 0) >= 0,
-                'negativo': (usuario?.puntos ?? 0) < 0
-              }">
+                  'positivo': (usuario?.puntos ?? 0) >= 0,
+                  'negativo': (usuario?.puntos ?? 0) < 0
+                }">
             {{ usuario?.puntos ?? 0 }}
           </div>
           <img src="assets/coin.png" alt="Moneda" class="moneda-animada" />
@@ -52,16 +56,19 @@
     </div>
   </header>
 
-  @if (hogar$ | async; as hogar) {
   <main class="contenido-principal">
     <app-lista-tareas></app-lista-tareas>
   </main>
-  }
 
   <footer class="footer">
     <div class="footer-content">
       <span>🧘 ZenHogar — La armonía empieza en casa</span>
       <span>v1.0 · Hecho con 💚 por Xabi</span>
+
+      <a href="https://instagram.com/appZenHogar" target="_blank" rel="noopener noreferrer" class="instagram-link">
+        <img src="assets/instagram.png" alt="Instagram" class="instagram-icon">
+      </a>
     </div>
   </footer>
+
 </div>

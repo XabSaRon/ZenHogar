@@ -1,12 +1,67 @@
 @if (tareasParaValorar$ | async; as porValorar) {
 @if ((porValorar?.length ?? 0) > 0) {
 <div class="aviso-valoracion">
-  🔔 Tienes {{ porValorar.length }} tarea{{ porValorar.length > 1 ? 's' : '' }} pendiente{{ porValorar.length > 1 ? 's'
-  : '' }} de valorar
+  🔔 Tienes {{ porValorar.length }} tarea{{ porValorar.length > 1 ? 's' : '' }}
+  pendiente{{ porValorar.length > 1 ? 's' : '' }} de valorar
 </div>
 }
 }
 
+@if (isGuest$ | async) {
+@if (miembros$ | async; as miembros) {
+<div class="fila-header">
+  <div class="info-usuario saludo-card">
+    <span class="emoji">👋</span>
+    <span class="texto-bienvenida">Bienvenido a ZenHogar</span>
+    <span class="pipe">|</span>
+    <span class="muted"> — Este es un hogar de ejemplo para que veas cómo funciona.</span>
+  </div>
+
+  <div class="selector-filtro">
+    <button #trigger class="btn-filtro" (click)="toggleFiltro($event)">
+      @if (uidSeleccionadoNombre) {
+      <span class="icono-texto">
+        @if (uidSeleccionadoFoto) {
+        <img [src]="uidSeleccionadoFoto" class="avatar-mini" alt="avatar" />
+        }
+        {{ uidSeleccionadoNombre }}
+      </span>
+      } @else {
+      <span class="icono-texto"><span class="emoji-icon">👥</span> Todos</span>
+      }
+      <span class="chevron">▾</span>
+    </button>
+
+    @if (mostrarFiltro) {
+    <div #dropdown class="dropdown-filtro" (click)="$event.stopPropagation()">
+      <div class="opcion" (click)="filtrarPorUsuario(null)">👥 Todos</div>
+      @for (miembro of miembros; track miembro.uid) {
+      <div class="opcion" (click)="filtrarPorUsuario(miembro.uid)">
+        @if (miembro.fotoURL) {
+        <img [src]="miembro.fotoURL" alt="avatar" />
+        }
+        {{ miembro.nombre }}
+      </div>
+      }
+    </div>
+    }
+  </div>
+</div>
+
+<div class="contenedor-tareas">
+  <div class="grid-tareas">
+    @if (tareas$ | async; as tareasDemo) {
+    @for (tarea of tareasDemo; track tarea.id; let i = $index) {
+    <app-tarjeta-tarea [tarea]="tarea" [uidActual]="'guest'" [miembros]="miembros" [delay]="i"
+      (asignadoCambio)="invitaALogin()" (tareaCompletada)="invitaALogin()">
+    </app-tarjeta-tarea>
+    }
+    }
+  </div>
+</div>
+}
+}
+@else {
 @if (usuario$ | async; as usuario) {
 @if (tareas$ | async; as tareas) {
 <div class="fila-header">
@@ -20,7 +75,8 @@
     <span class="resumen-tareas">
       🧹 {{ asignadas.length }}
       <span class="muted">
-        tarea{{ asignadas.length === 1 ? '' : 's' }} asignada{{ asignadas.length === 1 ? '' : 's' }}
+        tarea{{ asignadas.length === 1 ? '' : 's' }}
+        asignada{{ asignadas.length === 1 ? '' : 's' }}
       </span>
     </span>
     }
@@ -73,6 +129,7 @@
     }
   </div>
 </div>
+}
 }
 }
 }
