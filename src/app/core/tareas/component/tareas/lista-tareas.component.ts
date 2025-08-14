@@ -268,24 +268,36 @@ export class ListaTareasComponent implements OnInit {
       }));
     }
 
-    let idxAsign = 0;
-    return tareas.map((t, i) => {
-      if (i === 1) {
-        return { ...t, asignadA: null, asignadoNombre: '', asignadoFotoURL: '' };
-      }
+    const esBloqueada = (t: TareaDTO) => !!t.bloqueadaHastaValoracion;
+    const preservar = (t: TareaDTO) => esBloqueada(t);
 
-      const seAsigna = i % 3 !== 2;
-      if (seAsigna) {
-        const m = miembros[idxAsign % miembros.length];
-        idxAsign++;
+    const patron = ['A', 'U', 'A', 'A'] as const;
+
+    let idxMiembro = 0;
+
+    return tareas.map((t, i) => {
+      if (preservar(t)) return t;
+
+      const paso = patron[i % patron.length];
+
+      if (paso === 'U') {
         return {
           ...t,
-          asignadA: m.uid,
-          asignadoNombre: m.nombre,
-          asignadoFotoURL: m.fotoURL ?? ''
+          asignadA: null,
+          asignadoNombre: '',
+          asignadoFotoURL: ''
         };
       }
-      return { ...t, asignadA: null, asignadoNombre: '', asignadoFotoURL: '' };
+
+      const m = miembros[idxMiembro % miembros.length];
+      idxMiembro++;
+
+      return {
+        ...t,
+        asignadA: m.uid,
+        asignadoNombre: m.nombre,
+        asignadoFotoURL: m.fotoURL ?? ''
+      };
     });
   }
 

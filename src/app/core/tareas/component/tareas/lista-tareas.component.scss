@@ -7,16 +7,17 @@
 .grid-tareas {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 5rem 5rem;
+  gap: 5rem;
   padding: 2.5rem 1.5rem;
   justify-items: center;
   align-items: start;
 }
 
+/* breakpoints */
 @media (max-width: 1920px) {
   .grid-tareas {
     grid-template-columns: repeat(4, 1fr);
-    gap: 4rem 4rem;
+    gap: 4rem;
     padding: 2rem 1rem;
   }
 }
@@ -24,7 +25,7 @@
 @media (max-width: 1600px) {
   .grid-tareas {
     grid-template-columns: repeat(3, 1fr);
-    gap: 3rem 3rem;
+    gap: 3rem;
     padding: 1.8rem 1rem;
   }
 }
@@ -32,8 +33,8 @@
 @media (max-width: 1024px) {
   .grid-tareas {
     grid-template-columns: repeat(2, 1fr);
-    gap: 2.5rem 2.5rem;
-    padding: 1.5rem 0.8rem;
+    gap: 2.5rem;
+    padding: 1.5rem .8rem;
   }
 }
 
@@ -41,7 +42,7 @@
   .grid-tareas {
     grid-template-columns: repeat(2, 1fr);
     gap: 2rem 1.5rem;
-    padding: 1.2rem 0.6rem;
+    padding: 1.2rem .6rem;
   }
 }
 
@@ -49,7 +50,7 @@
   .grid-tareas {
     grid-template-columns: 1fr;
     gap: 1.5rem 0;
-    padding: 1rem 0.5rem;
+    padding: 1rem .5rem;
   }
 }
 
@@ -99,19 +100,18 @@
     .icono-texto {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: .4rem;
     }
 
     .emoji-icon {
       font-size: 1rem;
-      display: inline-block;
       line-height: 1;
       transform: translateY(1px);
     }
 
     .chevron {
-      font-size: 0.75rem;
-      margin-left: 0.25rem;
+      font-size: .75rem;
+      margin-left: .25rem;
     }
 
     &:hover {
@@ -140,10 +140,10 @@
       padding: 0.5rem 1rem;
       display: flex;
       align-items: center;
-      gap: 0.6rem;
-      font-size: 0.95rem;
+      gap: .6rem;
+      font-size: .95rem;
       cursor: pointer;
-      transition: background 0.2s ease;
+      transition: background .2s ease;
       font-weight: 500;
       color: #333;
 
@@ -161,12 +161,14 @@
   }
 }
 
+/* header superior */
 .fila-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 1.5rem 1rem;
-  margin-bottom: 0.5rem;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 1.5rem;
+  margin: 18px 0 8px;
 }
 
 .info-usuario {
@@ -175,7 +177,7 @@
   color: #2e7d32;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: .5rem;
 
   .emoji {
     font-size: 1.2rem;
@@ -185,15 +187,6 @@
     color: #555;
     font-weight: 400;
   }
-}
-
-.fila-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0 1.5rem;
-  margin: 18px 0 8px;
 }
 
 .saludo-card {
@@ -264,29 +257,5 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-
-@media (max-width: 1600px) {
-  .grid-tareas {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 1024px) {
-  .grid-tareas {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .grid-tareas {
-    grid-template-columns: 1fr;
-  }
-
-  .selector-filtro .btn-filtro {
-    padding: 0.3rem 0.8rem;
-    font-size: 0.9rem;
   }
 }

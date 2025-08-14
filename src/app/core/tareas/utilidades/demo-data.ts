@@ -52,6 +52,21 @@ export function generarTareasDemo(): TareaDTO[] {
           fechaOtorgados: new Date(Date.now() - 86400000 * 3 + 3600000).toISOString(),
         }
       ];
+
+      tarea.valoraciones = [
+        {
+          uid: 'u2',
+          puntos: 5,
+          comentario: 'Excelente trabajo',
+          fecha: new Date(Date.now() - 86400000 * 3 + 4000000).toISOString(),
+        },
+        {
+          uid: 'u3',
+          puntos: 5,
+          comentario: 'Muy limpio todo',
+          fecha: new Date(Date.now() - 86400000 * 3 + 5000000).toISOString(),
+        }
+      ];
     }
 
     if (i === 1) {
@@ -63,18 +78,14 @@ export function generarTareasDemo(): TareaDTO[] {
           fotoURL: DEMO_MIEMBROS[1].fotoURL,
           fecha: new Date(Date.now() - 86400000).toISOString(),
           completada: false,
-          hogarId: 'DEMO',
-          puntosOtorgados: -100,
-          pesoUsado: tarea.peso,
-          puntuacionFinal: 0,
-          fechaOtorgados: new Date(Date.now() - 86400000 * 3 + 3600000).toISOString(),
+          hogarId: 'DEMO'
         }
       ];
-      tarea.valoracionesPendientes = ['u1', 'u3'];
-      tarea.bloqueadaHastaValoracion = true;
+      tarea.bloqueadaHastaValoracion = false;
     }
 
-    if (i === 2) {
+
+    if (i === 3) {
       tarea.historial = [
         {
           uid: 'u3',
@@ -87,6 +98,21 @@ export function generarTareasDemo(): TareaDTO[] {
           pesoUsado: tarea.peso,
           puntuacionFinal: 4,
           fechaOtorgados: new Date(Date.now() - 86400000 * 5 + 7200000).toISOString(),
+        }
+      ];
+
+      tarea.valoraciones = [
+        {
+          uid: 'u1',
+          puntos: 4,
+          comentario: 'Podría mejorar un poco',
+          fecha: new Date(Date.now() - 86400000 * 5 + 7500000).toISOString(),
+        },
+        {
+          uid: 'u2',
+          puntos: 4,
+          comentario: 'Bien hecho',
+          fecha: new Date(Date.now() - 86400000 * 5 + 7600000).toISOString(),
         }
       ];
     }
@@ -107,6 +133,14 @@ export function generarTareasDemo(): TareaDTO[] {
           fechaOtorgados: new Date(Date.now() - 86400000 * 3 + 3600000).toISOString(),
         }
       ];
+      tarea.valoraciones = [
+        {
+          uid: 'u2',
+          puntos: 1,
+          comentario: 'Muy mal hecho',
+          fecha: new Date(Date.now() - 86400000 * 2 + 3700000).toISOString(),
+        }
+      ];
       tarea.valoracionesPendientes = ['u2', 'u3'];
       tarea.bloqueadaHastaValoracion = true;
     }
@@ -114,4 +148,3 @@ export function generarTareasDemo(): TareaDTO[] {
     return tarea;
   });
 }
-

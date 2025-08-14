@@ -3,7 +3,8 @@
   height: 215px;
   min-height: 215px;
   max-width: 380px;
-  background-color: #f0fbf4;
+  background: #f1f9f3;
+  border: 1px solid rgba(0, 0, 0, .05);
   border-radius: 1.25rem;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -13,8 +14,7 @@
   position: relative;
   overflow: hidden;
 
-  animation: fadeInStaggered 0.4s ease-out;
-  animation-fill-mode: both;
+  animation: fadeInStaggeredBase 0.4s ease-out both;
   animation-delay: calc(var(--i) * 80ms);
 
   &:hover {
@@ -222,9 +222,11 @@
   }
 }
 
+/* estados */
 .valoracion-pendiente {
-  background-color: #fffde7;
-  border: 2px solid #fbc02d;
+  background: #fff9e6;
+  border: 1px solid rgba(0, 0, 0, .05);
+  animation-name: fadeInStaggeredYellow;
 
   .titulo-tarea {
     color: #f57f17;
@@ -237,8 +239,9 @@
 }
 
 .tarea-en-curso {
-  background: #dfefff;
-  border: 2px solid #9cc4ff;
+  background: #eaf3ff;
+  border: 1px solid rgba(0, 0, 0, .05);
+  animation-name: fadeInStaggeredBlue;
 
   .titulo-tarea {
     color: #0f3d91;
@@ -272,19 +275,7 @@ button[disabled] mat-icon {
   opacity: 0.4;
 }
 
-/* Animaciones */
-@keyframes fadeInStaggered {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+/* keyframes en uso */
 @keyframes moveAcross {
   0% {
     transform: translate(-50%, -50%) translateX(-120%);
@@ -307,5 +298,51 @@ button[disabled] mat-icon {
   100% {
     transform: translate(-50%, -50%) translateX(120%);
     opacity: 0;
+  }
+}
+
+@keyframes fadeInStaggeredBase {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeInStaggeredBlue {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeInStaggeredYellow {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta-tarea {
+    animation: none !important;
+  }
+
+  .tarjeta-tarea .hover-loader {
+    animation: none !important;
   }
 }
