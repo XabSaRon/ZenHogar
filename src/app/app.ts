@@ -41,8 +41,9 @@ export class App {
 
   abrirInvitar(hogar: Hogar) {
     this.dialog.open(DialogInvitarPersona, {
-      maxWidth: '480px',
-      panelClass: 'crear-hogar-dialog',
+      width: '500px',
+      maxWidth: '92vw',
+      panelClass: 'invitar-dialog',
       data: hogar.id,
       disableClose: true
     });
@@ -50,8 +51,9 @@ export class App {
 
   abrirUnirme() {
     this.dialog.open(DialogUnirseCodigo, {
-      maxWidth: '400px',
-      panelClass: 'crear-hogar-dialog',
+      width: '500px',
+      maxWidth: '92vw',
+      panelClass: 'unirse-dialog',
       disableClose: true
     });
   }
@@ -59,19 +61,27 @@ export class App {
   abrirCrearHogar() {
     const ref = this.dialog.open(DialogCrearHogarComponent, {
       disableClose: true,
-      maxWidth: '480px',
+      width: '540px',
+      maxWidth: '92vw',
       panelClass: 'crear-hogar-dialog',
     });
 
     ref.afterClosed()
       .pipe(take(1))
-      .subscribe(nombre => {
-        if (nombre) {
-          const user = this.fbAuth.currentUser;
-          if (user) {
-            this.hogarSvc.crearHogar(nombre, user);
-          }
-        }
+      .subscribe((result?: { nombre: string; provincia: string }) => {
+        if (!result) return;
+
+        const { nombre, provincia } = result;
+        if (!nombre?.trim() || !provincia) return;
+
+        const user = this.fbAuth.currentUser;
+        if (!user) return;
+
+        this.hogarSvc.crearHogar(nombre.trim(), provincia, user)
+          .catch(err => {
+            console.error('Error creando hogar:', err);
+          });
       });
   }
+
 }

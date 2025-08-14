@@ -4,9 +4,34 @@
   </h1>
 
   <form #f="ngForm" (ngSubmit)="crear()" class="dialog-body">
-    <mat-form-field appearance="outline">
+    <mat-form-field appearance="outline" class="w-100">
       <mat-label>Nombre del hogar</mat-label>
-      <input matInput [(ngModel)]="nombre" name="nombre" required />
+      <input matInput [(ngModel)]="nombre" name="nombre" required autocomplete="off" />
+      @if (f.submitted && !nombre) {
+      <mat-error>El nombre es obligatorio</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Provincia</mat-label>
+
+      <input matInput placeholder="Escribe y elige..." [(ngModel)]="provinciaInput" name="provinciaInput" required
+        (ngModelChange)="onProvinciaInputChange($event)" [matAutocomplete]="auto" autocomplete="off" />
+
+      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onProvinciaSelected($event.option.value)"
+        autoActiveFirstOption class="panel-provincias">
+        @for (p of provinciasFiltradas; track p) {
+        <mat-option [value]="p">{{ p }}</mat-option>
+        }
+        @if (provinciasFiltradas.length === 0) {
+        <mat-option disabled>Sin resultados</mat-option>
+        }
+      </mat-autocomplete>
+
+      <mat-hint>Usaremos la provincia para rankings y vistas locales</mat-hint>
+      @if (f.submitted && !provincia) {
+      <mat-error>La provincia es obligatoria</mat-error>
+      }
     </mat-form-field>
 
     <div mat-dialog-actions>

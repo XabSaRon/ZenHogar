@@ -46,10 +46,12 @@ export class HogarService {
 
   async crearHogar(
     nombre: string,
+    provincia: string,
     user: User
   ): Promise<{ id: string }> {
     const ref = await addDoc(collection(this.fs, 'hogares'), {
       nombre,
+      provincia,
       adminUid: user.uid,
       miembros: [user.uid],
       creadoEn: serverTimestamp(),
@@ -60,11 +62,20 @@ export class HogarService {
     return { id: ref.id };
   }
 
-  async getOrCreateHogar(nombre = 'Mi hogar'): Promise<string> {
+  /*async getOrCreateHogar(
+    { nombre = 'Mi hogar', provincia }: { nombre?: string; provincia: string }
+  ): Promise<string> {
     const user = this.auth.currentUser!;
     if (!user) throw new Error('No hay usuario autenticado');
 
     const existente = await firstValueFrom(this.getHogar$());
-    return existente ? existente.id! : (await this.crearHogar(nombre, user)).id;
+    if (existente) return existente.id!;
+
+    if (!provincia) throw new Error('Falta provincia para crear el hogar');
+
+    const { id } = await this.crearHogar(nombre, provincia, user);
+    return id;
   }
+    */
+
 }

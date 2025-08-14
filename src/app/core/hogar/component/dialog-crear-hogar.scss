@@ -4,6 +4,85 @@
   @include base.dialog-base;
 
   & {
-    animation: slideFadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    background: linear-gradient(135deg, #f5fefc, #e3f2fd);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+    animation: slideFadeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+/* --------- Título + icono --------- */
+.titulo-modal {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0 0 1rem 0;
+
+  mat-icon {
+    font-size: 1.2rem;
+    width: 1.2rem;
+    height: 1.2rem;
+    padding: .35rem;
+    border-radius: 10px;
+    display: inline-grid;
+    place-items: center;
+    background: rgba(46, 125, 50, .12);
+    color: #2e7d32;
+  }
+}
+
+/* --------- Formulario --------- */
+.dialog-body {
+  display: grid;
+  gap: 1rem;
+}
+
+mat-form-field {
+  width: 100%;
+
+  .mat-mdc-text-field-wrapper {
+    background: #fff;
+    border-radius: 12px;
+    transition: box-shadow .18s ease;
+  }
+
+  &.ng-invalid.ng-touched .mat-mdc-text-field-wrapper {
+    box-shadow: 0 0 0 2px rgba(229, 57, 53, .12);
+  }
+
+  .mat-mdc-form-field-subscript-wrapper {
+    margin-top: .25rem !important;
+  }
+
+  mat-error {
+    font-size: .8rem;
+    color: #e53935;
+    margin: 0;
+  }
+}
+
+.mat-mdc-hint {
+  font-size: .82rem;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+[mat-dialog-actions] {
+  justify-content: center;
+  gap: .75rem;
+
+  button {
+    min-width: 112px;
+    border-radius: 999px;
+  }
+}
+
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.995);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }

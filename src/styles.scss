@@ -11,52 +11,13 @@ body {
   --i: 0;
 }
 
-/* -------------  Diálogo “Crear hogar”  ------------- */
-.crear-hogar-dialog {
-  width: 500px !important;
-  max-width: 90vw !important;
-  padding: 0 !important;
-  border-radius: 16px !important;
-  font-family: 'Segoe UI', Roboto, sans-serif;
-  background: #f9f9fb;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25) !important;
-  overflow: visible !important;
-
-  .mat-mdc-dialog-surface {
-    width: 100% !important;
-    border-radius: 16px !important;
-    overflow: visible !important;
-    padding: 2rem !important;
-    box-shadow: none !important;
-
-    animation: zoomInFade 0.25s ease-out;
-  }
-}
-
-@keyframes zoomInFade {
-  0% {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
+/* Fondo desenfocado al abrir diálogos */
 .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
   backdrop-filter: blur(2px);
   background-color: rgba(0, 0, 0, 0.3);
 }
 
-::ng-deep .mat-menu-panel {
-  z-index: 1000 !important;
-  border-radius: 0.75rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-}
-
-
+/* Menús globales */
 .mat-mdc-menu-panel {
   max-width: 240px !important;
   border-radius: 10px !important;
@@ -90,16 +51,138 @@ body {
   color: #555;
 }
 
-.mat-mdc-menu-item {
-  line-height: 1.4 !important;
+/* -------------------------------
+   Autocomplete: panel-provincias
+-------------------------------- */
+.panel-provincias {
+  border-radius: 14px !important;
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .18) !important;
+  max-height: 60vh !important;
+  padding: .5rem 0 !important;
+  overflow: auto;
+  border: 2px solid rgba(46, 125, 50, 0.15);
+
+  .mat-mdc-option {
+    min-height: 44px;
+    font-size: .95rem;
+    padding: 0 1rem;
+    transition: background-color .2s, color .2s;
+
+    &:hover {
+      background-color: rgba(46, 125, 50, 0.08);
+    }
+  }
+
+  .mat-mdc-option.mdc-list-item--selected .mdc-list-item__primary-text {
+    font-weight: 600;
+    color: #2e7d32;
+  }
+
+  .mat-mdc-option.search-option {
+    pointer-events: none;
+    background: transparent !important;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: .5rem .75rem;
+    margin-bottom: .25rem;
+    min-height: auto;
+
+    .mdc-list-item__primary-text {
+      width: 100%;
+    }
+
+    .mdc-list-item__ripple {
+      display: none;
+    }
+
+    .mdc-list-item__start,
+    .mdc-list-item__end {
+      display: none;
+    }
+  }
+
+  .mat-mdc-option.search-option input[matinput] {
+    all: unset;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: .65rem .85rem;
+    border-radius: 10px;
+    border: 1px solid #cfd8dc;
+    background: #f8fafc;
+    font-size: .95rem;
+  }
+
+  .mat-mdc-option.search-option input[matinput]::placeholder {
+    color: #9aa4aa;
+  }
+
+  .mat-mdc-option.search-option input[matinput]:focus {
+    border-color: #2e7d32;
+    box-shadow: 0 0 0 2px rgba(46, 125, 50, .15);
+    background: #fff;
+    outline: none;
+  }
 }
 
-.menu-text {
-  display: flex;
-  align-items: center;
-  line-height: 1.2;
+/* ---------- Overlay del autocomplete (panel real en el overlay) ---------- */
+$c-provincias-gap: 16px;
+
+.cdk-overlay-pane .mat-mdc-autocomplete-panel.panel-provincias {
+  border-radius: 14px !important;
+  background: #fff !important;
+  border: 2px solid rgba(46, 125, 50, .15) !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .18) !important;
+
+  margin-top: $c-provincias-gap !important;
+
+  max-height: calc(50vh - #{$c-provincias-gap}) !important;
+  overflow: auto !important;
+  padding: .25rem 0 !important;
+
+  .mat-mdc-option {
+    border-bottom: 1px solid rgba(0, 0, 0, .045);
+  }
+
+  .mat-mdc-option:hover,
+  .mat-mdc-option.mdc-list-item--activated {
+    background-color: rgba(46, 125, 50, .08) !important;
+  }
+
+  .mat-mdc-option.mdc-list-item--selected .mdc-list-item__primary-text {
+    font-weight: 600;
+    color: #2e7d32 !important;
+  }
+
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: rgba(46, 125, 50, .25);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
 
+.cdk-overlay-pane .mat-mdc-autocomplete-panel.panel-provincias.mat-mdc-autocomplete-panel-above {
+  margin-top: 0 !important;
+  margin-bottom: $c-provincias-gap !important;
+  max-height: calc(50vh - #{$c-provincias-gap}) !important;
+}
+
+.cdk-overlay-pane .mat-mdc-select-panel-above {
+  transform-origin: top center !important;
+  top: auto !important;
+  bottom: unset !important;
+}
+
+/* Animaciones globales */
 @keyframes gradientBG {
   0% {
     background-position: 0% 50%;
@@ -111,5 +194,17 @@ body {
 
   100% {
     background-position: 0% 50%;
+  }
+}
+
+@keyframes zoomInFade {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
