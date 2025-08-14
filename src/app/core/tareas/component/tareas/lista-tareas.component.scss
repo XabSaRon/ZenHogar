@@ -13,7 +13,6 @@
   align-items: start;
 }
 
-/* breakpoints */
 @media (max-width: 1920px) {
   .grid-tareas {
     grid-template-columns: repeat(4, 1fr);
@@ -61,24 +60,28 @@
   padding: 0.75rem 1rem;
   border-radius: 0.75rem;
   font-weight: 600;
-  margin: 2rem auto 1rem;
+  margin: 2rem auto 1.5rem;
+  /* + espacio inferior */
   text-align: center;
   max-width: 480px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
+/* ---------------------------
+   Filtros (estado y usuario)
+---------------------------- */
 .selector-filtro {
   position: relative;
   display: flex;
-  justify-content: flex-end;
-  padding: 0 1.5rem 1rem 0;
+  flex: 0 0 auto;
+  padding: 0;
 
   .btn-filtro {
     background: linear-gradient(to right, #e3f2fd, #f1f8e9);
     border: none;
     border-radius: 999px;
-    padding: 1.5rem 1.5rem 2rem;
-    margin-top: 1.5rem;
+    padding: .65rem 1rem;
+    margin-top: 0;
     font-weight: 500;
     display: flex;
     align-items: center;
@@ -161,16 +164,36 @@
   }
 }
 
-/* header superior */
+.selector-filtro .btn-filtro {
+  min-width: 160px;
+  justify-content: space-between;
+  padding: .70rem 1.05rem;
+}
+
+/* --------------------------
+   Header superior (fila)
+--------------------------- */
 .fila-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 1rem;
   padding: 0 1.5rem;
-  margin: 18px 0 8px;
+  margin: 18px 0 24px;
+  padding-bottom: .25rem;
 }
 
+.fila-header .selector-filtro:nth-of-type(2) {
+  margin-left: auto;
+}
+
+.selector-filtro+.selector-filtro {
+  margin-left: .75rem;
+}
+
+/* --------------------------
+   Info usuario
+--------------------------- */
 .info-usuario {
   font-weight: 500;
   font-size: 1.05rem;
@@ -241,6 +264,20 @@
   }
 }
 
+
+@media (min-width: 1200px) {
+  .fila-header {
+    margin-bottom: 28px;
+  }
+
+  .aviso-valoracion {
+    margin-bottom: 1.75rem;
+  }
+}
+
+/* --------------------------
+   Animaciones
+--------------------------- */
 @keyframes popIn {
   from {
     opacity: 0;

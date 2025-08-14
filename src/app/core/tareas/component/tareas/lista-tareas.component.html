@@ -18,6 +18,24 @@
   </div>
 
   <div class="selector-filtro">
+    <button #triggerEstado class="btn-filtro" (click)="toggleFiltroEstado($event)">
+      <span class="icono-texto">
+        <span class="emoji-icon">{{ estadoIcon }}</span> {{ estadoSeleccionadoLabel }}
+      </span>
+      <span class="chevron">▾</span>
+    </button>
+
+    @if (mostrarFiltroEstado) {
+    <div #dropdownEstado class="dropdown-filtro" (click)="$event.stopPropagation()">
+      <div class="opcion" (click)="filtrarPorEstado('todos')">🗂️ Todas las tarjetas</div>
+      <div class="opcion" (click)="filtrarPorEstado('sin_asignar')">🔓 Sin asignar</div>
+      <div class="opcion" (click)="filtrarPorEstado('en_curso')">⏳ En curso</div>
+      <div class="opcion" (click)="filtrarPorEstado('pendiente_valoracion')">⭐ Pendiente valoración</div>
+    </div>
+    }
+  </div>
+
+  <div class="selector-filtro">
     <button #trigger class="btn-filtro" (click)="toggleFiltro($event)">
       @if (uidSeleccionadoNombre) {
       <span class="icono-texto">
@@ -85,6 +103,24 @@
     <span class="badge-puntos">
       ⭐ <strong>{{ (puntosSemana$ | async) ?? 0 }}</strong> esta semana
     </span>
+  </div>
+
+  <div class="selector-filtro">
+    <button #triggerEstado class="btn-filtro" (click)="toggleFiltroEstado($event)">
+      <span class="icono-texto">
+        <span class="emoji-icon">{{ estadoIcon }}</span> {{ estadoSeleccionadoLabel }}
+      </span>
+      <span class="chevron">▾</span>
+    </button>
+
+    @if (mostrarFiltroEstado) {
+    <div #dropdownEstado class="dropdown-filtro" (click)="$event.stopPropagation()">
+      <div class="opcion" (click)="filtrarPorEstado('todos')">🗂️ Todas las tarjetas</div>
+      <div class="opcion" (click)="filtrarPorEstado('sin_asignar')">🔓 Sin asignar</div>
+      <div class="opcion" (click)="filtrarPorEstado('en_curso')">⏳ En curso</div>
+      <div class="opcion" (click)="filtrarPorEstado('pendiente_valoracion')">⭐ Pendiente valoración</div>
+    </div>
+    }
   </div>
 
   <div class="selector-filtro">

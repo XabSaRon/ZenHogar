@@ -26,6 +26,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 
+type EstadoFiltro = 'todos' | 'sin_asignar' | 'en_curso' | 'pendiente_valoracion';
+
 @Component({
   selector: 'app-lista-tareas',
   standalone: true,
@@ -39,24 +41,73 @@ export class ListaTareasComponent implements OnInit {
   private tareas = inject(TareasService);
   private fs = inject(Firestore);
   private snackBar = inject(MatSnackBar);
-  private usuarioSeleccionado$ = new BehaviorSubject<string | null>(null);
   private destroyRef = di(DestroyRef);
 
-  @ViewChild('dropdown') dropdown?: ElementRef<HTMLElement>;
-  @ViewChild('trigger') trigger?: ElementRef<HTMLElement>;
-
-  usuario$ = this.auth.user$;
-  usuarioActual: User | null = null;
+  private usuarioSeleccionado$ = new BehaviorSubject<string | null>(null);
   uidSeleccionado: string | null = null;
-  mostrarFiltro = false;
   uidSeleccionadoNombre: string | null = null;
   uidSeleccionadoFoto: string | null = null;
 
-  miembros: { uid: string; nombre: string; fotoURL?: string }[] = [];
+  private estadoSeleccionado$ = new BehaviorSubject<EstadoFiltro>('todos');
+  mostrarFiltroEstado = false;
+  get estadoSeleccionadoLabel(): string {
+    const m: Record<EstadoFiltro, string> = {
+      'todos': 'Todas las tarjetas',
+      'sin_asignar': 'Sin asignar',
+      'en_curso': 'En curso',
+      'pendiente_valoracion': 'Pendiente valoración'
+    };
+    return m[this.estadoSeleccionado$.value];
+  }
 
+  get estadoIcon(): string {
+    const m: Record<EstadoFiltro, string> = {
+      todos: '🗂️',
+      sin_asignar: '🔓',
+      en_curso: '⏳',
+      pendiente_valoracion: '⭐',
+    };
+    return m[this.estadoSeleccionado$.value];
+  }
+
+  @ViewChild('dropdown') dropdown?: ElementRef<HTMLElement>;
+  @ViewChild('trigger') trigger?: ElementRef<HTMLElement>;
+  @ViewChild('dropdownEstado') dropdownEstado?: ElementRef<HTMLElement>;
+  @ViewChild('triggerEstado') triggerEstado?: ElementRef<HTMLElement>;
+
+  usuario$ = this.auth.user$;
+  usuarioActual: User | null = null;
+  mostrarFiltro = false;
+
+  miembros: { uid: string; nombre: string; fotoURL?: string }[] = [];
   isGuest$ = this.usuario$.pipe(map(u => !u));
 
-  tareas$ = combineLatest([this.usuario$, this.usuarioSeleccionado$]).pipe(
+  private tieneValoracionPendiente(t: TareaDTO): boolean {
+    return !!t.bloqueadaHastaValoracion || (t.valoracionesPendientes?.length ?? 0) > 0;
+  }
+
+  private esEnCurso(t: TareaDTO): boolean {
+    return !!t.asignadA && !t.completada && !this.tieneValoracionPendiente(t);
+  }
+
+  private esSinAsignar(t: TareaDTO): boolean {
+    return !t.asignadA && !this.tieneValoracionPendiente(t);
+  }
+
+  private aplicarFiltroEstado(tareas: TareaDTO[], estado: EstadoFiltro): TareaDTO[] {
+    switch (estado) {
+      case 'todos':
+        return tareas;
+      case 'sin_asignar':
+        return tareas.filter(t => this.esSinAsignar(t));
+      case 'en_curso':
+        return tareas.filter(t => this.esEnCurso(t));
+      case 'pendiente_valoracion':
+        return tareas.filter(t => this.tieneValoracionPendiente(t));
+    }
+  }
+
+  private baseTareas$ = combineLatest([this.usuario$, this.usuarioSeleccionado$]).pipe(
     switchMap(([usuario, uidSeleccionado]) => {
       if (!usuario) {
         return this.miembros$.pipe(
@@ -79,6 +130,10 @@ export class ListaTareasComponent implements OnInit {
         })
       );
     })
+  );
+
+  tareas$ = combineLatest([this.baseTareas$, this.estadoSeleccionado$]).pipe(
+    map(([tareas, estado]) => this.aplicarFiltroEstado(tareas, estado))
   );
 
   miembros$ = this.usuario$.pipe(
@@ -121,22 +176,68 @@ export class ListaTareasComponent implements OnInit {
   toggleFiltro(ev: MouseEvent) {
     ev.stopPropagation();
     this.mostrarFiltro = !this.mostrarFiltro;
+    if (this.mostrarFiltro) this.mostrarFiltroEstado = false;
+  }
+
+  toggleFiltroEstado(ev: MouseEvent) {
+    ev.stopPropagation();
+    this.mostrarFiltroEstado = !this.mostrarFiltroEstado;
+    if (this.mostrarFiltroEstado) this.mostrarFiltro = false;
   }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(ev: MouseEvent) {
-    if (!this.mostrarFiltro) return;
     const target = ev.target as Node;
-    const insideDropdown = this.dropdown?.nativeElement.contains(target) ?? false;
-    const insideTrigger = this.trigger?.nativeElement.contains(target) ?? false;
-    if (!insideDropdown && !insideTrigger) {
-      this.mostrarFiltro = false;
+
+    if (this.mostrarFiltro) {
+      const insideDropdown = this.dropdown?.nativeElement.contains(target) ?? false;
+      const insideTrigger = this.trigger?.nativeElement.contains(target) ?? false;
+      if (!insideDropdown && !insideTrigger) {
+        this.mostrarFiltro = false;
+      }
+    }
+
+    if (this.mostrarFiltroEstado) {
+      const insideDropdownE = this.dropdownEstado?.nativeElement.contains(target) ?? false;
+      const insideTriggerE = this.triggerEstado?.nativeElement.contains(target) ?? false;
+      if (!insideDropdownE && !insideTriggerE) {
+        this.mostrarFiltroEstado = false;
+      }
     }
   }
 
   @HostListener('document:keydown.escape')
   onEsc() {
     this.mostrarFiltro = false;
+    this.mostrarFiltroEstado = false;
+  }
+
+  filtrarPorUsuario(uid: string | null) {
+    this.uidSeleccionado = uid;
+    this.mostrarFiltro = false;
+
+    if (uid === null) {
+      this.uidSeleccionadoNombre = null;
+      this.uidSeleccionadoFoto = null;
+    } else {
+      const user = this.miembros.find(m => m.uid === uid);
+      this.uidSeleccionadoNombre = user?.nombre || null;
+      this.uidSeleccionadoFoto = user?.fotoURL || null;
+    }
+
+    this.usuarioSeleccionado$.next(uid);
+  }
+
+  filtrarPorEstado(estado: EstadoFiltro) {
+    this.estadoSeleccionado$.next(estado);
+    this.mostrarFiltroEstado = false;
+  }
+
+  loginConGoogle() { this.auth.loginGoogle(); }
+
+  invitaALogin() {
+    this.snackBar.open('🔒 Inicia sesión para asignar y valorar tareas.', 'Iniciar sesión', { duration: 4000 })
+      .onAction().subscribe(() => this.loginConGoogle());
   }
 
   reasignarTarea(tareaId: string | undefined, nuevoUid: string) {
@@ -180,31 +281,6 @@ export class ListaTareasComponent implements OnInit {
     })
   );
 
-  filtrarPorUsuario(uid: string | null) {
-    this.uidSeleccionado = uid;
-    this.mostrarFiltro = false;
-
-    if (uid === null) {
-      this.uidSeleccionadoNombre = null;
-      this.uidSeleccionadoFoto = null;
-    } else {
-      const user = this.miembros.find(m => m.uid === uid);
-      this.uidSeleccionadoNombre = user?.nombre || null;
-      this.uidSeleccionadoFoto = user?.fotoURL || null;
-    }
-
-    this.usuarioSeleccionado$.next(uid);
-  }
-
-  loginConGoogle() {
-    this.auth.loginGoogle();
-  }
-
-  invitaALogin() {
-    this.snackBar.open('🔒 Inicia sesión para asignar y valorar tareas.', 'Iniciar sesión', { duration: 4000 })
-      .onAction().subscribe(() => this.loginConGoogle());
-  }
-
   async finalizarTarea(tarea: TareaDTO) {
     if (!this.usuarioActual) {
       this.invitaALogin();
@@ -246,12 +322,10 @@ export class ListaTareasComponent implements OnInit {
     }
   }
 
-  tareasParaValorar$ = combineLatest([this.tareas$, this.usuario$]).pipe(
+  tareasParaValorar$ = combineLatest([this.baseTareas$, this.usuario$]).pipe(
     map(([tareas, usuario]) => {
       if (!usuario) return [];
-      return tareas.filter(t =>
-        t.valoracionesPendientes?.includes(usuario.uid)
-      );
+      return tareas.filter(t => t.valoracionesPendientes?.includes(usuario.uid));
     })
   );
 
@@ -300,5 +374,4 @@ export class ListaTareasComponent implements OnInit {
       };
     });
   }
-
 }
