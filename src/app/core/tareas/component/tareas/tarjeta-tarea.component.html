@@ -1,6 +1,6 @@
 <div class="tarjeta-tarea" [ngStyle]="styleDelay" [ngClass]="{
     'valoracion-pendiente': tieneValoracionPendiente,
-    'tarea-en-curso': !tieneValoracionPendiente && tarea.asignadA && !tarea.completada
+    'tarea-en-curso': isEnCurso
   }">
   <div class="tarea-header">
     <div class="emoji-icon">{{ emoji }}</div>
@@ -29,8 +29,7 @@
   <hr class="divider" />
 
   <div class="boton-asignar">
-    <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Asignar tarea"
-      [disabled]="tarea.bloqueadaHastaValoracion">
+    <button mat-icon-button [matMenuTriggerFor]="menu" [matTooltip]="tooltipAsignacion" [disabled]="!puedeAbrirMenu">
       <mat-icon [fontIcon]="'person_add'"></mat-icon>
     </button>
 
@@ -40,7 +39,7 @@
     </button>
     }
 
-    @if (tarea.asignadA && !tarea.completada && tarea.asignadA === uidActual) {
+    @if (isEnCurso && tarea.asignadA === uidActual) {
     <button class="boton-realizada-lateral" mat-icon-button color="primary" (click)="marcarComoRealizada()"
       matTooltip="Marcar como realizada">
       <mat-icon [fontIcon]="'check_circle'"></mat-icon>
@@ -56,28 +55,28 @@
   </div>
 
   <mat-menu #menu="matMenu">
-    <button mat-menu-item (click)="asignarAMiembro('')" [disabled]="tarea.bloqueadaHastaValoracion">
-      <mat-icon [fontIcon]="'lock_open'"></mat-icon>
-      <span class="menu-text">Sin asignar</span>
+    <button mat-menu-item (click)="asignarAMiembro('')" [disabled]="!puedeGestionarAsignacion">
+      <span class="mdc-list-item__primary-text item-row">
+        <mat-icon fontIcon="lock_open" class="item-ico"></mat-icon>
+        <span>Sin asignar</span>
+      </span>
     </button>
 
     @for (miembro of miembros; track miembro.uid) {
-    <button mat-menu-item (click)="asignarAMiembro(miembro.uid)" [disabled]="tarea.bloqueadaHastaValoracion">
-      <img class="avatar-small avatar-inline" [src]="miembro.fotoURL || 'assets/default-avatar.png'"
-        alt="Avatar de {{ miembro.nombre }}" (error)="onImageError($event)" />
-      <span class="menu-text">{{ miembro.nombre }}</span>
+    <button mat-menu-item (click)="asignarAMiembro(miembro.uid)" [disabled]="!puedeGestionarAsignacion">
+      <span class="mdc-list-item__primary-text item-row">
+        <img class="avatar-inline item-ico" [src]="miembro.fotoURL || 'assets/default-avatar.png'"
+          alt="Avatar de {{ miembro.nombre }}" (error)="onImageError($event)" />
+        <span>{{ miembro.nombre }}</span>
+      </span>
     </button>
     }
   </mat-menu>
 
-  @if (tarea.asignadA && !tarea.completada && !tieneValoracionPendiente) {
-  <div class="hover-loader">
-    ⏳ En curso
-  </div>
+  @if (isEnCurso) {
+  <div class="hover-loader">⏳ En curso</div>
   }
-
   @if (tieneValoracionPendiente) {
   <div class="hover-loader">⭐ Pendiente de valorar</div>
   }
-
 </div>

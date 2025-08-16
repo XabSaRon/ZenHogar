@@ -11,13 +11,36 @@ body {
   --i: 0;
 }
 
-/* Fondo desenfocado al abrir diálogos */
 .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
   backdrop-filter: blur(2px);
   background-color: rgba(0, 0, 0, 0.3);
 }
 
 /* Menús globales */
+.mat-mdc-menu-item .mdc-list-item__primary-text.item-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  min-width: 0;
+}
+
+.mat-mdc-menu-item .item-row .item-ico {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  display: inline-grid;
+  place-items: center;
+}
+
+.mat-mdc-menu-item .item-row img.item-ico {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.mat-mdc-menu-item {
+  align-items: center !important;
+}
+
 .mat-mdc-menu-panel {
   max-width: 240px !important;
   border-radius: 10px !important;

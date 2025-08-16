@@ -252,7 +252,9 @@ export class ListaTareasComponent implements OnInit {
       const msg =
         err?.message === 'No se puede asignar esta tarea hasta que se complete la valoración.'
           ? '❌ No se puede asignar esta tarea hasta que todos valoren cómo se ha hecho.'
-          : '❌ Error al asignar tarea';
+          : err?.message === 'Solo quien la tiene en curso puede reasignar.'
+            ? '⛔ Solo quien la tiene en curso puede reasignar.'
+            : '❌ Error al asignar tarea';
 
       this.snackBar.open(msg, 'Cerrar', { duration: 3000 });
       console.error('Error al asignar tarea', err);
@@ -329,6 +331,29 @@ export class ListaTareasComponent implements OnInit {
     })
   );
 
+  onAsignadoCambio(tarea: TareaDTO, nuevoUid: string) {
+    const enCurso = this.esEnCurso(tarea);
+    const soyAsignado = tarea.asignadA === this.usuarioActual?.uid;
+
+    if (enCurso && !soyAsignado) {
+      this.snackBar.open('⛔ Solo quien la tiene en curso puede reasignar.', 'Cerrar', { duration: 3000 });
+      return;
+    }
+
+    this.reasignarTarea(tarea.id!, nuevoUid);
+  }
+
+  onPenalizarAbandono(ev: { tareaId: string; uid: string; puntos: number }) {
+    this.snackBar.open(`-${Math.abs(ev.puntos)} puntos por abandonar la tarea`, 'Cerrar', { duration: 3000 });
+  }
+
+  onTareaCompletada(tarea: TareaDTO) {
+    this.finalizarTarea(tarea);
+  }
+
+  // --------------------------
+  // DEMO
+  // --------------------------
   private asignarDemoEnCaliente(
     tareas: TareaDTO[],
     miembros: { uid: string; nombre: string; fotoURL?: string }[]

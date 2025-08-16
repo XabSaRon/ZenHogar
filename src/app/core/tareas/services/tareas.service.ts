@@ -22,12 +22,14 @@ import { tareaConverter } from '../utilidades/tarea.converter';
 import { TAREAS_POR_DEFECTO } from '../utilidades/tareas-default';
 import { Usuario } from '../../usuarios/models/usuario.model';
 import { AuthService } from '../../auth/auth.service';
+import { PUNTOS_POR_VALORACION, PENALIZACION_ABANDONO } from '../utilidades/tareas.constants';
 
 @Injectable({ providedIn: 'root' })
 export class TareasService {
   private fs = inject(Firestore);
   private authService = inject(AuthService);
 
+  // ---- Helpers ----
   private getWeekStart(d = new Date()): Date {
     const weekStart = new Date(d);
     const day = weekStart.getDay() || 7;
@@ -37,14 +39,7 @@ export class TareasService {
   }
 
   private puntosBaseFromRating(rating: number): number {
-    switch (rating) {
-      case 5: return 10;
-      case 4: return 5;
-      case 3: return 0;
-      case 2: return -5;
-      case 1: return -10;
-      default: return 0;
-    }
+    return PUNTOS_POR_VALORACION[rating] ?? 0;
   }
 
   private mediaValoraciones(valoraciones: { puntos: number }[]): number {
@@ -53,6 +48,12 @@ export class TareasService {
     return Math.round(sum / valoraciones.length);
   }
 
+  private esEnCurso(t: Tarea): boolean {
+    const pendientes = (t.valoracionesPendientes?.length ?? 0) > 0;
+    return !!t.asignadA && !t.completada && !pendientes && !t.bloqueadaHastaValoracion;
+  }
+
+  // ---- Queries ----
   getTareasPorHogar(hogarId: string, enrich: boolean = true): Observable<TareaDTO[]> {
     const tareasRef = collection(this.fs, 'tareas').withConverter(tareaConverter);
     const q = query(tareasRef, where('hogarId', '==', hogarId));
@@ -148,67 +149,98 @@ export class TareasService {
     return batch.commit();
   }
 
-  asignarTarea(tareaId: string, nuevoUid: string): Promise<void> {
+  async asignarTarea(tareaId: string, nuevoUid: string, penalizacionAbandono: number = PENALIZACION_ABANDONO): Promise<void> {
     const currentUser = this.authService.currentUser;
     if (!currentUser) {
-      return Promise.reject(new Error('Modo demo: no se puede asignar tarea.'));
+      throw new Error('Modo demo: no se puede asignar tarea.');
     }
 
     const tareaRef = doc(this.fs, 'tareas', tareaId);
+    const tareaSnap = await getDoc(tareaRef);
+    if (!tareaSnap.exists()) {
+      throw new Error('Tarea no encontrada');
+    }
 
-    return getDoc(tareaRef).then(async (tareaSnap) => {
-      const tareaActual = tareaSnap.data() as Tarea;
-      const historialActual = [...(tareaActual.historial ?? [])];
+    const tareaActual = tareaSnap.data() as Tarea;
+    const historialActual = [...(tareaActual.historial ?? [])];
 
-      if (!nuevoUid) {
-        if (tareaActual.asignadA && tareaActual.asignadoNombre) {
-          const nuevaEntrada = {
-            uid: tareaActual.asignadA,
-            nombre: tareaActual.asignadoNombre,
-            fotoURL: tareaActual.asignadoFotoURL || '',
-            fecha: new Date().toISOString(),
-            completada: tareaActual.completada || false,
-            hogarId: tareaActual.hogarId,
-          };
-          return updateDoc(tareaRef, {
-            asignadA: null,
-            asignadoNombre: null,
-            asignadoFotoURL: null,
-            historial: [...historialActual, nuevaEntrada],
-          });
-        } else {
-          return updateDoc(tareaRef, {
-            asignadA: null,
-            asignadoNombre: null,
-            asignadoFotoURL: null,
-          });
-        }
-      }
+    const enCurso = this.esEnCurso(tareaActual);
+    const soyAsignado = tareaActual.asignadA === currentUser.uid;
+
+    if (enCurso && !soyAsignado) {
+      throw new Error('Solo quien la tiene en curso puede reasignar.');
+    }
+
+    if (!nuevoUid) {
+      const ahoraIso = new Date().toISOString();
+      const penaliza = enCurso && soyAsignado && penalizacionAbandono !== 0;
 
       if (tareaActual.asignadA && tareaActual.asignadoNombre) {
-        historialActual.push({
+        const nuevaEntrada: any = {
           uid: tareaActual.asignadA,
           nombre: tareaActual.asignadoNombre,
           fotoURL: tareaActual.asignadoFotoURL || '',
-          fecha: new Date().toISOString(),
+          fecha: ahoraIso,
           completada: tareaActual.completada || false,
           hogarId: tareaActual.hogarId,
+        };
+
+        if (penaliza) {
+          nuevaEntrada.puntosOtorgados = penalizacionAbandono;
+          nuevaEntrada.fechaOtorgados = ahoraIso;
+          nuevaEntrada.motivo = 'abandono';
+        }
+
+        await updateDoc(tareaRef, {
+          asignadA: null,
+          asignadoNombre: null,
+          asignadoFotoURL: null,
+          historial: [...historialActual, nuevaEntrada],
+        });
+      } else {
+        await updateDoc(tareaRef, {
+          asignadA: null,
+          asignadoNombre: null,
+          asignadoFotoURL: null,
         });
       }
 
-      const usuarioRef = doc(this.fs, 'usuarios', nuevoUid);
-      const snap = await getDoc(usuarioRef);
-      if (!snap.exists()) throw new Error('Usuario no encontrado');
+      if (penaliza) {
+        await this.registrarPenalizacionAbandono(tareaActual, currentUser.uid, penalizacionAbandono);
+      }
 
-      const user = snap.data() as Usuario;
+      return;
+    }
 
-      return updateDoc(tareaRef, {
-        asignadA: nuevoUid,
-        asignadoNombre: user.nombre,
-        asignadoFotoURL: user.photoURL || null,
-        historial: historialActual,
+    if (tareaActual.asignadA && tareaActual.asignadoNombre) {
+      historialActual.push({
+        uid: tareaActual.asignadA,
+        nombre: tareaActual.asignadoNombre,
+        fotoURL: tareaActual.asignadoFotoURL || '',
+        fecha: new Date().toISOString(),
+        completada: tareaActual.completada || false,
+        hogarId: tareaActual.hogarId,
       });
+    }
+
+    const usuarioRef = doc(this.fs, 'usuarios', nuevoUid);
+    const snap = await getDoc(usuarioRef);
+    if (!snap.exists()) throw new Error('Usuario no encontrado');
+
+    const user = snap.data() as Usuario;
+
+    await updateDoc(tareaRef, {
+      asignadA: nuevoUid,
+      asignadoNombre: user.nombre,
+      asignadoFotoURL: user.photoURL || null,
+      historial: historialActual,
     });
+  }
+
+  async registrarPenalizacionAbandono(tarea: Tarea, uid: string, puntos: number): Promise<void> {
+    if (!uid || !tarea?.hogarId) return;
+    const usuarioRef = doc(this.fs, 'usuarios', uid);
+    await updateDoc(usuarioRef, { puntos: increment(puntos) });
   }
 
   valorarTarea(tareaId: string, puntuacion: number, comentario: string, uidActual: string): Promise<void> {
