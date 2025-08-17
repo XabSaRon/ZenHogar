@@ -20,11 +20,15 @@ import { TareasService } from '../../services/tareas.service';
 import { TareaDTO } from '../../models/tarea.model';
 import { TarjetaTareaComponent } from './tarjeta-tarea.component';
 import { DEMO_MIEMBROS, generarTareasDemo } from '../../utilidades/demo-data';
+import { DialogCrearHogarComponent } from '../../../hogar/component/dialog-crear-hogar';
+import { DialogUnirseCodigo } from '../../../invitaciones/component/unirse/dialog-unirse-codigo';
 
 import { User } from '@angular/fire/auth';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
+import { Auth } from '@angular/fire/auth';
 
 type EstadoFiltro = 'todos' | 'sin_asignar' | 'en_curso' | 'pendiente_valoracion';
 
@@ -42,6 +46,8 @@ export class ListaTareasComponent implements OnInit {
   private fs = inject(Firestore);
   private snackBar = inject(MatSnackBar);
   private destroyRef = di(DestroyRef);
+  private dialog = inject(MatDialog);
+  private fbAuth = inject(Auth);
 
   private usuarioSeleccionado$ = new BehaviorSubject<string | null>(null);
   uidSeleccionado: string | null = null;
@@ -81,6 +87,9 @@ export class ListaTareasComponent implements OnInit {
 
   miembros: { uid: string; nombre: string; fotoURL?: string }[] = [];
   isGuest$ = this.usuario$.pipe(map(u => !u));
+  usuarioSinHogar$ = combineLatest([this.usuario$, this.hogar.getHogar$()]).pipe(
+    map(([u, h]) => !!u && !h)
+  );
 
   private tieneValoracionPendiente(t: TareaDTO): boolean {
     return !!t.bloqueadaHastaValoracion || (t.valoracionesPendientes?.length ?? 0) > 0;
@@ -349,6 +358,43 @@ export class ListaTareasComponent implements OnInit {
 
   onTareaCompletada(tarea: TareaDTO) {
     this.finalizarTarea(tarea);
+  }
+
+  abrirCrearHogar() {
+    const ref = this.dialog.open(DialogCrearHogarComponent, {
+      disableClose: true,
+      width: '540px',
+      maxWidth: '92vw',
+      panelClass: 'crear-hogar-dialog',
+    });
+
+    ref.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((result?: { nombre: string; provincia: string }) => {
+      if (!result) return;
+      const { nombre, provincia } = result;
+      if (!nombre?.trim() || !provincia) return;
+
+      const user = this.fbAuth.currentUser;
+      if (!user) return;
+
+      this.hogar.crearHogar(nombre.trim(), provincia, user).catch(err => {
+        console.error('Error creando hogar:', err);
+        this.snackBar.open('❌ Error al crear el hogar', 'Cerrar', { duration: 3000 });
+      });
+    });
+  }
+
+  abrirUnirseHogar() {
+    this.dialog.open(DialogUnirseCodigo, {
+      width: '500px',
+      maxWidth: '92vw',
+      panelClass: 'unirse-dialog',
+      disableClose: true
+    });
+  }
+
+  probarDemo() {
+    this.snackBar.open('Entrando en modo demo…', '', { duration: 1500 });
+    this.auth.logout?.();
   }
 
   // --------------------------

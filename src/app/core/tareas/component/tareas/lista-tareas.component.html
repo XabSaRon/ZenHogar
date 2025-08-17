@@ -1,3 +1,71 @@
+@if (usuarioSinHogar$ | async) {
+<section class="empty-state">
+  <div class="empty-hero">
+    <div class="emoji">🏡</div>
+    <h1>Tu hogar aún no está creado</h1>
+    <p class="sub">
+      Organiza tareas, reparte responsabilidades y suma puntos con tu familia o piso.
+    </p>
+
+    <div class="cta-row">
+      <button class="cta cta-primary" (click)="abrirCrearHogar()">
+        <span>Crear hogar</span> <small>(recomendado)</small>
+      </button>
+      <button class="cta" (click)="abrirUnirseHogar()">Unirme con código</button>
+      <button class="cta ghost" (click)="probarDemo()">Probar demo</button>
+    </div>
+
+    <ul class="benefits">
+      <li>🧹 Tareas como tarjetas: asigna, completa y valora</li>
+      <li>⭐ Puntos y ranking semanal</li>
+      <li>👥 Invita a tu pareja, amigos o familia</li>
+    </ul>
+  </div>
+
+  <div class="quick-start">
+    <h2>Empezar en 3 pasos</h2>
+    <ol>
+      <li><strong>Crea tu hogar</strong> y ponle un nombre.</li>
+      <li><strong>Invita</strong> a quien convivís.</li>
+      <li><strong>Añade tareas</strong> o usa una plantilla.</li>
+    </ol>
+
+    <div class="cards">
+      <div class="qcard">
+        <div class="icon">🏠</div>
+        <div class="title">Tipos de hogar</div>
+        <p>Pareja, Familiar, Erasmus o Amigos. Elige y ¡listo!</p>
+      </div>
+      <div class="qcard">
+        <div class="icon">📨</div>
+        <div class="title">Invitaciones</div>
+        <p>Invita por email o comparte un código.</p>
+      </div>
+      <div class="qcard">
+        <div class="icon">🛍️</div>
+        <div class="title">Tienda de puntos</div>
+        <p>Canjea recompensas según la clasificación del hogar.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="soft-preview">
+    <div class="preview-card shimmer">
+      <div class="row">
+        <div class="bubble"></div>
+        <div class="line w60"></div>
+      </div>
+      <div class="line w100"></div>
+      <div class="chips">
+        <span class="chip"></span><span class="chip"></span><span class="chip"></span>
+      </div>
+    </div>
+    <div class="preview-card shimmer delay"></div>
+    <div class="preview-card shimmer delay2"></div>
+  </div>
+</section>
+} @else {
+
 @if (tareasParaValorar$ | async; as porValorar) {
 @if ((porValorar?.length ?? 0) > 0) {
 <div class="aviso-valoracion">
@@ -78,12 +146,10 @@
   </div>
 </div>
 }
-}
-@else {
+} @else {
 @if (usuario$ | async; as usuario) {
 @if (tareas$ | async; as tareas) {
 <div class="fila-header">
-
   <div class="info-usuario saludo-card">
     <span class="emoji">👋</span>
     <span class="texto-bienvenida">Hola {{ usuario.displayName || usuario.email }}</span>
@@ -166,6 +232,7 @@
     }
   </div>
 </div>
+}
 }
 }
 }
