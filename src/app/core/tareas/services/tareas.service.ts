@@ -12,7 +12,8 @@ import {
   writeBatch,
   serverTimestamp,
   deleteField,
-  increment
+  increment,
+  addDoc,
 } from '@angular/fire/firestore';
 import { inject, Injectable } from '@angular/core';
 import { Observable, combineLatest, of } from 'rxjs';
@@ -23,13 +24,13 @@ import { TAREAS_POR_DEFECTO } from '../utilidades/tareas-default';
 import { Usuario } from '../../usuarios/models/usuario.model';
 import { AuthService } from '../../auth/auth.service';
 import { PUNTOS_POR_VALORACION, PENALIZACION_ABANDONO } from '../utilidades/tareas.constants';
+import { PeticionAsignacionDTO } from '../models/peticion-asignacion.model';
 
 @Injectable({ providedIn: 'root' })
 export class TareasService {
   private fs = inject(Firestore);
   private authService = inject(AuthService);
 
-  // ---- Helpers ----
   private getWeekStart(d = new Date()): Date {
     const weekStart = new Date(d);
     const day = weekStart.getDay() || 7;
@@ -304,5 +305,119 @@ export class TareasService {
 
       return updateDoc(tareaRef, actualizaciones);
     });
+  }
+
+  // ----------------------------------------------------------------
+  //                👇 NUEVAS FUNCIONES DE PETICIONES 👇
+  // ----------------------------------------------------------------
+  async crearPeticionAsignacion(data: {
+    tareaId: string;
+    hogarId: string;
+    deUid: string;
+    paraUid: string;
+  }): Promise<void> {
+    const { tareaId, hogarId, deUid, paraUid } = data;
+
+    if (!deUid || !paraUid || !tareaId || !hogarId) {
+      throw new Error('Datos incompletos para crear petición.');
+    }
+    if (deUid === paraUid) {
+      throw new Error('La petición a uno mismo no es necesaria.');
+    }
+
+    const col = collection(this.fs, 'peticionesAsignacion');
+    const payload = {
+      tareaId,
+      hogarId,
+      deUid,
+      paraUid,
+      estado: 'pendiente' as const,
+      fecha: new Date().toISOString(),
+    };
+
+    try {
+      await addDoc(col, payload);
+    } catch (e: any) {
+      console.error('Error creando petición:', e?.code, e?.message, payload);
+      throw e;
+    }
+  }
+
+  peticionesPendientesPara$(uid: string): Observable<PeticionAsignacionDTO[]> {
+    if (!uid) return of([]);
+    const col = collection(this.fs, 'peticionesAsignacion');
+    const qy = query(col, where('paraUid', '==', uid), where('estado', '==', 'pendiente'));
+    return collectionData(qy, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>;
+  }
+
+  async aceptarPeticion(peticionId: string): Promise<void> {
+    const petRef = doc(this.fs, 'peticionesAsignacion', peticionId);
+    const petSnap = await getDoc(petRef);
+    if (!petSnap.exists()) throw new Error('Petición no encontrada');
+
+    const pet = petSnap.data() as PeticionAsignacionDTO;
+    if (pet.estado !== 'pendiente') {
+      throw new Error('La petición ya fue procesada.');
+    }
+
+    const tareaRef = doc(this.fs, 'tareas', pet.tareaId);
+    const tareaSnap = await getDoc(tareaRef);
+    if (!tareaSnap.exists()) throw new Error('Tarea no encontrada');
+
+    const tarea = tareaSnap.data() as Tarea;
+
+    if (tarea.bloqueadaHastaValoracion || (tarea.valoracionesPendientes?.length ?? 0) > 0) {
+      throw new Error('No se puede reasignar hasta completar las valoraciones.');
+    }
+
+    const usuarioRef = doc(this.fs, 'usuarios', pet.paraUid);
+    const usuarioSnap = await getDoc(usuarioRef);
+    if (!usuarioSnap.exists()) throw new Error('Usuario destino no encontrado');
+
+    const user = usuarioSnap.data() as Usuario;
+
+    const batch = writeBatch(this.fs);
+
+    const historialActual = [...(tarea.historial ?? [])];
+    if (tarea.asignadA && tarea.asignadoNombre) {
+      historialActual.push({
+        uid: tarea.asignadA,
+        nombre: tarea.asignadoNombre,
+        fotoURL: tarea.asignadoFotoURL || '',
+        fecha: new Date().toISOString(),
+        completada: tarea.completada || false,
+        hogarId: tarea.hogarId,
+      });
+    }
+
+    batch.update(tareaRef, {
+      asignadA: pet.paraUid,
+      asignadoNombre: user.nombre,
+      asignadoFotoURL: user.photoURL || null,
+      historial: historialActual,
+    });
+
+    batch.update(petRef, { estado: 'aceptada' });
+
+    await batch.commit();
+  }
+
+  async rechazarPeticion(peticionId: string): Promise<void> {
+    const petRef = doc(this.fs, 'peticionesAsignacion', peticionId);
+    const petSnap = await getDoc(petRef);
+    if (!petSnap.exists()) throw new Error('Petición no encontrada');
+
+    const pet = petSnap.data() as PeticionAsignacionDTO;
+    if (pet.estado !== 'pendiente') {
+      throw new Error('La petición ya fue procesada.');
+    }
+
+    await updateDoc(petRef, { estado: 'rechazada' });
+  }
+
+  peticionesPendientesEnHogar$(hogarId: string): Observable<PeticionAsignacionDTO[]> {
+    const col = collection(this.fs, 'peticionesAsignacion');
+    const qy = query(col, where('hogarId', '==', hogarId), where('estado', '==', 'pendiente'));
+    return collectionData(qy, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>;
   }
 }

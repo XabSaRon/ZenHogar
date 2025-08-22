@@ -1,0 +1,25 @@
+<div class="dialog-container">
+  <h1 class="titulo-modal">
+    <span class="icon-pill"><mat-icon fontIcon="notifications"></mat-icon></span>
+    Petición de asignación
+  </h1>
+
+  <div class="dialog-body">
+    <p class="mensaje">
+      <strong>{{ tareaNombre }}</strong><br />
+      Quieren asignarte esta tarea. ¿La aceptas?
+    </p>
+
+    <div class="acciones">
+      <button mat-button (click)="rechazar()">
+        <mat-icon fontIcon="close"></mat-icon>
+        Rechazar
+      </button>
+
+      <button mat-raised-button color="primary" (click)="aceptar()">
+        <mat-icon fontIcon="check"></mat-icon>
+        Aceptar
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,9 @@
+@use '../../../../../shared/styles/dialog-base' as base;
+
+.dialog-container {
+  @include base.dialog-base;
+
+  & {
+    animation: slideFadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}

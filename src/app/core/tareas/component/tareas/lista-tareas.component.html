@@ -226,8 +226,11 @@
   <div class="grid-tareas">
     @for (tarea of tareas; track tarea.id; let i = $index) {
     <app-tarjeta-tarea [tarea]="tarea" [uidActual]="usuario?.uid || ''" [miembros]="miembros" [delay]="i"
-      (asignadoCambio)="onAsignadoCambio(tarea, $event)" (penalizarAbandono)="onPenalizarAbandono($event)"
-      (tareaCompletada)="onTareaCompletada(tarea)">
+      [peticionParaMi]="peticionesMap[tarea.id!]"
+      [destinatarioNombre]="peticionesPorTareaMap[tarea.id!]?.destinatarioNombre"
+      [peticionPendiente]="!!peticionesPorTareaMap[tarea.id!]"
+      [peticionPendienteInfo]="peticionesPorTareaMap[tarea.id!]" (asignadoCambio)="onAsignadoCambio(tarea, $event)"
+      (penalizarAbandono)="onPenalizarAbandono($event)" (tareaCompletada)="onTareaCompletada(tarea)">
     </app-tarjeta-tarea>
     }
   </div>

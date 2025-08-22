@@ -5,6 +5,7 @@ import { switchMap, map, filter } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DestroyRef, inject as di } from '@angular/core';
+import { PeticionAsignacionDTO } from '../../models/peticion-asignacion.model';
 
 import {
   Firestore,
@@ -31,6 +32,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { Auth } from '@angular/fire/auth';
 
 type EstadoFiltro = 'todos' | 'sin_asignar' | 'en_curso' | 'pendiente_valoracion';
+type PeticionAsignacionExtendida = PeticionAsignacionDTO & {
+  destinatarioNombre?: string;
+};
 
 @Component({
   selector: 'app-lista-tareas',
@@ -53,6 +57,9 @@ export class ListaTareasComponent implements OnInit {
   uidSeleccionado: string | null = null;
   uidSeleccionadoNombre: string | null = null;
   uidSeleccionadoFoto: string | null = null;
+
+  peticionesMap: Record<string, PeticionAsignacionDTO | undefined> = {};
+  peticionesPorTareaMap: Record<string, PeticionAsignacionExtendida | undefined> = {};
 
   private estadoSeleccionado$ = new BehaviorSubject<EstadoFiltro>('todos');
   mostrarFiltroEstado = false;
@@ -175,11 +182,48 @@ export class ListaTareasComponent implements OnInit {
       .subscribe(usuario => {
         this.usuarioActual = usuario;
         this.filtrarPorUsuario(null);
+
+        if (usuario) {
+          this.tareas
+            .peticionesPendientesPara$(usuario.uid)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(lista => {
+              const nuevo = Object.fromEntries((lista || []).map(p => [p.tareaId, p]));
+              setTimeout(() => {
+                this.peticionesMap = nuevo;
+              }, 0);
+            });
+        } else {
+          this.peticionesMap = {};
+        }
       });
 
     this.miembros$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(lista => this.miembros = lista);
+
+    this.hogar.getHogar$()
+      .pipe(
+        switchMap(h => h
+          ? combineLatest([
+            this.tareas.peticionesPendientesEnHogar$(h.id!),
+            this.miembros$
+          ])
+          : of<[PeticionAsignacionDTO[], { uid: string; nombre: string }[]]>([[], []])
+        )
+      )
+      .subscribe(([lista, miembros]) => {
+        const byUid = Object.fromEntries(miembros.map(m => [m.uid, m.nombre]));
+        const entries: [string, PeticionAsignacionExtendida][] = (lista || []).map(p => ([
+          p.tareaId,
+          { ...p, destinatarioNombre: byUid[p.paraUid] || 'Usuario desconocido' }
+        ]));
+
+        const nuevoMapa = Object.fromEntries(entries) as Record<string, PeticionAsignacionExtendida>;
+        setTimeout(() => {
+          this.peticionesPorTareaMap = nuevoMapa;
+        }, 0);
+      });
   }
 
   toggleFiltro(ev: MouseEvent) {
@@ -249,24 +293,35 @@ export class ListaTareasComponent implements OnInit {
       .onAction().subscribe(() => this.loginConGoogle());
   }
 
-  reasignarTarea(tareaId: string | undefined, nuevoUid: string) {
-    if (!tareaId) return;
+  reasignarTarea(tarea: TareaDTO, nuevoUid: string) {
+    if (!tarea?.id) return;
 
     if (!this.usuarioActual) {
       this.invitaALogin();
       return;
     }
 
-    this.tareas.asignarTarea(tareaId, nuevoUid).catch((err) => {
-      const msg =
-        err?.message === 'No se puede asignar esta tarea hasta que se complete la valoración.'
-          ? '❌ No se puede asignar esta tarea hasta que todos valoren cómo se ha hecho.'
-          : err?.message === 'Solo quien la tiene en curso puede reasignar.'
-            ? '⛔ Solo quien la tiene en curso puede reasignar.'
-            : '❌ Error al asignar tarea';
+    if (nuevoUid === this.usuarioActual.uid) {
+      this.tareas.asignarTarea(tarea.id, nuevoUid);
+      return;
+    }
 
-      this.snackBar.open(msg, 'Cerrar', { duration: 3000 });
-      console.error('Error al asignar tarea', err);
+    const hogarId = tarea.hogarId;
+    if (!hogarId) {
+      this.snackBar.open('❌ No se pudo determinar el hogar de la tarea', 'Cerrar', { duration: 3000 });
+      return;
+    }
+
+    this.tareas.crearPeticionAsignacion({
+      tareaId: tarea.id,
+      hogarId,
+      deUid: this.usuarioActual.uid,
+      paraUid: nuevoUid,
+    }).then(() => {
+      this.snackBar.open('📩 Petición enviada al usuario', 'Cerrar', { duration: 3000 });
+    }).catch(err => {
+      console.error(err);
+      this.snackBar.open('❌ Error al enviar petición', 'Cerrar', { duration: 3000 });
     });
   }
 
@@ -349,7 +404,7 @@ export class ListaTareasComponent implements OnInit {
       return;
     }
 
-    this.reasignarTarea(tarea.id!, nuevoUid);
+    this.reasignarTarea(tarea, nuevoUid);
   }
 
   onPenalizarAbandono(ev: { tareaId: string; uid: string; puntos: number }) {
