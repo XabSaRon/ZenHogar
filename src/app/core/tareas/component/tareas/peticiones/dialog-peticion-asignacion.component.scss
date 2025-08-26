@@ -7,3 +7,108 @@
     animation: slideFadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
+
+.dialog-container {
+  .titulo-modal {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin: 0 0 .75rem 0;
+    line-height: 1.2;
+  }
+
+  .icon-pill {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #e8f5e9, #e3f2fd);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .08) inset, 0 1px 2px rgba(0, 0, 0, .06);
+
+    .mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #2e7d32;
+      opacity: .9;
+    }
+  }
+
+  .dialog-body {
+    .mensaje {
+      margin: .25rem 0 1rem;
+      color: #1f2937;
+
+      strong {
+        display: block;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: .25rem;
+      }
+    }
+  }
+
+  [mat-dialog-actions],
+  .acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: .75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+
+    button {
+      border-radius: 999px;
+      padding: .5rem 1.4rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      transition: transform .15s ease, box-shadow .15s ease, background-color .2s ease;
+
+      &:hover {
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: scale(.98);
+      }
+
+      &:focus-visible {
+        outline: 2px solid #90caf9;
+        outline-offset: 2px;
+      }
+    }
+
+    .btn-rechazar {
+      background-color: #ffffff;
+      color: #c62828;
+      border-color: #f1d1d1;
+
+      &:hover {
+        background-color: #fff5f5;
+        border-color: #ef9a9a;
+      }
+    }
+
+    .mat-mdc-unelevated-button[color='primary'],
+    .mat-mdc-raised-button[color='primary'] {
+      box-shadow: 0 3px 10px rgba(76, 175, 80, .28);
+
+      &:hover {
+        box-shadow: 0 6px 16px rgba(76, 175, 80, .38);
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+
+    [mat-dialog-actions],
+    .acciones {
+      justify-content: stretch;
+      gap: .6rem;
+
+      button {
+        flex: 1 1 100%;
+      }
+    }
+  }
+}

@@ -11,15 +11,16 @@
     </p>
 
     <div class="acciones">
-      <button mat-button (click)="rechazar()">
+      <button mat-button class="btn-rechazar" (click)="rechazar()">
         <mat-icon fontIcon="close"></mat-icon>
         Rechazar
       </button>
 
-      <button mat-raised-button color="primary" (click)="aceptar()">
+      <button mat-raised-button color="primary" (click)="aceptar()" cdkFocusInitial>
         <mat-icon fontIcon="check"></mat-icon>
         Aceptar
       </button>
     </div>
+
   </div>
 </div>

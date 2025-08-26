@@ -5,7 +5,6 @@ import { switchMap, map, filter } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DestroyRef, inject as di } from '@angular/core';
-import { PeticionAsignacionDTO } from '../../models/peticion-asignacion.model';
 
 import {
   Firestore,
@@ -23,6 +22,8 @@ import { TarjetaTareaComponent } from './tarjeta-tarea.component';
 import { DEMO_MIEMBROS, generarTareasDemo } from '../../utilidades/demo-data';
 import { DialogCrearHogarComponent } from '../../../hogar/component/dialog-crear-hogar';
 import { DialogUnirseCodigo } from '../../../invitaciones/component/unirse/dialog-unirse-codigo';
+import { PeticionAsignacionDTO } from '../../models/peticion-asignacion.model';
+import { NotificadorComponent } from '../notificaciones/notificador.component';
 
 import { User } from '@angular/fire/auth';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -30,6 +31,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { Auth } from '@angular/fire/auth';
+import { Router } from '@angular/router';
 
 type EstadoFiltro = 'todos' | 'sin_asignar' | 'en_curso' | 'pendiente_valoracion';
 type PeticionAsignacionExtendida = PeticionAsignacionDTO & {
@@ -39,7 +41,7 @@ type PeticionAsignacionExtendida = PeticionAsignacionDTO & {
 @Component({
   selector: 'app-lista-tareas',
   standalone: true,
-  imports: [CommonModule, AsyncPipe, TarjetaTareaComponent, MatIconModule, MatButtonModule],
+  imports: [CommonModule, AsyncPipe, TarjetaTareaComponent, MatIconModule, MatButtonModule, NotificadorComponent],
   templateUrl: './lista-tareas.component.html',
   styleUrls: ['./lista-tareas.component.scss'],
 })
@@ -52,6 +54,7 @@ export class ListaTareasComponent implements OnInit {
   private destroyRef = di(DestroyRef);
   private dialog = inject(MatDialog);
   private fbAuth = inject(Auth);
+  private router = inject(Router);
 
   private usuarioSeleccionado$ = new BehaviorSubject<string | null>(null);
   uidSeleccionado: string | null = null;
@@ -450,6 +453,10 @@ export class ListaTareasComponent implements OnInit {
   probarDemo() {
     this.snackBar.open('Entrando en modo demo…', '', { duration: 1500 });
     this.auth.logout?.();
+  }
+
+  onVerTarea(tareaId: string) {
+    this.router.navigate(['/tareas', tareaId]);
   }
 
   // --------------------------

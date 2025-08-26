@@ -1,0 +1,74 @@
+@let total = (total$ | async) ?? 0;
+@let notifications = (notifications$ | async) ?? [];
+
+<button mat-icon-button class="noti-icon" [matMenuTriggerFor]="menu" matTooltip="Notificaciones" [matBadge]="total"
+  [matBadgeHidden]="total === 0" matBadgeColor="warn" [matBadgeOverlap]="false">
+  <mat-icon>
+    {{ total > 0 ? 'notifications_active' : 'notifications' }}
+  </mat-icon>
+</button>
+
+<mat-menu #menu="matMenu" [overlapTrigger]="false" xPosition="after" yPosition="below" class="noti-panel">
+
+  <div class="np-header" (click)="$event.stopPropagation()">
+    <div class="np-title">
+      <mat-icon fontIcon="notifications"></mat-icon>
+      Notificaciones
+    </div>
+    @if (total > 0) {
+    <div class="np-count">{{ total }}</div>
+    }
+  </div>
+
+  <div class="np-body" (click)="$event.stopPropagation()">
+    @if (notifications.length > 0) {
+    @for (n of notifications; track n.id) {
+    <div class="np-item" (click)="$event.stopPropagation()" [class.-aceptada]="n.tipo === 'aceptada'"
+      [class.-rechazo]="n.tipo === 'rechazo'">
+
+      <div class="np-icon">
+        <mat-icon>{{ n.tipo === 'aceptada' ? 'check_circle' : 'block' }}</mat-icon>
+      </div>
+
+      <div class="np-content">
+        <div class="np-top">
+          <span class="np-pill" [class.-ok]="n.tipo === 'aceptada'" [class.-error]="n.tipo === 'rechazo'">
+            {{ n.tipo === 'aceptada' ? 'Aceptada' : 'Rechazada' }}
+          </span>
+          <span class="np-meta">
+            por <strong>{{ n.quien }}</strong>
+          </span>
+          @if (n.fecha) {
+          <span class="np-time">{{ n.fecha | date:'dd/MM HH:mm' }}</span>
+          }
+        </div>
+
+        <div class="np-task" (click)="$event.stopPropagation()">
+          <mat-icon fontIcon="assignment"></mat-icon>
+          <span class="np-task-name">
+            {{ getTareaNombre$(n.hogarId, n.tareaId) | async }}
+          </span>
+        </div>
+
+        <div class="np-actions" (click)="$event.stopPropagation()">
+          <button mat-stroked-button color="primary" (click)="$event.stopPropagation(); marcarUnaComoVista(n)">
+            Marcar visto
+          </button>
+        </div>
+      </div>
+    </div>
+    }
+
+    <div class="np-footer" (click)="$event.stopPropagation()">
+      <button mat-stroked-button color="primary" (click)="$event.stopPropagation(); marcarTodoComoVisto()">
+        Marcar todo como visto
+      </button>
+    </div>
+    } @else {
+    <div class="np-empty" (click)="$event.stopPropagation()">
+      <mat-icon fontIcon="celebration"></mat-icon>
+      No tienes notificaciones pendientes
+    </div>
+    }
+  </div>
+</mat-menu>

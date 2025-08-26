@@ -6,19 +6,16 @@
     <div class="emoji-icon">{{ emoji }}</div>
     <h3 class="titulo-tarea">{{ tarea.nombre }}</h3>
 
-    @if (peticionPendiente || peticionParaMi) {
+    @if ((peticionesPendientes$ | async)?.length) {
     <span class="peticion-campana-wrapper">
       <button class="peticion-campana" mat-icon-button (click)="onClickCampana($event)"
-        [ngClass]="{ 'es-mia': !!peticionParaMi }" aria-label="Petición de asignación" [matTooltip]="peticionParaMi
-        ? 'Tienes una petición de asignación'
-        : ('Pendiente de aceptación por ' + (destinatarioNombre || 'usuario'))" matTooltipPosition="above"
-        matTooltipShowDelay="250" matTooltipHideDelay="0" [matTooltipDisabled]="tooltipDisabled"
-        (mousedown)="tooltipDisabled = true" (mouseup)="tooltipDisabled = false" (mouseleave)="tooltipDisabled = false">
-        <mat-icon>{{ peticionParaMi ? 'notifications_active' : 'notifications' }}</mat-icon>
+        [ngClass]="{ 'es-mia': (peticionParaMi$ | async) }" aria-label="Petición de asignación"
+        [matTooltip]="(tooltipCampana$ | async) || ''" matTooltipPosition="above" matTooltipShowDelay="250"
+        matTooltipHideDelay="0">
+        <mat-icon>{{ (peticionParaMi$ | async) ? 'notifications_active' : 'notifications' }}</mat-icon>
       </button>
     </span>
     }
-
   </div>
 
   <hr class="divider" />
@@ -44,8 +41,8 @@
 
   <div class="boton-asignar">
     <button mat-icon-button [matMenuTriggerFor]="menu"
-      [matTooltip]="peticionPendiente ? 'Bloqueada: hay una petición pendiente' : tooltipAsignacion"
-      [disabled]="!puedeAbrirMenu || peticionPendiente">
+      [matTooltip]="(hayPeticionPendiente$ | async) ? 'Bloqueada: hay una petición pendiente' : tooltipAsignacion"
+      [disabled]="!puedeAbrirMenu || (hayPeticionPendiente$ | async)">
       <mat-icon [fontIcon]="'person_add'"></mat-icon>
     </button>
 

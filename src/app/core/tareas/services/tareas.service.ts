@@ -307,9 +307,6 @@ export class TareasService {
     });
   }
 
-  // ----------------------------------------------------------------
-  //                👇 NUEVAS FUNCIONES DE PETICIONES 👇
-  // ----------------------------------------------------------------
   async crearPeticionAsignacion(data: {
     tareaId: string;
     hogarId: string;
@@ -325,18 +322,25 @@ export class TareasService {
       throw new Error('La petición a uno mismo no es necesaria.');
     }
 
-    const col = collection(this.fs, 'peticionesAsignacion');
+    const colRef = collection(this.fs, 'peticionesAsignacion');
+    const deSnap = await getDoc(doc(this.fs, 'usuarios', deUid));
+    const paraSnap = await getDoc(doc(this.fs, 'usuarios', paraUid));
+    const deNombre = deSnap.exists() ? ((deSnap.data() as Usuario).nombre ?? '') : '';
+    const paraNombre = paraSnap.exists() ? ((paraSnap.data() as Usuario).nombre ?? '') : '';
+
     const payload = {
       tareaId,
       hogarId,
       deUid,
       paraUid,
+      deNombre,
+      paraNombre,
       estado: 'pendiente' as const,
       fecha: new Date().toISOString(),
     };
 
     try {
-      await addDoc(col, payload);
+      await addDoc(colRef, payload);
     } catch (e: any) {
       console.error('Error creando petición:', e?.code, e?.message, payload);
       throw e;
@@ -345,8 +349,14 @@ export class TareasService {
 
   peticionesPendientesPara$(uid: string): Observable<PeticionAsignacionDTO[]> {
     if (!uid) return of([]);
-    const col = collection(this.fs, 'peticionesAsignacion');
-    const qy = query(col, where('paraUid', '==', uid), where('estado', '==', 'pendiente'));
+    const colRef = collection(this.fs, 'peticionesAsignacion');
+    const qy = query(colRef, where('paraUid', '==', uid), where('estado', '==', 'pendiente'));
+    return collectionData(qy, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>;
+  }
+
+  peticionesPendientesEnHogar$(hogarId: string): Observable<PeticionAsignacionDTO[]> {
+    const colRef = collection(this.fs, 'peticionesAsignacion');
+    const qy = query(colRef, where('hogarId', '==', hogarId), where('estado', '==', 'pendiente'));
     return collectionData(qy, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>;
   }
 
@@ -397,7 +407,13 @@ export class TareasService {
       historial: historialActual,
     });
 
-    batch.update(petRef, { estado: 'aceptada' });
+    batch.update(petRef, {
+      estado: 'aceptada',
+      aceptadaEn: serverTimestamp(),
+      aceptadaPorUid: pet.paraUid,
+      aceptadaPorNombre: user.nombre ?? null,
+      aceptacionNotificadaSolicitante: false,
+    });
 
     await batch.commit();
   }
@@ -412,12 +428,53 @@ export class TareasService {
       throw new Error('La petición ya fue procesada.');
     }
 
-    await updateDoc(petRef, { estado: 'rechazada' });
+    const usuarioRef = doc(this.fs, 'usuarios', pet.paraUid);
+    const usuarioSnap = await getDoc(usuarioRef);
+    const rechazador = usuarioSnap.exists() ? (usuarioSnap.data() as Usuario) : undefined;
+
+    await updateDoc(petRef, {
+      estado: 'rechazada',
+      rechazadaEn: serverTimestamp(),
+      rechazadaPorUid: pet.paraUid,
+      rechazadaPorNombre: rechazador?.nombre ?? null,
+      rechazoNotificadoSolicitante: false,
+    });
   }
 
-  peticionesPendientesEnHogar$(hogarId: string): Observable<PeticionAsignacionDTO[]> {
-    const col = collection(this.fs, 'peticionesAsignacion');
-    const qy = query(col, where('hogarId', '==', hogarId), where('estado', '==', 'pendiente'));
+  rechazosParaSolicitante$(uidSolicitante: string): Observable<PeticionAsignacionDTO[]> {
+    if (!uidSolicitante) return of([]);
+    const colRef = collection(this.fs, 'peticionesAsignacion');
+    const qy = query(
+      colRef,
+      where('deUid', '==', uidSolicitante),
+      where('estado', '==', 'rechazada'),
+      where('rechazoNotificadoSolicitante', '==', false)
+    );
     return collectionData(qy, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>;
   }
+
+  async marcarRechazoNotificado(peticionId: string): Promise<void> {
+    const ref = doc(this.fs, 'peticionesAsignacion', peticionId);
+    await updateDoc(ref, {
+      rechazoNotificadoSolicitante: true,
+      rechazoNotificadoSolicitanteEn: serverTimestamp(),
+    });
+  }
+
+  aceptadasParaSolicitante$(uidSolicitante: string): Observable<PeticionAsignacionDTO[]> {
+    if (!uidSolicitante) return of([]);
+    const colRef = collection(this.fs, 'peticionesAsignacion');
+    const qy = query(colRef, where('deUid', '==', uidSolicitante), where('estado', '==', 'aceptada'));
+    return (collectionData(qy, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>)
+      .pipe(map(list => (list ?? []).filter(p => p.aceptacionNotificadaSolicitante !== true)));
+  }
+
+  async marcarAceptacionNotificada(peticionId: string): Promise<void> {
+    const ref = doc(this.fs, 'peticionesAsignacion', peticionId);
+    await updateDoc(ref, {
+      aceptacionNotificadaSolicitante: true,
+      aceptacionNotificadaSolicitanteEn: serverTimestamp(),
+    });
+  }
+
 }

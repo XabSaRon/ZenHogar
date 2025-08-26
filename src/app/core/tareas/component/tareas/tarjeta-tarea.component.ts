@@ -1,15 +1,22 @@
-import { Component, EventEmitter, Input, Output, OnChanges } from '@angular/core';
+import {
+  Component, EventEmitter, Input, Output, OnChanges
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+import {
+  Firestore, collection, query, where, collectionData
+} from '@angular/fire/firestore';
+import { Observable, of, firstValueFrom } from 'rxjs';
+import { map, shareReplay } from 'rxjs/operators';
 
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
 import { Overlay } from '@angular/cdk/overlay';
-import { MatDialogModule } from '@angular/material/dialog';
 
 import { TareaDTO } from '../../models/tarea.model';
 import { HistorialDialogComponent } from '../historial/historial-dialog.component';
@@ -40,16 +47,17 @@ export class TarjetaTareaComponent implements OnChanges {
   @Input() miembros: { uid: string; nombre: string; fotoURL?: string }[] = [];
   @Input() delay = 0;
   @Input() penalizacionAbandono = PENALIZACION_ABANDONO;
-  @Input() peticionParaMi: PeticionAsignacionDTO | null | undefined;
-  @Input() peticionPendiente = false;
-  @Input() peticionPendienteInfo: PeticionAsignacionDTO | null | undefined = null;
   @Input() destinatarioNombre?: string;
 
   @Output() asignadoCambio = new EventEmitter<string>();
   @Output() penalizarAbandono = new EventEmitter<{ tareaId: string; uid: string; puntos: number }>();
   @Output() tareaCompletada = new EventEmitter<void>();
 
-  tooltipDisabled = false;
+  peticionesPendientes$!: Observable<PeticionAsignacionDTO[]>;
+  hayPeticionPendiente$!: Observable<boolean>;
+  peticionParaMi$!: Observable<boolean>;
+  destinatarioNombre$!: Observable<string>;
+  tooltipCampana$!: Observable<string>;
 
   ultimaPersonaHistorial: {
     uid: string;
@@ -59,7 +67,11 @@ export class TarjetaTareaComponent implements OnChanges {
     completada: boolean;
   } | null = null;
 
-  constructor(private dialog: MatDialog, private overlay: Overlay) { }
+  constructor(
+    private fs: Firestore,
+    private dialog: MatDialog,
+    private overlay: Overlay
+  ) { }
 
   ngOnChanges(): void {
     if (this.tarea?.historial?.length) {
@@ -67,6 +79,61 @@ export class TarjetaTareaComponent implements OnChanges {
     } else {
       this.ultimaPersonaHistorial = null;
     }
+    this.crearStreamsPeticiones();
+  }
+
+  private crearStreamsPeticiones(): void {
+    if (!this.tarea?.id) {
+      this.peticionesPendientes$ = of([]);
+      this.hayPeticionPendiente$ = of(false);
+      this.peticionParaMi$ = of(false);
+      this.destinatarioNombre$ = of('usuario');
+      this.tooltipCampana$ = of('');
+      return;
+    }
+
+    const col = collection(this.fs, 'peticionesAsignacion');
+    const q = query(
+      col,
+      where('tareaId', '==', this.tarea.id),
+      where('estado', '==', 'pendiente')
+    );
+
+    const base$ = collectionData(q, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>;
+    this.peticionesPendientes$ = base$.pipe(shareReplay({ bufferSize: 1, refCount: true }));
+
+    this.hayPeticionPendiente$ = this.peticionesPendientes$.pipe(
+      map(pets => (pets?.length ?? 0) > 0),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+
+    this.peticionParaMi$ = this.peticionesPendientes$.pipe(
+      map(pets => pets?.some(p => p.paraUid === this.uidActual) ?? false),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+
+    this.destinatarioNombre$ = this.peticionesPendientes$.pipe(
+      map(pets => {
+        if (!pets || pets.length === 0) return 'usuario';
+        const mia = pets.find(p => p.paraUid === this.uidActual);
+        const targetUid = mia ? this.uidActual : pets[0].paraUid;
+        const nombre = this.miembros.find(m => m.uid === targetUid)?.nombre;
+        return nombre || 'usuario';
+      }),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+
+    this.tooltipCampana$ = this.peticionesPendientes$.pipe(
+      map(pets => {
+        const esMia = pets?.some(p => p.paraUid === this.uidActual) ?? false;
+        if (esMia) return 'Tienes una petición de asignación';
+        if (!pets || pets.length === 0) return '';
+        const targetUid = pets[0].paraUid;
+        const nombre = this.miembros.find(m => m.uid === targetUid)?.nombre || 'usuario';
+        return `Pendiente de aceptación por ${nombre}`;
+      }),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
   }
 
   onImageError(event: Event) {
@@ -207,27 +274,21 @@ export class TarjetaTareaComponent implements OnChanges {
     });
   }
 
-  abrirPeticionAsignacion() {
-    if (!this.peticionParaMi) return;
+  async onClickCampana(ev: MouseEvent) {
+    ev.stopPropagation();
+    const lista = await firstValueFrom(this.peticionesPendientes$);
+    const paraMi = lista.find(p => p.paraUid === this.uidActual);
+    if (!paraMi) return;
 
     this.dialog.open(DialogPeticionAsignacionComponent, {
       width: '480px',
       maxWidth: '92vw',
       panelClass: 'dialog-peticion-asignacion',
       data: {
-        peticion: this.peticionParaMi,
+        peticion: paraMi,
         tareaNombre: this.tarea?.nombre || 'Tarea'
       },
       scrollStrategy: this.overlay.scrollStrategies.noop()
     });
   }
-
-  onClickCampana(ev: MouseEvent) {
-    ev.stopPropagation();
-    if (!this.peticionParaMi) {
-      return;
-    }
-    this.abrirPeticionAsignacion();
-  }
-
 }
