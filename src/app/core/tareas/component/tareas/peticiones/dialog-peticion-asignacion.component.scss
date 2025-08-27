@@ -3,12 +3,10 @@
 .dialog-container {
   @include base.dialog-base;
 
-  & {
+  @media (prefers-reduced-motion: no-preference) {
     animation: slideFadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   }
-}
 
-.dialog-container {
   .titulo-modal {
     display: flex;
     align-items: center;
@@ -35,10 +33,81 @@
     }
   }
 
+  .solicitante {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin: .35rem 0 .8rem;
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      object-fit: cover;
+      box-shadow: 0 0 0 2px #fff, 0 1px 4px rgba(0, 0, 0, .15);
+      background: #eee;
+    }
+
+    .texto {
+      color: #334155;
+
+      strong {
+        color: #0f172a;
+        font-weight: 700;
+      }
+    }
+  }
+
+  .tarea-highlight {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: .75rem;
+    align-items: center;
+    padding: .75rem .9rem;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #f0fdf4, #ecfeff);
+    border: 1px solid rgba(16, 185, 129, .18);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .06) inset, 0 1px 2px rgba(0, 0, 0, .05);
+    margin: .35rem 0 1rem;
+
+    @media (prefers-reduced-motion: no-preference) {
+      animation: popIn .28s ease-out both;
+    }
+
+    .emoji {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      border-radius: 12px;
+      background: #ffffffcc;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+      user-select: none;
+    }
+
+    .info {
+      display: grid;
+      gap: .25rem;
+
+      .nombre {
+        font-weight: 800;
+        color: #0b4b2d;
+        letter-spacing: .2px;
+        line-height: 1.2;
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
   .dialog-body {
     .mensaje {
       margin: .25rem 0 1rem;
       color: #1f2937;
+      line-height: 1.45;
 
       strong {
         display: block;
@@ -60,6 +129,7 @@
     button {
       border-radius: 999px;
       padding: .5rem 1.4rem;
+      min-width: 120px;
       font-weight: 600;
       border: 1px solid transparent;
       transition: transform .15s ease, box-shadow .15s ease, background-color .2s ease;
@@ -108,7 +178,42 @@
 
       button {
         flex: 1 1 100%;
+        min-width: 0;
       }
     }
+  }
+
+  @media (forced-colors: active) {
+    .icon-pill {
+      box-shadow: none;
+    }
+
+    .acciones button:focus-visible {
+      outline: 2px solid CanvasText;
+    }
+  }
+}
+
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }

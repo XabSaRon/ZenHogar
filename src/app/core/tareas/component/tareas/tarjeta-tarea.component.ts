@@ -82,6 +82,8 @@ export class TarjetaTareaComponent implements OnChanges {
     this.crearStreamsPeticiones();
   }
 
+  private abriendoDialog = false;
+
   private crearStreamsPeticiones(): void {
     if (!this.tarea?.id) {
       this.peticionesPendientes$ = of([]);
@@ -276,19 +278,21 @@ export class TarjetaTareaComponent implements OnChanges {
 
   async onClickCampana(ev: MouseEvent) {
     ev.stopPropagation();
+    if (this.abriendoDialog) return;
+    this.abriendoDialog = true;
+
     const lista = await firstValueFrom(this.peticionesPendientes$);
     const paraMi = lista.find(p => p.paraUid === this.uidActual);
-    if (!paraMi) return;
+    if (!paraMi) { this.abriendoDialog = false; return; }
 
-    this.dialog.open(DialogPeticionAsignacionComponent, {
+    const ref = this.dialog.open(DialogPeticionAsignacionComponent, {
       width: '480px',
       maxWidth: '92vw',
       panelClass: 'dialog-peticion-asignacion',
-      data: {
-        peticion: paraMi,
-        tareaNombre: this.tarea?.nombre || 'Tarea'
-      },
+      data: { peticion: paraMi, tareaNombre: this.tarea?.nombre || 'Tarea' },
       scrollStrategy: this.overlay.scrollStrategies.noop()
     });
+
+    ref.afterClosed().subscribe(() => this.abriendoDialog = false);
   }
 }

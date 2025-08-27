@@ -5,10 +5,23 @@
   </h1>
 
   <div class="dialog-body">
-    <p class="mensaje">
-      <strong>{{ tareaNombre }}</strong><br />
-      Quieren asignarte esta tarea. ¿La aceptas?
-    </p>
+
+    @if (solicitanteNombre) {
+    <div class="solicitante">
+      <img class="avatar" [src]="solicitanteFotoURL || 'assets/default-avatar.png'" (error)="onImageError($event)"
+        alt="Avatar" />
+      <div class="texto">
+        <strong>{{ solicitanteNombre }}</strong> quiere asignarte:
+      </div>
+    </div>
+    }
+
+    <div class="tarea-highlight">
+      <div class="emoji">{{ tareaEmoji }}</div>
+      <div class="info">
+        <div class="nombre">{{ tareaNombre }}</div>
+      </div>
+    </div>
 
     <div class="acciones">
       <button mat-button class="btn-rechazar" (click)="rechazar()">
@@ -21,6 +34,5 @@
         Aceptar
       </button>
     </div>
-
   </div>
 </div>

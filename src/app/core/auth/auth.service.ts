@@ -12,10 +12,16 @@ import {
   docData,
 } from '@angular/fire/firestore';
 import { Observable, of, switchMap } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Usuario } from '../usuarios/models/usuario.model';
 
 import { firebaseAuthWrapper } from './firebase-auth-wrapper';
 import { firestoreWrapper } from './firestore-wrapper';
+
+export type UsuarioPublico = {
+  displayName?: string | null;
+  photoURL?: string | null;
+};
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -66,4 +72,19 @@ export class AuthService {
   logout() {
     return firebaseAuthWrapper.signOut(this.auth);
   }
+
+  getUsuarioPublico$(uid: string): Observable<UsuarioPublico | null> {
+    if (!uid) return of(null);
+    const ref = doc(this.fs, 'usuarios', uid);
+    return docData(ref).pipe(
+      map((u: any) => {
+        if (!u) return null;
+        return {
+          displayName: u.displayName ?? u.nombre ?? null,
+          photoURL: u.photoURL ?? null,
+        } as UsuarioPublico;
+      })
+    );
+  }
 }
+

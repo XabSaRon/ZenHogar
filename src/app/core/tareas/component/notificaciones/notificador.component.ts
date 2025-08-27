@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component, Input, ViewChild, Output, EventEmitter } from '@angular/core';
 import { Observable, of, firstValueFrom, combineLatest } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 
@@ -43,6 +43,7 @@ export class NotificadorComponent {
     this._uidSolicitante = v ?? '';
     this._buildStreams();
   }
+  @Output() verTarea = new EventEmitter<string>();
 
   @ViewChild(MatMenuTrigger, { static: false }) menuTrigger?: MatMenuTrigger;
 
@@ -114,7 +115,7 @@ export class NotificadorComponent {
     const cached = this.nombreCache.get(key);
     if (cached) return cached;
 
-    const obs = this.tareasSrv.getTareasPorHogar(hogarId, /*enrich*/ false).pipe(
+    const obs = this.tareasSrv.getTareasPorHogar(hogarId, false).pipe(
       map(lista => lista.find(t => t.id === tareaId)?.nombre ?? 'Tarea'),
       shareReplay({ bufferSize: 1, refCount: true })
     );
@@ -139,4 +140,11 @@ export class NotificadorComponent {
       this.menuTrigger?.closeMenu();
     }
   }
+
+  async onClickVer(n: NotiVM) {
+    this.verTarea.emit(n.tareaId);
+    try { await this.marcarUnaComoVista(n); } catch { }
+    this.menuTrigger?.closeMenu();
+  }
 }
+
