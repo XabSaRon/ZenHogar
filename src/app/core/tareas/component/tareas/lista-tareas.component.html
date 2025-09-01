@@ -236,6 +236,14 @@
     }
   </div>
 </div>
+
+<div class="btn-add-wrapper">
+  <button mat-fab class="btn-add-tarea" (click)="abrirDialogCrearTarea()" [class.limited]="personalizadasCount >= 2">
+    <mat-icon>add</mat-icon>
+  </button>
+  <div class="label">{{ personalizadasCount }}/2</div>
+</div>
+
 }
 }
 }

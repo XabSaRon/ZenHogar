@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { combineLatest, of, BehaviorSubject } from 'rxjs';
+import { combineLatest, of, BehaviorSubject, take, EMPTY } from 'rxjs';
 import { switchMap, map, filter } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -24,6 +24,8 @@ import { DialogCrearHogarComponent } from '../../../hogar/component/dialog-crear
 import { DialogUnirseCodigo } from '../../../invitaciones/component/unirse/dialog-unirse-codigo';
 import { PeticionAsignacionDTO } from '../../models/peticion-asignacion.model';
 import { NotificadorComponent } from '../notificaciones/notificador.component';
+import { DialogCrearTareaComponent } from './crear-tarea/dialog-crear-tarea.component';
+import { DialogLimiteTareasComponent } from './limite-tarea/dialog-limite-tareas.component';
 
 import { User } from '@angular/fire/auth';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -32,6 +34,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { Auth } from '@angular/fire/auth';
 import { Router } from '@angular/router';
+import { Overlay } from '@angular/cdk/overlay';
 
 type EstadoFiltro = 'todos' | 'sin_asignar' | 'en_curso' | 'pendiente_valoracion';
 type PeticionAsignacionExtendida = PeticionAsignacionDTO & {
@@ -66,6 +69,11 @@ export class ListaTareasComponent implements OnInit {
 
   private estadoSeleccionado$ = new BehaviorSubject<EstadoFiltro>('todos');
   mostrarFiltroEstado = false;
+
+  constructor(
+    private overlay: Overlay
+  ) { }
+
   get estadoSeleccionadoLabel(): string {
     const m: Record<EstadoFiltro, string> = {
       'todos': 'Todas las tarjetas',
@@ -94,6 +102,7 @@ export class ListaTareasComponent implements OnInit {
   usuario$ = this.auth.user$;
   usuarioActual: User | null = null;
   mostrarFiltro = false;
+  personalizadasCount: number = 0;
 
   miembros: { uid: string; nombre: string; fotoURL?: string }[] = [];
   isGuest$ = this.usuario$.pipe(map(u => !u));
@@ -213,7 +222,8 @@ export class ListaTareasComponent implements OnInit {
             this.miembros$
           ])
           : of<[PeticionAsignacionDTO[], { uid: string; nombre: string }[]]>([[], []])
-        )
+        ),
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(([lista, miembros]) => {
         const byUid = Object.fromEntries(miembros.map(m => [m.uid, m.nombre]));
@@ -227,6 +237,14 @@ export class ListaTareasComponent implements OnInit {
           this.peticionesPorTareaMap = nuevoMapa;
         }, 0);
       });
+
+    this.hogar.getHogar$()
+      .pipe(
+        switchMap(h => h ? this.tareas.getTareasPorHogar(h.id!) : of([] as TareaDTO[])),
+        map(tareas => tareas.filter(t => t.personalizada === true).length),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(count => this.personalizadasCount = count);
   }
 
   toggleFiltro(ev: MouseEvent) {
@@ -457,6 +475,64 @@ export class ListaTareasComponent implements OnInit {
 
   onVerTarea(tareaId: string) {
     this.router.navigate(['/tareas', tareaId]);
+  }
+
+  abrirDialogCrearTarea() {
+    this.hogar.getHogar$().pipe(
+      take(1),
+      switchMap(hogar => {
+        if (!hogar) {
+          this.snackBar.open('❌ No se encontró un hogar activo', 'Cerrar', { duration: 3000 });
+          return EMPTY;
+        }
+        return this.tareas.getTareasPorHogar(hogar.id!).pipe(
+          take(1),
+          map(tareas => ({
+            hogar,
+            personalizadasCount: tareas.filter(t => t.personalizada === true).length
+          }))
+        );
+      })
+    ).subscribe(({ hogar, personalizadasCount }) => {
+      this.personalizadasCount = personalizadasCount;
+
+      if (personalizadasCount >= 2) {
+        this.dialog.open(DialogLimiteTareasComponent, {
+          width: '550px',
+          maxWidth: '92vw',
+          panelClass: 'limite-tareas-dialog',
+          scrollStrategy: this.overlay.scrollStrategies.noop(),
+          data: { max: 2, actuales: personalizadasCount }
+        });
+        return;
+      }
+
+      const restantes = 2 - personalizadasCount;
+
+      const ref = this.dialog.open(DialogCrearTareaComponent, {
+        width: '520px',
+        maxWidth: '92vw',
+        panelClass: 'crear-tarea-dialog',
+        scrollStrategy: this.overlay.scrollStrategies.noop(),
+        disableClose: true,
+        data: { restantes }
+      });
+
+      ref.afterClosed().pipe(take(1)).subscribe((result?: { nombre: string; descripcion?: string; peso: number }) => {
+        if (!result) return;
+
+        this.tareas.crearTarea({
+          nombre: result.nombre.trim(),
+          descripcion: (result.descripcion || '').trim() || undefined,
+          hogarId: hogar.id!,
+          asignadA: null,
+          personalizada: true,
+          peso: result.peso,
+        })
+          .then(() => this.snackBar.open('✅ Tarea creada con éxito', 'Cerrar', { duration: 3000 }))
+          .catch(() => this.snackBar.open('❌ Error al crear la tarea', 'Cerrar', { duration: 3000 }));
+      });
+    });
   }
 
   // --------------------------

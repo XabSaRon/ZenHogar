@@ -42,6 +42,24 @@ export class HistorialDialogComponent {
       || typeof this.data?.pesoUsado === 'number';
   }
 
+  get dificultadLabel(): string {
+    switch (this.data.pesoUsado) {
+      case 1: return 'Fácil';
+      case 2: return 'Media';
+      case 3: return 'Difícil';
+      default: return 'Desconocido';
+    }
+  }
+
+  get dificultadClase(): string {
+    switch (this.data.pesoUsado) {
+      case 1: return 'dificultad-facil';
+      case 2: return 'dificultad-media';
+      case 3: return 'dificultad-dificil';
+      default: return '';
+    }
+  }
+
   onImageError(event: Event) {
     (event.target as HTMLImageElement).src = 'assets/default-avatar.png';
   }

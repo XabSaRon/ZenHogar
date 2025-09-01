@@ -1,4 +1,4 @@
-import { Timestamp } from '@angular/fire/firestore';
+import { Timestamp, FieldValue } from '@angular/fire/firestore';
 
 export interface Tarea {
   id?: string;
@@ -7,10 +7,11 @@ export interface Tarea {
   completada: boolean;
   asignadA?: string | null;
   hogarId: string;
-  createdAt?: Timestamp;
+  createdAt?: Timestamp | FieldValue;
   asignadoNombre?: string | null;
   asignadoFotoURL?: string | null;
   peso?: number;
+  personalizada?: boolean;
 
   historial?: {
     uid: string;

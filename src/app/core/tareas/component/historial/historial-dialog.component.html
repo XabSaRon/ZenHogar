@@ -53,8 +53,8 @@
           @if (data.pesoUsado != null) {
           <div class="peso">
             <mat-icon fontIcon="fitness_center"></mat-icon>
-            <span class="label">Peso:</span>
-            <span>{{ data.pesoUsado }}</span>
+            <span class="label">Dificultad:</span>
+            <span [ngClass]="dificultadClase">{{ dificultadLabel }}</span>
           </div>
           }
         </div>

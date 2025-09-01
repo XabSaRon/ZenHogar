@@ -1,0 +1,31 @@
+<div class="dialog-container">
+  <h1 class="titulo-modal">
+    <span class="icon-pill"><mat-icon fontIcon="block"></mat-icon></span>
+    Límite de tareas personalizadas
+  </h1>
+
+  <div class="divider"></div>
+
+  <div class="dialog-body">
+    <p class="lead">
+      Puedes crear hasta <strong>{{ data.max }}</strong> tareas personalizadas por hogar.
+      <ng-container *ngIf="data.actuales != null">
+        Actualmente tienes <strong>{{ data.actuales }}</strong>.
+      </ng-container>
+    </p>
+
+    <div class="pill pill-warning">
+      <mat-icon fontIcon="error_outline"></mat-icon>
+      Ya has alcanzado el máximo permitido.
+    </div>
+
+    <ul class="sugerencias">
+      <li>Edita o elimina alguna tarea personalizada existente.</li>
+      <li>Reutiliza una tarea cambiando su nombre, descripción o peso.</li>
+    </ul>
+  </div>
+
+  <div class="acciones">
+    <button mat-button (click)="cerrar()">Cerrar</button>
+  </div>
+</div>

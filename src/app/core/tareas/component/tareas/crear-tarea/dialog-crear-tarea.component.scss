@@ -1,0 +1,227 @@
+@use '../../../../../shared/styles/dialog-base' as base;
+
+/* ==========
+   Variables locales de diseño
+   ========== */
+:host {
+  --dlg-accent: #2e7d32;
+  --dlg-accent-2: #1976d2;
+  --dlg-grad-1: #f5fefc;
+  --dlg-grad-2: #e3f2fd;
+  --dlg-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+  --dlg-border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* ==========
+   Contenedor
+   ========== */
+.dialog-container {
+  @include base.dialog-base;
+
+  & {
+    background: linear-gradient(135deg, var(--dlg-grad-1), var(--dlg-grad-2));
+    box-shadow: var(--dlg-shadow);
+    animation: slideFadeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    border: var(--dlg-border);
+  }
+
+  @media (max-width: 480px) {
+    padding: 1rem 1rem .9rem 1rem;
+  }
+}
+
+/* ==========
+   Título + icono
+   ========== */
+.titulo-modal {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  margin: 0 0 1rem 0;
+
+  .icon-pill {
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #e8f5e9, #e3f2fd);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .08) inset, 0 1px 2px rgba(0, 0, 0, .06);
+    outline: 2px solid transparent;
+    transition: transform .18s ease, box-shadow .18s ease;
+
+    .mat-icon {
+      font-size: 19px;
+      width: 19px;
+      height: 19px;
+      color: var(--dlg-accent);
+    }
+  }
+}
+
+/* ==========
+   Cuerpo
+   ========== */
+.dialog-body {
+  display: grid;
+  gap: 1rem;
+
+  .formulario {
+    display: grid;
+    gap: .95rem;
+  }
+
+  .w100 {
+    width: 100%;
+  }
+
+  .mat-mdc-form-field {
+    --field-radius: 12px;
+
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-radius: var(--field-radius);
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    &:hover .mdc-notched-outline__leading,
+    &:hover .mdc-notched-outline__notch,
+    &:hover .mdc-notched-outline__trailing {
+      border-color: rgba(0, 0, 0, .14);
+    }
+
+    &.mat-focused .mdc-notched-outline__leading,
+    &.mat-focused .mdc-notched-outline__notch,
+    &.mat-focused .mdc-notched-outline__trailing {
+      border-color: color-mix(in oklab, var(--dlg-accent) 65%, #000 0%);
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--dlg-accent) 18%, transparent 82%);
+    }
+
+    .mat-mdc-select-trigger,
+    .mat-mdc-input-element {
+      line-height: 1.2;
+    }
+
+    .mat-mdc-form-field-hint-wrapper,
+    .mat-mdc-form-field-error-wrapper {
+      margin-top: .15rem;
+    }
+  }
+
+  .nota {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: .6rem;
+    padding: .7rem .8rem;
+    border-radius: .7rem;
+    background: color-mix(in oklab, var(--dlg-accent-2) 8%, transparent 92%);
+    border: 1px solid color-mix(in oklab, var(--dlg-accent-2) 14%, transparent 86%);
+
+    .i {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      margin-top: .15rem;
+      color: var(--dlg-accent-2);
+    }
+
+    em {
+      font-style: normal;
+      opacity: .8;
+    }
+
+    strong {
+      font-weight: 700;
+    }
+  }
+}
+
+/* ==========
+   Acciones
+   ========== */
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: .6rem;
+  margin-top: 1rem;
+
+  .btn-rechazar {
+    color: #5f6a73;
+    border-radius: .7rem;
+
+    &:hover {
+      background: rgba(0, 0, 0, .035);
+    }
+
+    &:focus-visible {
+      outline: 3px solid color-mix(in oklab, var(--dlg-accent-2) 30%, transparent 70%);
+      outline-offset: 2px;
+    }
+  }
+
+  .btn-crear {
+    border-radius: .9rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .12);
+    background: linear-gradient(135deg, color-mix(in oklab, var(--dlg-accent) 88%, #fff 12%), color-mix(in oklab, #66bb6a 70%, #fff 30%));
+    color: #fff;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, .14);
+      background: linear-gradient(135deg, color-mix(in oklab, var(--dlg-accent) 92%, #fff 8%), color-mix(in oklab, #66bb6a 80%, #fff 20%));
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, .12);
+    }
+
+    &:disabled {
+      filter: saturate(.65) brightness(.92);
+      cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 3px solid color-mix(in oklab, var(--dlg-accent) 30%, transparent 70%);
+      outline-offset: 2px;
+    }
+  }
+}
+
+:host-context(.crear-tarea-dialog) {
+
+  .mat-mdc-select-panel {
+    border-radius: 12px !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, .18);
+    padding-block: .25rem;
+  }
+
+  .mat-mdc-option {
+    padding: .5rem .75rem;
+
+    &:hover .mdc-list-item__primary-text {
+      transform: translateX(1px);
+    }
+
+    .mdc-list-item__primary-text {
+      transition: transform .12s ease;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog-container {
+    animation: none;
+  }
+
+  .btn-crear,
+  .titulo-modal .icon-pill,
+  .mat-mdc-form-field .mdc-notched-outline__leading,
+  .mat-mdc-form-field .mdc-notched-outline__trailing,
+  .mat-mdc-form-field .mdc-notched-outline__notch {
+    transition: none !important;
+  }
+}

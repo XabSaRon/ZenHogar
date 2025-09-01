@@ -477,4 +477,35 @@ export class TareasService {
     });
   }
 
+  async crearTarea(data: {
+    nombre: string;
+    descripcion?: string;
+    hogarId: string;
+    personalizada: boolean;
+    asignadA?: string | null;
+    peso?: number;
+  }): Promise<string> {
+    const colRef = collection(this.fs, 'tareas').withConverter(tareaConverter);
+
+    const payload: Omit<Tarea, 'id'> = {
+      nombre: data.nombre,
+      descripcion: data.descripcion ?? '',
+      completada: false,
+      asignadA: data.asignadA ?? null,
+      hogarId: data.hogarId,
+      createdAt: serverTimestamp(),
+      asignadoNombre: null,
+      asignadoFotoURL: null,
+      peso: data.peso,
+      historial: [],
+      valoraciones: [],
+      valoracionesPendientes: [],
+      bloqueadaHastaValoracion: false,
+      personalizada: data.personalizada,
+    };
+
+    const ref = await addDoc(colRef, payload);
+    return ref.id;
+  }
+
 }

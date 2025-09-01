@@ -543,6 +543,105 @@
   }
 }
 
+/* --------------------------
+   Boton Crear tarea
+--------------------------- */
+
+.btn-add-wrapper {
+  position: fixed;
+  bottom: 1.8rem;
+  right: 1.8rem;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .3rem;
+
+  .label {
+    font-size: .75rem;
+    font-weight: 600;
+    color: #333;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, .1);
+    padding: .15rem .5rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .12);
+  }
+}
+
+.btn-add-tarea {
+  position: static;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+
+  background: linear-gradient(145deg, #43a047, #66bb6a);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(145deg, #2e7d32, #57a05b);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(102, 187, 106, 0.4);
+    outline-offset: 3px;
+  }
+
+  .badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    font-size: .65rem;
+    font-weight: 600;
+    line-height: 1.2;
+    padding: .15rem .4rem;
+    border-radius: 999px;
+    background: #fff;
+    color: #333;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .12);
+    user-select: none;
+    pointer-events: none;
+  }
+
+  &.limited {
+    filter: grayscale(.35) opacity(.85);
+  }
+
+  &.limited:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    background: linear-gradient(145deg, #3b8d40, #5aa35f);
+  }
+
+  .mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    line-height: 1;
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-add-tarea {
+    transition: none !important;
+  }
+}
 
 /* --------------------------
    Animaciones

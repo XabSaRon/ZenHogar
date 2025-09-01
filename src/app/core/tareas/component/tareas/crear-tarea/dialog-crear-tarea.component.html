@@ -1,0 +1,60 @@
+<div class="dialog-container">
+  <h1 class="titulo-modal">
+    <span class="icon-pill">
+      <mat-icon fontIcon="add_task"></mat-icon>
+    </span>
+    Nueva tarea
+  </h1>
+
+  <div class="dialog-body">
+    <form [formGroup]="form" class="formulario" (submit)="$event.preventDefault()">
+
+      <mat-form-field appearance="outline" class="w100">
+        <mat-label>Nombre de la tarea</mat-label>
+        <input matInput formControlName="nombre" maxlength="60" (keydown.enter)="onCrear()"
+          placeholder="Ej. Fregar platos" autocomplete="off" />
+        <mat-hint align="end">{{ nombreCtrl.value.length }}/60</mat-hint>
+
+        @if (nombreCtrl.touched && nombreCtrl.hasError('required')) {
+        <mat-error>El nombre es obligatorio.</mat-error>
+        }
+        @if (nombreCtrl.touched && nombreCtrl.hasError('minlength')) {
+        <mat-error>Debe tener al menos 2 caracteres.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w100">
+        <mat-label>Descripción (opcional)</mat-label>
+        <textarea matInput formControlName="descripcion" maxlength="240" rows="3"
+          placeholder="Detalles, frecuencia, ubicación…"></textarea>
+        <mat-hint align="end">{{ descripcionCtrl.value.length }}/240</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w100">
+        <mat-label>Dificultad</mat-label>
+        <mat-select formControlName="peso">
+          <mat-option [value]="1">⚪ Fácil</mat-option>
+          <mat-option [value]="2">🟡 Media</mat-option>
+          <mat-option [value]="3">🔴 Difícil</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </form>
+
+    <div class="nota">
+      <mat-icon fontIcon="info" class="i"></mat-icon>
+      <div>
+        En ZenHogar (plan básico) puedes añadir <strong>hasta 2 tareas personalizadas</strong> por hogar.
+        En el futuro, en <em>ZenPrime</em> serán ilimitadas.
+      </div>
+    </div>
+  </div>
+
+  <div class="acciones">
+    <button class="btn-rechazar" mat-button (click)="onCancelar()" [disabled]="creando()">Cancelar</button>
+    <button class="btn-crear" mat-flat-button color="primary" (click)="onCrear()"
+      [disabled]="form.invalid || creando()">
+      <mat-icon fontIcon="add"></mat-icon>
+      Crear
+    </button>
+  </div>
+</div>

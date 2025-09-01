@@ -145,6 +145,21 @@
     }
   }
 
+  .dificultad-facil {
+    color: #43a047;
+    font-weight: 600;
+  }
+
+  .dificultad-media {
+    color: #fb8c00;
+    font-weight: 600;
+  }
+
+  .dificultad-dificil {
+    color: #e53935;
+    font-weight: 600;
+  }
+
   .stars mat-icon {
     color: #fbc02d;
     transform: scale(.95);
