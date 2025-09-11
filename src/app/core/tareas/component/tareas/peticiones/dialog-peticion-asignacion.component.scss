@@ -104,6 +104,10 @@
   }
 
   .dialog-body {
+    animation: none;
+    overflow-y: auto;
+    scrollbar-width: none;
+
     .mensaje {
       margin: .25rem 0 1rem;
       color: #1f2937;
@@ -118,6 +122,11 @@
     }
   }
 
+  .dialog-body::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
   [mat-dialog-actions],
   .acciones {
     display: flex;
@@ -125,6 +134,7 @@
     gap: .75rem;
     margin-top: 1rem;
     flex-wrap: wrap;
+    margin-bottom: .25rem;
 
     button {
       border-radius: 999px;

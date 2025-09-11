@@ -1,8 +1,12 @@
+import type { Timestamp } from 'firebase/firestore';
+export type TipoHogar = 'Familiar' | 'Pareja' | 'Amigos' | 'Erasmus';
 export interface Hogar {
   id?: string;
   nombre: string;
   provincia: string;
+  provinciaCode: string;
   ownerUid: string;
   miembros: string[];
-  createdAt: any;
+  createdAt: Timestamp | null;
+  tipoHogar?: TipoHogar;
 }

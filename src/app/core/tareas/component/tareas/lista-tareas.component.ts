@@ -501,7 +501,7 @@ export class ListaTareasComponent implements OnInit {
           width: '550px',
           maxWidth: '92vw',
           panelClass: 'limite-tareas-dialog',
-          scrollStrategy: this.overlay.scrollStrategies.noop(),
+          scrollStrategy: this.overlay.scrollStrategies.block(),
           data: { max: 2, actuales: personalizadasCount }
         });
         return;

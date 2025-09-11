@@ -288,9 +288,10 @@ export class TarjetaTareaComponent implements OnChanges {
     const ref = this.dialog.open(DialogPeticionAsignacionComponent, {
       width: '480px',
       maxWidth: '92vw',
+      maxHeight: '72dvh',
       panelClass: 'dialog-peticion-asignacion',
       data: { peticion: paraMi, tareaNombre: this.tarea?.nombre || 'Tarea' },
-      scrollStrategy: this.overlay.scrollStrategies.noop()
+      scrollStrategy: this.overlay.scrollStrategies.block()
     });
 
     ref.afterClosed().subscribe(() => this.abriendoDialog = false);

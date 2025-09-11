@@ -4,33 +4,35 @@
   @include base.dialog-base;
 
   & {
-    padding: 1rem 1.25rem 1.25rem;
     max-width: 520px;
-
+    padding: 1.75rem 1.25rem 1.25rem;
     background: linear-gradient(135deg, #f5fefc, #e9f3ff);
     border-radius: 16px;
-
     animation: slideFadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  /* ===== Header ===== */
   .titulo-modal {
     display: flex;
     align-items: center;
-    gap: .6rem;
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 700;
+    justify-content: center;
+    gap: .65rem;
+    margin: .1rem 0 .25rem;
+    font-size: 1.22rem;
+    font-weight: 800;
+    letter-spacing: .2px;
     color: #2e7d32;
+    text-align: center;
 
     .icon-pill {
       display: inline-grid;
       place-items: center;
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       border-radius: 999px;
       background: linear-gradient(135deg, #e8f5e9, #e3f2fd);
-      box-shadow: 0 3px 10px rgba(0, 0, 0, .08) inset, 0 1px 2px rgba(0, 0, 0, .06);
+      box-shadow:
+        0 3px 10px rgba(0, 0, 0, .08) inset,
+        0 1px 2px rgba(0, 0, 0, .06);
 
       mat-icon {
         font-size: 18px;
@@ -42,28 +44,38 @@
   }
 
   .divider {
+    width: 86%;
     height: 1px;
-    background: rgba(0, 0, 0, .08);
-    margin: .75rem 0 1rem;
+    margin: .35rem auto .8rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, .10) 15%,
+        rgba(0, 0, 0, .12) 50%,
+        rgba(0, 0, 0, .10) 85%,
+        rgba(0, 0, 0, 0) 100%);
   }
 
-  /* ===== Body ===== */
   .dialog-body {
     display: grid;
-    gap: .75rem;
+    gap: .8rem;
+    max-width: 520px;
+    margin: 0 auto;
 
     .lead {
       margin: 0;
+      text-align: center;
     }
 
     .pill {
       display: inline-flex;
       align-items: center;
-      gap: .4rem;
+      gap: .45rem;
       border-radius: 999px;
-      padding: .35rem .6rem;
+      padding: .4rem .7rem;
       font-weight: 600;
       border: 1px solid transparent;
+      margin-inline: auto;
 
       mat-icon {
         font-size: 18px;
@@ -80,20 +92,49 @@
     }
 
     .sugerencias {
-      margin: .25rem 0 0 1rem;
-      padding: 0;
+      list-style: none;
+      margin: .5rem auto 0;
+      padding-left: 0;
+      width: min(460px, 100%);
+      text-align: left;
+    }
 
-      li {
-        line-height: 1.35;
-      }
+    .sugerencias li {
+      position: relative;
+      padding-left: 1.15rem;
+      margin: .38rem 0;
+      line-height: 1.5;
+    }
+
+    .sugerencias li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: .6em;
+      width: .35rem;
+      height: .35rem;
+      border-radius: 999px;
+      background: #64748b;
+      opacity: .9;
     }
   }
 
-  /* ===== Acciones ===== */
+  .dialog-body .lead {
+    margin: 0;
+    text-align: center;
+    line-height: 1.45;
+  }
+
+  .dialog-body .lead-sec {
+    display: block;
+    margin-top: .15rem;
+    opacity: .95;
+  }
+
   .acciones {
     display: flex;
-    justify-content: flex-end;
-    gap: .5rem;
+    justify-content: center;
+    gap: .6rem;
     margin-top: 1rem;
 
     button[mat-button] {
@@ -101,10 +142,9 @@
       padding: 0.5rem 1.5rem;
       font-weight: 500;
       transition: all 0.2s ease;
-      border: 1px solid transparent;
+      border: 1px solid #d4d4d4;
       background-color: #ffffff;
       color: #1565c0;
-      border-color: #d4d4d4;
 
       &:hover {
         transform: translateY(-1px);
@@ -123,21 +163,25 @@
     }
   }
 
-  /* ===== Responsive ===== */
   @media (max-width: 480px) {
     & {
-      padding: 1.2rem;
+      padding: 1.35rem 1.1rem 1.1rem;
     }
 
     .titulo-modal .icon-pill {
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
 
       mat-icon {
         font-size: 16px;
         width: 16px;
         height: 16px;
       }
+    }
+
+    .divider {
+      width: 94%;
+      margin: .3rem auto .7rem;
     }
   }
 }

@@ -11,17 +11,16 @@
     </mat-form-field>
 
     <div mat-dialog-actions>
-      <button mat-button (click)="cancelar()" [disabled]="loading">
+      <button mat-button type="button" (click)="cancelar()" [disabled]="loading">
         Cancelar
       </button>
+
       <button mat-flat-button color="primary" type="submit" [disabled]="f.invalid || loading">
-        <ng-container *ngIf="!loading; else enviando">
-          Enviar
-        </ng-container>
-        <ng-template #enviando>
-          <mat-progress-spinner diameter="18" mode="indeterminate" color="accent">
-          </mat-progress-spinner>
-        </ng-template>
+        @if (!loading) {
+        Enviar
+        } @else {
+        <mat-progress-spinner diameter="18" mode="indeterminate" color="accent"></mat-progress-spinner>
+        }
       </button>
     </div>
   </form>

@@ -16,12 +16,11 @@
       </button>
 
       <button mat-flat-button color="primary" type="submit" [disabled]="f.invalid || loading">
-
-        <ng-container *ngIf="!loading; else esperando">Unirme</ng-container>
-        <ng-template #esperando>
-          <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
-        </ng-template>
-
+        @if (!loading) {
+        Unirme
+        } @else {
+        <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
+        }
       </button>
     </div>
   </form>

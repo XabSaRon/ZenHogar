@@ -16,12 +16,14 @@
       <mat-label>Provincia</mat-label>
 
       <input matInput placeholder="Escribe y elige..." [(ngModel)]="provinciaInput" name="provinciaInput" required
-        (ngModelChange)="onProvinciaInputChange($event)" [matAutocomplete]="auto" autocomplete="off" />
+        (ngModelChange)="onProvinciaInputChange($event)" [matAutocomplete]="auto"
+        (keydown.enter)="onProvinciaEnter($any($event))" autocomplete="off" role="combobox" aria-autocomplete="list"
+        aria-expanded="true" />
 
       <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onProvinciaSelected($event.option.value)"
         autoActiveFirstOption class="panel-provincias">
-        @for (p of provinciasFiltradas; track p) {
-        <mat-option [value]="p">{{ p }}</mat-option>
+        @for (p of provinciasFiltradas; track p.code) {
+        <mat-option [value]="p.name">{{ p.name }}</mat-option>
         }
         @if (provinciasFiltradas.length === 0) {
         <mat-option disabled>Sin resultados</mat-option>
@@ -29,14 +31,14 @@
       </mat-autocomplete>
 
       <mat-hint>Usaremos la provincia para rankings y vistas locales</mat-hint>
-      @if (f.submitted && !provincia) {
-      <mat-error>La provincia es obligatoria</mat-error>
+      @if (f.submitted && !provinciaValida) {
+      <mat-error>Elige una provincia válida</mat-error>
       }
     </mat-form-field>
 
     <div mat-dialog-actions>
       <button mat-button type="button" (click)="cancelar()">Cancelar</button>
-      <button mat-flat-button type="submit" color="primary" [disabled]="f.invalid">
+      <button mat-flat-button type="submit" color="primary" [disabled]="f.invalid || !provinciaValida">
         Crear
       </button>
     </div>

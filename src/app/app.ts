@@ -63,6 +63,7 @@ export class App {
       disableClose: true,
       width: '540px',
       maxWidth: '92vw',
+      maxHeight: '72dvh',
       panelClass: 'crear-hogar-dialog',
     });
 

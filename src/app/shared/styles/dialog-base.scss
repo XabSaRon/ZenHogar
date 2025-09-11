@@ -2,9 +2,14 @@
   background: linear-gradient(135deg, #f5fefc, #e3f2fd);
   border-radius: 20px;
   font-family: 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  max-height: min(80dvh, 640px);
+  overflow: clip;
+
   padding: 2rem;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.15);
-  animation: slideFadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: slideFadeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 
   h1 {
     font-size: 1.6rem;
@@ -13,10 +18,19 @@
     color: #2e7d32;
   }
 
-  .dialog-body {
+  .titulo-modal {
+    margin-bottom: 2rem !important;
+  }
+
+  .dialog-body,
+  .mat-mdc-dialog-content {
+    flex: 1 1 auto;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
+    overflow-y: hidden;
+    animation: enableScroll 1ms linear 220ms forwards;
 
     @media (max-width: 480px) {
       gap: 0.5rem;
@@ -26,28 +40,18 @@
   mat-form-field {
     width: 100%;
 
-    .mat-mdc-form-field-outline {
-      border-radius: 12px;
-    }
-
     .mat-mdc-text-field-wrapper {
-      background: white;
-      transition: border 0.3s ease;
-    }
-
-    &.ng-invalid.ng-touched .mat-mdc-text-field-wrapper {
-      border: 1px solid #ef5350;
-      border-radius: 12px;
+      background: transparent;
     }
 
     .mat-mdc-form-field-subscript-wrapper {
-      margin-top: 0.2rem !important;
+      margin-top: .35rem !important;
       padding: 0 !important;
       min-height: 0 !important;
     }
 
     mat-error {
-      font-size: 0.75rem;
+      font-size: .78rem;
       color: #e53935;
       margin: 0;
     }
@@ -110,12 +114,18 @@
 @keyframes slideFadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.98);
+    transform: translate3d(0, 12px, 0) scale(0.995);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes enableScroll {
+  to {
+    overflow-y: auto;
   }
 }
 

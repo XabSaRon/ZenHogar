@@ -8,18 +8,41 @@ import {
   addDoc,
   serverTimestamp,
   collectionData,
+  limit,
   FirestoreDataConverter,
   DocumentData,
 } from '@angular/fire/firestore';
 import { Auth, authState, User } from '@angular/fire/auth';
-import { Observable, of, switchMap, map, firstValueFrom } from 'rxjs';
+import { Observable, of, switchMap, map } from 'rxjs';
 import { TareasService } from '../../tareas/services/tareas.service';
+import { PROVINCIAS_INE } from '../../../shared/constants/provincias';
 
 const hogarConverter: FirestoreDataConverter<Hogar> = {
-  toFirestore: (hogar: Hogar): DocumentData => hogar,
-  fromFirestore: (snap) =>
-    ({ id: snap.id, ...(snap.data() as DocumentData) } as Hogar),
+  toFirestore: (hogar: Hogar): DocumentData =>
+    (hogar as unknown as DocumentData),
+  fromFirestore: (snap) => {
+    const d = snap.data() as any;
+    return {
+      id: snap.id,
+      nombre: d.nombre,
+      provincia: d.provincia,
+      provinciaCode: d.provinciaCode ?? '',
+      ownerUid: d.ownerUid ?? d.adminUid ?? '',
+      miembros: d.miembros ?? [],
+      createdAt: d.createdAt ?? d.creadoEn ?? null,
+      tipoHogar: d.tipoHogar,
+    } as Hogar;
+  },
 };
+
+const NAME2CODE = new Map(PROVINCIAS_INE.map(p => [normalize(p.name), p.code]));
+function normalize(v: string) {
+  return (v || '')
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .trim();
+}
 
 @Injectable({ providedIn: 'root' })
 export class HogarService {
@@ -34,11 +57,12 @@ export class HogarService {
 
         const q = query(
           collection(this.fs, 'hogares').withConverter(hogarConverter),
-          where('miembros', 'array-contains', user.uid)
+          where('miembros', 'array-contains', user.uid),
+          limit(1)
         );
 
         return collectionData<Hogar>(q).pipe(
-          map(arr => (arr.length ? arr[0] : null))
+          map(arr => arr[0] ?? null)
         );
       })
     );
@@ -47,35 +71,23 @@ export class HogarService {
   async crearHogar(
     nombre: string,
     provincia: string,
-    user: User
+    user: User,
+    provinciaCode?: string
   ): Promise<{ id: string }> {
-    const ref = await addDoc(collection(this.fs, 'hogares'), {
-      nombre,
+    const code = provinciaCode ?? NAME2CODE.get(normalize(provincia)) ?? '';
+
+    const docData: Omit<Hogar, 'id'> = {
+      nombre: nombre.trim(),
       provincia,
-      adminUid: user.uid,
+      provinciaCode: code,
+      ownerUid: user.uid,
       miembros: [user.uid],
-      creadoEn: serverTimestamp(),
-    });
+      createdAt: serverTimestamp() as any,
+      tipoHogar: 'Familiar',
+    };
 
+    const ref = await addDoc(collection(this.fs, 'hogares'), docData);
     await this.tareasSvc.crearTareasPorDefecto(ref.id, user.uid);
-
     return { id: ref.id };
   }
-
-  /*async getOrCreateHogar(
-    { nombre = 'Mi hogar', provincia }: { nombre?: string; provincia: string }
-  ): Promise<string> {
-    const user = this.auth.currentUser!;
-    if (!user) throw new Error('No hay usuario autenticado');
-
-    const existente = await firstValueFrom(this.getHogar$());
-    if (existente) return existente.id!;
-
-    if (!provincia) throw new Error('Falta provincia para crear el hogar');
-
-    const { id } = await this.crearHogar(nombre, provincia, user);
-    return id;
-  }
-    */
-
 }

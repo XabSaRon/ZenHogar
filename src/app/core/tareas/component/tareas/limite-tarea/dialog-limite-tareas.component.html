@@ -9,23 +9,25 @@
   <div class="dialog-body">
     <p class="lead">
       Puedes crear hasta <strong>{{ data.max }}</strong> tareas personalizadas por hogar.
-      <ng-container *ngIf="data.actuales != null">
+      @if (data.actuales != null) {
+      <span class="lead-sec">
         Actualmente tienes <strong>{{ data.actuales }}</strong>.
-      </ng-container>
+      </span>
+      }
     </p>
 
-    <div class="pill pill-warning">
-      <mat-icon fontIcon="error_outline"></mat-icon>
+    <div class="pill pill-warning" role="alert" aria-live="polite">
+      <mat-icon fontIcon="error_outline" aria-hidden="true"></mat-icon>
       Ya has alcanzado el máximo permitido.
     </div>
 
     <ul class="sugerencias">
       <li>Edita o elimina alguna tarea personalizada existente.</li>
-      <li>Reutiliza una tarea cambiando su nombre, descripción o peso.</li>
+      <li>Reutiliza una tarea cambiando su nombre, descripción o dificultad.</li>
     </ul>
   </div>
 
   <div class="acciones">
-    <button mat-button (click)="cerrar()">Cerrar</button>
+    <button mat-button type="button" (click)="cerrar()">Cerrar</button>
   </div>
 </div>
