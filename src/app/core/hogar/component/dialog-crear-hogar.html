@@ -3,12 +3,47 @@
     <mat-icon>home</mat-icon> Crear hogar
   </h1>
 
+  <button type="button" class="pais-detector" [matMenuTriggerFor]="menuPaises" aria-label="Cambiar país">
+    <img class="bandera" [src]="'assets/flags/' + countryCode.toLowerCase() + '.svg'" [alt]="countryCode + ' flag'" />
+    <span class="codigo">{{ countryCode }}</span>
+    <mat-icon>expand_more</mat-icon>
+  </button>
+
+  <mat-menu #menuPaises="matMenu" class="menu-paises">
+    @for (code of paisesDisponibles; track code) {
+    <button mat-menu-item (click)="seleccionarPais(code)">
+      <img matMenuItemIcon class="bandera" [src]="flagPath(code)" [alt]="countryName(code) + ' flag'" width="20"
+        height="14" />
+      <span class="nombre-pais">{{ countryName(code) }}</span>
+    </button>
+    }
+  </mat-menu>
+
   <form #f="ngForm" (ngSubmit)="crear()" class="dialog-body">
     <mat-form-field appearance="outline" class="w-100">
       <mat-label>Nombre del hogar</mat-label>
       <input matInput [(ngModel)]="nombre" name="nombre" required autocomplete="off" />
       @if (f.submitted && !nombre) {
       <mat-error>El nombre es obligatorio</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 tipo-hogar-field">
+      <mat-label>Tipo de hogar</mat-label>
+
+      <mat-select [(ngModel)]="tipoHogar" name="tipoHogar" required [disableOptionCentering]="true"
+        [panelClass]="'select-panel-pro'">
+        <mat-select-trigger>
+          {{ tipoHogar || 'Elige una opción…' }}
+        </mat-select-trigger>
+
+        @for (tipo of tiposHogar; track tipo) {
+        <mat-option [value]="tipo">{{ tipo }}</mat-option>
+        }
+      </mat-select>
+
+      @if (f.submitted && !tipoHogar) {
+      <mat-error>Elige un tipo de hogar</mat-error>
       }
     </mat-form-field>
 
@@ -38,7 +73,7 @@
 
     <div mat-dialog-actions>
       <button mat-button type="button" (click)="cancelar()">Cancelar</button>
-      <button mat-flat-button type="submit" color="primary" [disabled]="f.invalid || !provinciaValida">
+      <button mat-flat-button type="submit" color="primary" [disabled]="f.invalid || !provinciaValida || !tipoHogar">
         Crear
       </button>
     </div>

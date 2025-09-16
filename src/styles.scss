@@ -78,6 +78,121 @@ body {
 }
 
 /* =========================================================
+   MatMenu: países (con banderas) - look pro
+   ========================================================= */
+$overlay-bg: #f7f9fb;
+$overlay-border: rgba(46, 125, 50, .15);
+$overlay-shadow: 0 18px 48px rgba(0, 0, 0, .18);
+
+.cdk-overlay-pane .mat-mdc-menu-panel.menu-paises {
+  border-radius: 12px !important;
+  background: $overlay-bg !important;
+  border: 2px solid $overlay-border !important;
+  box-shadow: $overlay-shadow !important;
+  padding: 4px 0 !important;
+  min-width: 190px !important;
+}
+
+.cdk-overlay-pane .mat-mdc-menu-panel.menu-paises .mat-mdc-menu-content {
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.cdk-overlay-pane .mat-mdc-menu-panel.menu-paises .mat-mdc-menu-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: .6rem;
+  padding: 8px 12px !important;
+  min-height: 40px !important;
+  background: transparent !important;
+  transition: background-color .18s ease;
+}
+
+.cdk-overlay-pane .mat-mdc-menu-panel.menu-paises .mat-mdc-menu-item:hover {
+  background: rgba(46, 125, 50, .08) !important;
+}
+
+.cdk-overlay-pane .mat-mdc-menu-panel.menu-paises .bandera,
+.cdk-overlay-pane .mat-mdc-menu-panel.menu-paises .mat-mdc-menu-item .bandera {
+  width: 20px !important;
+  height: 14px !important;
+  object-fit: cover;
+  border-radius: 2px;
+  flex-shrink: 0;
+  display: block;
+  background: #e9eef1;
+}
+
+.cdk-overlay-pane .mat-mdc-menu-panel.menu-paises .nombre-pais {
+  font-size: .92rem;
+  line-height: 1.1;
+  color: rgba(0, 0, 0, .87);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   Select: panel
+   ========================================================= */
+$c-select-gap: 16px;
+
+.cdk-overlay-pane .mat-mdc-select-panel.select-panel-pro {
+  border-radius: 14px !important;
+  background: #fff !important;
+  border: 2px solid rgba(46, 125, 50, .15) !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .18) !important;
+  margin-top: $c-select-gap !important;
+  max-height: calc(50vh - #{$c-select-gap}) !important;
+  overflow: auto !important;
+  padding: .25rem 0 !important;
+}
+
+.cdk-overlay-pane .mat-mdc-select-panel.select-panel-pro.mat-mdc-select-panel-above {
+  margin-top: 0 !important;
+  margin-bottom: $c-select-gap !important;
+  max-height: calc(50vh - #{$c-select-gap}) !important;
+}
+
+.cdk-overlay-pane .mat-mdc-select-panel.select-panel-pro .mat-mdc-option {
+  min-height: 44px !important;
+  font-size: .95rem !important;
+  padding: 0 1rem !important;
+  border-bottom: 1px solid rgba(0, 0, 0, .045) !important;
+  transition: background-color .2s, color .2s;
+}
+
+.cdk-overlay-pane .mat-mdc-select-panel.select-panel-pro .mat-mdc-option:last-child {
+  border-bottom: 0 !important;
+}
+
+.cdk-overlay-pane .mat-mdc-select-panel.select-panel-pro .mat-mdc-option:hover,
+.cdk-overlay-pane .mat-mdc-select-panel.select-panel-pro .mat-mdc-option.mdc-list-item--activated {
+  background-color: rgba(46, 125, 50, .08) !important;
+}
+
+.cdk-overlay-pane .mat-mdc-select-panel.select-panel-pro .mat-mdc-option.mdc-list-item--selected .mdc-list-item__primary-text {
+  font-weight: 600;
+  color: #2e7d32 !important;
+}
+
+.cdk-overlay-pane .mat-mdc-select-panel.select-panel-pro .mat-mdc-option[aria-disabled="true"] {
+  display: none !important;
+}
+
+.cdk-overlay-pane .mat-mdc-select-panel.select-panel-pro::-webkit-scrollbar {
+  width: 10px;
+}
+
+.cdk-overlay-pane .mat-mdc-select-panel.select-panel-pro::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: rgba(46, 125, 50, .25);
+}
+
+.cdk-overlay-pane .mat-mdc-select-panel.select-panel-pro::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* =========================================================
    Autocomplete: panel-provincias
    ========================================================= */
 .panel-provincias {

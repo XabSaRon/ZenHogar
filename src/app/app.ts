@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { filter, switchMap, take } from 'rxjs/operators';
+import { take } from 'rxjs';
 
 import { HogarService } from './core/hogar/services/hogar.service';
 import { AuthService } from './core/auth/auth.service';
@@ -10,7 +10,7 @@ import { DialogCrearHogarComponent } from './core/hogar/component/dialog-crear-h
 import { DialogInvitarPersona } from './core/invitaciones/component/invitar/dialog-invitar-persona';
 import { DialogUnirseCodigo } from './core/invitaciones/component/unirse/dialog-unirse-codigo';
 import { Auth } from '@angular/fire/auth';
-import { Hogar } from './core/hogar/models/hogar.model';
+import { Hogar, TipoHogar } from './core/hogar/models/hogar.model';
 import { ListaTareasComponent } from './core/tareas/component/tareas/lista-tareas.component';
 
 @Component({
@@ -61,7 +61,7 @@ export class App {
   abrirCrearHogar() {
     const ref = this.dialog.open(DialogCrearHogarComponent, {
       disableClose: true,
-      width: '540px',
+      width: '560px',
       maxWidth: '92vw',
       maxHeight: '72dvh',
       panelClass: 'crear-hogar-dialog',
@@ -69,19 +69,31 @@ export class App {
 
     ref.afterClosed()
       .pipe(take(1))
-      .subscribe((result?: { nombre: string; provincia: string }) => {
+      .subscribe((result?: {
+        nombre: string;
+        provincia: string;
+        provinciaCode?: string;
+        countryCode?: string;
+        tipoHogar?: TipoHogar;
+      }) => {
         if (!result) return;
 
-        const { nombre, provincia } = result;
-        if (!nombre?.trim() || !provincia) return;
+        const { nombre, provincia, provinciaCode, countryCode, tipoHogar } = result;
+        if (!nombre?.trim() || !provincia || !tipoHogar) return;
 
         const user = this.fbAuth.currentUser;
         if (!user) return;
 
-        this.hogarSvc.crearHogar(nombre.trim(), provincia, user)
-          .catch(err => {
-            console.error('Error creando hogar:', err);
-          });
+        this.hogarSvc
+          .crearHogar(
+            nombre.trim(),
+            provincia,
+            user,
+            provinciaCode,
+            countryCode ?? 'ES',
+            tipoHogar
+          )
+          .catch(err => console.error('Error creando hogar:', err));
       });
   }
 
