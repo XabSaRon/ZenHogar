@@ -10,6 +10,15 @@
       <button class="hogar-titulo" type="button" (click)="abrirInvitar(hogar)">
         🏠 {{ hogar.nombre }}
       </button>
+
+      @if (isAdmin$ | async) {
+      <span class="admin-badge" aria-label="Administrador del hogar" title="Administrador">
+        <span class="badge-ico">👑</span>
+        Admin
+        <span class="shimmer" aria-hidden="true"></span>
+      </span>
+      }
+
     </div>
     } @else {
     <div class="header-center sin-hogar-botones">

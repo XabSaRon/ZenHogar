@@ -55,7 +55,10 @@ describe('DialogInvitarPersona', () => {
       nombre: 'Mi Hogar',
       ownerUid: 'uid123',
       miembros: [],
-      createdAt: {} as any
+      createdAt: {} as any,
+      countryCode: 'ES',
+      provincia: 'Bizkaia',
+      provinciaCode: 'BI'
     };
 
     invitacionesServiceSpy.crearInvitacion.and.resolveTo(mockCodigo);

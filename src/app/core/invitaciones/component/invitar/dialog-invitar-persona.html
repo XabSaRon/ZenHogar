@@ -1,27 +1,151 @@
 <div class="dialog-container">
   <h1 class="titulo-modal">
-    <mat-icon>person_add</mat-icon>
-    Invitar a personas
+    <span class="icon-pill"><mat-icon fontIcon="home"></mat-icon></span>
+    Panel del hogar
   </h1>
 
-  <form #f="ngForm" (ngSubmit)="enviar(f)" class="dialog-body">
-    <mat-form-field appearance="outline">
-      <mat-label>Email de la persona</mat-label>
-      <input matInput type="email" name="email" required [(ngModel)]="email" email [disabled]="loading" />
-    </mat-form-field>
+  <div class="dialog-body">
+    <section class="bloque">
+      <h2 class="bloque-titulo">
+        <mat-icon fontIcon="person_add"></mat-icon>
+        Invitar a personas
+      </h2>
 
-    <div mat-dialog-actions>
-      <button mat-button type="button" (click)="cancelar()" [disabled]="loading">
-        Cancelar
-      </button>
+      <form #f="ngForm" (ngSubmit)="enviar(f)" class="form-invitar" novalidate>
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Email de la persona</mat-label>
+          <input matInput type="email" name="email" required [(ngModel)]="email" email [disabled]="loading"
+            [errorStateMatcher]="matcher" autocomplete="off" />
+          <mat-error>Introduce un email válido.</mat-error>
+        </mat-form-field>
 
-      <button mat-flat-button color="primary" type="submit" [disabled]="f.invalid || loading">
-        @if (!loading) {
-        Enviar
-        } @else {
-        <mat-progress-spinner diameter="18" mode="indeterminate" color="accent"></mat-progress-spinner>
+        <div class="acciones acciones--right">
+          <button mat-flat-button color="primary" type="submit" [disabled]="f.invalid || loading">
+            @if (!loading) { Enviar } @else {
+            <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
+            }
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <mat-divider class="sep"></mat-divider>
+
+    @if (esAdmin) {
+    <section class="bloque transfer-admin">
+      <h2 class="bloque-titulo">
+        <mat-icon fontIcon="supervisor_account"></mat-icon>
+        Transferir admin
+      </h2>
+
+      @if (miembros.length > 1) {
+      <ul class="lista-miembros">
+        @for (m of miembros; track m.uid) {
+        <li class="miembro" [class.es-admin]="m.esAdmin" [class.soy-yo]="m.soyYo">
+          <img class="avatar" [src]="m.fotoURL || 'assets/default-avatar.png'" alt="Foto"
+            (error)="onImageError($event)" />
+          <div class="info">
+            <div class="nombre">
+              {{ m.nombre || m.email || ('Usuario ' + m.uid.slice(0,6)) }}
+              @if (m.esAdmin) {
+              <span class="badge">Admin</span>
+              }
+              @if (m.soyYo) {
+              <span class="badge badge-yo">Tú</span>
+              }
+            </div>
+            @if (m.email) { <div class="email">{{ m.email }}</div> }
+          </div>
+
+          <span class="spacer"></span>
+
+          <button mat-stroked-button (click)="transferirAdmin(m)"
+            [disabled]="m.esAdmin || m.soyYo || loadingTransfer[m.uid] || loading" class="btn-assign">
+            @if (!loadingTransfer[m.uid]) { Asignar } @else {
+            <mat-progress-spinner diameter="16" mode="indeterminate"></mat-progress-spinner>
+            }
+          </button>
+        </li>
         }
-      </button>
-    </div>
-  </form>
+      </ul>
+      } @else {
+      <div class="estado-vacio">
+        <mat-icon fontIcon="info"></mat-icon>
+        <div>
+          Eres el único miembro del hogar. Invita a alguien para poder transferir la administración.
+        </div>
+      </div>
+      }
+    </section>
+
+    <mat-divider class="sep"></mat-divider>
+
+    <section class="bloque danger">
+      <h2 class="bloque-titulo">
+        <mat-icon fontIcon="delete_forever"></mat-icon>
+        Eliminar hogar
+      </h2>
+
+      <p class="help">
+        Esta acción <strong>eliminará definitivamente</strong> el hogar, sus tareas, eventos y relaciones.
+        No se puede deshacer.
+      </p>
+
+      <div class="acciones acciones--right">
+        <button mat-stroked-button color="warn" class="btn-danger" type="button" (click)="confirmarEliminarHogar()"
+          [disabled]="loading">
+          <mat-icon fontIcon="warning_amber"></mat-icon>
+          Eliminar hogar
+        </button>
+      </div>
+    </section>
+    }
+
+    @if (!esAdmin) {
+    <section class="bloque danger">
+      <h2 class="bloque-titulo">
+        <mat-icon fontIcon="logout"></mat-icon>
+        Salir del hogar
+      </h2>
+
+      <p class="help">
+        Dejarás de ver tareas, historial y notificaciones de este hogar.
+        Tus tareas activas se dejarán <strong>Sin asignar</strong>.
+      </p>
+
+      @if (!confirmando) {
+      <div class="acciones acciones--right">
+        <button mat-stroked-button class="btn-danger" type="button" (click)="confirmarSalida()" [disabled]="loading">
+          <mat-icon fontIcon="logout"></mat-icon>
+          Salir del hogar
+        </button>
+      </div>
+      } @else {
+      <div class="confirm">
+        <mat-icon fontIcon="warning_amber"></mat-icon>
+        <div class="textos">
+          <strong>¿Seguro que quieres salir del hogar?</strong>
+          <small><br>Esta acción es inmediata.</small>
+        </div>
+        <div class="acciones">
+          <button mat-button type="button" (click)="confirmando = false" [disabled]="loading">Cancelar</button>
+          <button mat-flat-button color="warn" type="button" (click)="salir()" [disabled]="loading">
+            @if (!loading) { Sí, salir } @else {
+            <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
+            }
+          </button>
+        </div>
+      </div>
+      }
+    </section>
+    }
+  </div>
+
+  <div class="dialog-footer">
+    <span class="spacer"></span>
+    <button mat-stroked-button class="btn-close" type="button" (click)="cancelar()" [disabled]="loading">
+      <mat-icon fontIcon="close"></mat-icon>
+      Cerrar
+    </button>
+  </div>
 </div>

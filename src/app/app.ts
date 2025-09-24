@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { take } from 'rxjs';
+import { take, combineLatest, map } from 'rxjs';
 
 import { HogarService } from './core/hogar/services/hogar.service';
 import { AuthService } from './core/auth/auth.service';
@@ -34,6 +34,9 @@ export class App {
   user$ = this.auth.user$;
   usuarioCompleto$ = this.auth.usuarioCompleto$;
   hogar$ = this.hogarSvc.getHogar$();
+  isAdmin$ = combineLatest([this.user$, this.hogar$]).pipe(
+    map(([u, h]) => !!u && !!h && (u.uid === h.ownerUid))
+  );
 
   onImageError(e: Event) {
     (e.target as HTMLImageElement).src = 'assets/default-avatar.png';
@@ -41,7 +44,7 @@ export class App {
 
   abrirInvitar(hogar: Hogar) {
     this.dialog.open(DialogInvitarPersona, {
-      width: '500px',
+      width: '750px',
       maxWidth: '92vw',
       panelClass: 'invitar-dialog',
       data: hogar.id,

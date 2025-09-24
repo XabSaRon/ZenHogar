@@ -4,15 +4,8 @@ import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class EmailService {
-
-  /** Envía el correo de invitación */
   enviarInvitacion(destino: string, hogar: string, codigo: string) {
-    const params = {
-      to_email: destino,
-      hogar,
-      codigo,
-    };
-
+    const params = { to_email: destino, hogar, codigo };
     return emailjs.send(
       environment.emailjs.serviceId,
       environment.emailjs.templateId,
@@ -20,5 +13,18 @@ export class EmailService {
       environment.emailjs.publicKey
     );
   }
-}
 
+  enviarAvisoHogarEliminado(destino: string, hogar: string, adminNombre: string) {
+    const params = {
+      to_email: destino,
+      hogar,
+      admin_nombre: adminNombre || 'Administrador',
+    };
+    return emailjs.send(
+      environment.emailjs.serviceId,
+      environment.emailjs.templates.hogarEliminado,
+      params,
+      environment.emailjs.publicKey
+    );
+  }
+}
