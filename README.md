@@ -36,7 +36,7 @@ Si deseas colaborar, distribuir o monetizar este proyecto, contacta conmigo prev
 ## 🧪 Clonar y ejecutar en local
 
 ```bash
-git clone https://github.com/XabSaRon/OrdenaTuCasa.git
+git clone https://github.com/XabSaRon/ZenHogar.git
 cd OrdenaTuCasa
 npm install
 ng serve
