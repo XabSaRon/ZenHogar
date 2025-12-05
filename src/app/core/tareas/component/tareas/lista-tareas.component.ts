@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { combineLatest, of, BehaviorSubject, take, EMPTY } from 'rxjs';
+import { combineLatest, of, BehaviorSubject, take, EMPTY, Observable } from 'rxjs';
 import { switchMap, map, filter } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -20,7 +20,7 @@ import { TareasService } from '../../services/tareas.service';
 import { TareaDTO } from '../../models/tarea.model';
 import { TarjetaTareaComponent } from './tarjeta-tarea.component';
 import { DEMO_MIEMBROS, generarTareasDemo } from '../../utilidades/demo-data';
-import { DialogCrearHogarComponent } from '../../../hogar/component/dialog-crear-hogar';
+import { DialogCrearHogarComponent } from '../../../hogar/component/crear/dialog-crear-hogar';
 import { DialogUnirseCodigo } from '../../../invitaciones/component/unirse/dialog-unirse-codigo';
 import { PeticionAsignacionDTO } from '../../models/peticion-asignacion.model';
 import { NotificadorComponent } from '../notificaciones/notificador.component';
@@ -40,6 +40,10 @@ type EstadoFiltro = 'todos' | 'sin_asignar' | 'en_curso' | 'pendiente_valoracion
 type PeticionAsignacionExtendida = PeticionAsignacionDTO & {
   destinatarioNombre?: string;
 };
+
+interface UsuarioConStats extends User {
+  totalTareasRealizadas?: number;
+}
 
 @Component({
   selector: 'app-lista-tareas',
@@ -99,8 +103,22 @@ export class ListaTareasComponent implements OnInit {
   @ViewChild('dropdownEstado') dropdownEstado?: ElementRef<HTMLElement>;
   @ViewChild('triggerEstado') triggerEstado?: ElementRef<HTMLElement>;
 
-  usuario$ = this.auth.user$;
-  usuarioActual: User | null = null;
+
+  usuario$: Observable<UsuarioConStats | null> = this.auth.user$.pipe(
+    switchMap(usuario => {
+      if (!usuario) return of(null);
+
+      const ref = doc(this.fs, 'usuarios', usuario.uid);
+      return docData(ref).pipe(
+        map(perfil => ({
+          ...usuario,
+          totalTareasRealizadas: (perfil?.['totalTareasRealizadas'] as number) ?? 0,
+        }))
+      );
+    })
+  );
+  usuarioActual: UsuarioConStats | null = null;
+
   mostrarFiltro = false;
   personalizadasCount: number = 0;
 

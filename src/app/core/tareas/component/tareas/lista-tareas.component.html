@@ -169,6 +169,11 @@
     <span class="badge-puntos">
       ⭐ <strong>{{ (puntosSemana$ | async) ?? 0 }}</strong> esta semana
     </span>
+
+    <span class="pipe">|</span>
+    <span class="badge-total">
+      ✅ <strong>{{ usuario.totalTareasRealizadas ?? 0 }}</strong> tareas totales
+    </span>
   </div>
 
   <app-notificador [uidSolicitante]="(usuario$ | async)?.uid || ''" (verTarea)="onVerTarea($event)">

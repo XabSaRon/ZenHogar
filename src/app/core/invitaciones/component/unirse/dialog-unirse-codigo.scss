@@ -6,4 +6,73 @@
   & {
     animation: slideFadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   }
+
+  .titulo-modal {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin-bottom: .25rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2e7d32;
+
+    .icon-wrapper {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(76, 175, 80, .12);
+
+      mat-icon {
+        font-size: 20px;
+        color: #2e7d32;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        display: block;
+        transform: translateY(1px);
+      }
+    }
+  }
+
+  .subtitulo-dialog {
+    margin: 0 0 1.1rem;
+    font-size: .95rem;
+    color: #607d8b;
+  }
+
+  .dialog-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+  }
+
+  .campo-codigo {
+    width: 100%;
+  }
+
+  .input-codigo {
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      'Liberation Mono', 'Courier New', monospace;
+  }
+
+  mat-hint {
+    font-size: .85rem;
+    color: #78909c;
+  }
+
+  [mat-dialog-actions] {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: .5rem;
+
+    .mat-mdc-button-base {
+      min-width: 110px;
+    }
+  }
 }

@@ -1,13 +1,23 @@
 <div class="dialog-container">
   <h1 class="titulo-modal">
-    <mat-icon>vpn_key</mat-icon>
+    <span class="icon-wrapper">
+      <mat-icon>vpn_key</mat-icon>
+    </span>
     Unirme con código
   </h1>
 
+  <p class="subtitulo-dialog">
+    Pega el código que te ha llegado por email para entrar en el hogar.
+  </p>
+
   <form #f="ngForm" (ngSubmit)="unir(f)" class="dialog-body">
-    <mat-form-field appearance="outline">
+    <mat-form-field appearance="outline" class="campo-codigo">
       <mat-label>Código de invitación</mat-label>
-      <input matInput name="codigo" required [(ngModel)]="codigo" [disabled]="loading" (keydown.enter)="unir(f)" />
+      <input matInput name="codigo" required [(ngModel)]="codigo" [disabled]="loading" (keydown.enter)="unir(f)"
+        autocomplete="one-time-code" class="input-codigo" placeholder="Ej: ZEN-ABCD-1234" />
+      <mat-hint align="start">
+        🔐 El código es único para ti y caduca tras usarlo.
+      </mat-hint>
     </mat-form-field>
 
     <div mat-dialog-actions>

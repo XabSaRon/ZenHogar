@@ -274,6 +274,8 @@ export class TareasService {
       };
 
       if (nuevasPendientes.length === 0) {
+        // 👉 Aquí sabemos que ya han valorado TODOS
+
         const media = this.mediaValoraciones(valoraciones);
         const pesoUsado = tarea.peso ?? 1;
         const base = this.puntosBaseFromRating(media);
@@ -284,8 +286,14 @@ export class TareasService {
 
         if (ultimo?.uid) {
           const usuarioRef = doc(this.fs, 'usuarios', ultimo.uid);
+
+          // Sumar puntos finales
           await updateDoc(usuarioRef, { puntos: increment(puntosOtorgados) });
 
+          // 🔹 AUMENTAR totalTareasRealizadas CUANDO LA TAREA QUEDA CERRADA
+          await this.incrementarTotalTareasUsuario(ultimo.uid);
+
+          // Guardar info de la valoración final en historial
           historial[historial.length - 1] = {
             ...ultimo,
             puntosOtorgados,
@@ -506,6 +514,16 @@ export class TareasService {
 
     const ref = await addDoc(colRef, payload);
     return ref.id;
+  }
+
+  private async incrementarTotalTareasUsuario(uid: string): Promise<void> {
+    if (!uid) return;
+
+    const usuarioRef = doc(this.fs, 'usuarios', uid);
+
+    await updateDoc(usuarioRef, {
+      totalTareasRealizadas: increment(1),
+    });
   }
 
 }

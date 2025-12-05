@@ -186,6 +186,10 @@
   margin-left: auto;
 }
 
+.fila-header app-notificador {
+  margin-left: -0.95rem;
+}
+
 .selector-filtro+.selector-filtro {
   margin-left: .75rem;
 }
@@ -261,8 +265,25 @@
     color: #2e7d32;
     box-shadow: 0 4px 12px rgba(0, 0, 0, .04);
   }
-}
 
+  .badge-total {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    background: linear-gradient(90deg, #e3f2fd, #e8f5e9);
+    border: 1px solid rgba(0, 0, 0, .05);
+    padding: .25rem .6rem;
+    border-radius: 999px;
+    font-size: .92rem;
+    color: #1e88e5;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .04);
+
+    strong {
+      font-weight: 700;
+    }
+  }
+
+}
 
 @media (min-width: 1200px) {
   .fila-header {

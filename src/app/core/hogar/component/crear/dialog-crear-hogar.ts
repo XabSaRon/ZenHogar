@@ -11,7 +11,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatSelectModule } from '@angular/material/select';
 import { MatMenuModule } from '@angular/material/menu';
 
-import type { TipoHogar } from '../models/hogar.model';
+import type { TipoHogar } from '../../models/hogar.model';
 import {
   SUBDIVISIONS,
   type Subdivisiones,
@@ -20,8 +20,8 @@ import {
   COUNTRY_NAMES,
   countryName,
   flagPath,
-} from '../../../shared/constants/subdivisiones';
-import { detectCountryByNavigator } from '../../../shared/utils/geo';
+} from '../../../../shared/constants/subdivisiones';
+import { detectCountryByNavigator } from '../../../../shared/utils/geo';
 
 @Component({
   selector: 'app-dialog-crear-hogar',

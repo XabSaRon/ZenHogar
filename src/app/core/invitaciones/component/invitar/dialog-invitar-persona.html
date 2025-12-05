@@ -1,4 +1,4 @@
-<div class="dialog-container">
+<div class="dialog-container" [attr.aria-busy]="loadingEliminar ? 'true' : null">
   <h1 class="titulo-modal">
     <span class="icon-pill"><mat-icon fontIcon="home"></mat-icon></span>
     Panel del hogar
@@ -148,4 +148,14 @@
       Cerrar
     </button>
   </div>
+
+  @if (loadingEliminar) {
+  <div class="blocking-overlay" role="status" aria-live="polite">
+    <div class="overlay-card">
+      <mat-progress-spinner [diameter]="28" mode="indeterminate"></mat-progress-spinner>
+      <span>Eliminando hogar…</span>
+    </div>
+  </div>
+  }
+
 </div>

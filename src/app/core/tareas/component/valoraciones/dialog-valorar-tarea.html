@@ -1,8 +1,20 @@
 <div class="dialog-container">
   <h1 class="titulo-modal">
-    <mat-icon>star_rate</mat-icon>
-    Valorar tarea
+    <span class="icon-wrapper">
+      <mat-icon>star_rate</mat-icon>
+    </span>
+    <span>Valorar tarea</span>
   </h1>
+
+  @if (data['nombreTarea']) {
+  <p class="subtitulo-tarea">
+    ¿Cómo se ha realizado <strong>{{ data['nombreTarea'] }}</strong>?
+  </p>
+  } @else {
+  <p class="subtitulo-tarea">
+    Cuéntanos qué tal se ha hecho esta tarea.
+  </p>
+  }
 
   @if (isDemoMode) {
   <div class="aviso-demo">
@@ -11,26 +23,39 @@
   }
 
   <form #form="ngForm" (ngSubmit)="guardarValoracion()" class="dialog-body">
-    <div class="valoracion-estrellas">
-      <ng-container *ngFor="let estrella of estrellas">
-        <button mat-icon-button type="button" (click)="seleccionarEstrella(estrella.valor)"
-          [class.seleccionada]="estrella.valor <= valorSeleccionado" matTooltip="{{ estrella.etiqueta }}">
-          <mat-icon>star</mat-icon>
-        </button>
-      </ng-container>
+
+    <div class="valoracion-bloque">
+      <div class="texto-valoracion">
+        @if (valorSeleccionado === 0) {
+        <span class="muted">Elige una puntuación de 1 a 5 estrellas</span>
+        } @else {
+        <span class="etiqueta-activa">
+          {{ estrellas[valorSeleccionado - 1].etiqueta }}
+        </span>
+        }
+      </div>
+
+      <div class="valoracion-estrellas">
+        <ng-container *ngFor="let estrella of estrellas">
+          <button mat-icon-button type="button" (click)="seleccionarEstrella(estrella.valor)"
+            [class.seleccionada]="estrella.valor <= valorSeleccionado" matTooltip="{{ estrella.etiqueta }}">
+            <mat-icon>star</mat-icon>
+          </button>
+        </ng-container>
+      </div>
     </div>
 
     <mat-form-field appearance="outline">
       <mat-label>Comentario (opcional)</mat-label>
       <textarea matInput name="comentario" [(ngModel)]="comentario" rows="3"
-        placeholder="Escribe un comentario sobre la tarea..."></textarea>
+        placeholder="¿Algo que destacar? Ej: ‘Ha quedado impecable’ o ‘Podría haberse hecho mejor’…"></textarea>
     </mat-form-field>
 
-    <div mat-dialog-actions>
-      <button mat-button (click)="cerrarDialogo()" type="button">
+    <div mat-dialog-actions class="acciones-dialogo">
+      <button mat-button type="button" (click)="cerrarDialogo()">
         Cancelar
       </button>
-      <button mat-flat-button color="primary" type="submit" [disabled]="valorSeleccionado === 0">
+      <button mat-flat-button color="primary" type="submit" [disabled]="valorSeleccionado === 0" class="btn-guardar">
         Guardar valoración
       </button>
     </div>

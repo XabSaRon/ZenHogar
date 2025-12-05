@@ -6,7 +6,7 @@ import { take, combineLatest, map } from 'rxjs';
 
 import { HogarService } from './core/hogar/services/hogar.service';
 import { AuthService } from './core/auth/auth.service';
-import { DialogCrearHogarComponent } from './core/hogar/component/dialog-crear-hogar';
+import { DialogCrearHogarComponent } from './core/hogar/component/crear/dialog-crear-hogar';
 import { DialogInvitarPersona } from './core/invitaciones/component/invitar/dialog-invitar-persona';
 import { DialogUnirseCodigo } from './core/invitaciones/component/unirse/dialog-unirse-codigo';
 import { Auth } from '@angular/fire/auth';
@@ -44,7 +44,7 @@ export class App {
 
   abrirInvitar(hogar: Hogar) {
     this.dialog.open(DialogInvitarPersona, {
-      width: '750px',
+      width: '800px',
       maxWidth: '92vw',
       panelClass: 'invitar-dialog',
       data: hogar.id,

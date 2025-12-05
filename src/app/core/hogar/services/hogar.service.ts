@@ -136,10 +136,19 @@ export class HogarService {
     const preSnap = await getDoc(hogarRef);
 
     if (!preSnap.exists()) throw new Error('Hogar no encontrado');
-    {
-      const d = preSnap.data() as any;
-      const ownerUid: string = d.ownerUid || d.adminUid;
-      if (ownerUid === uid) throw new Error('ADMIN_MUST_TRANSFER');
+
+    const d = preSnap.data() as any;
+    const ownerUid: string = d.ownerUid || d.adminUid;
+    if (ownerUid === uid) throw new Error('ADMIN_MUST_TRANSFER');
+
+    const nombreHogar: string = d?.nombre || 'Tu hogar en ZenHogar';
+
+    // === HISTÓRICO: registrar salida de este usuario de este hogar ===
+    try {
+      await this.registrarHistoricoSalidaUsuario(hogarId, uid, nombreHogar, ownerUid);
+    } catch (e) {
+      console.warn('No se pudo registrar el histórico al salir del hogar', e);
+      // No lanzamos error para no bloquear la salida
     }
 
     const tareasCol = collection(this.fs, 'tareas');
@@ -177,8 +186,8 @@ export class HogarService {
       const snap = await tx.get(hogarRef);
       if (!snap.exists()) throw new Error('Hogar no encontrado');
       const data = snap.data() as any;
-      const ownerUid: string = data.ownerUid || data.adminUid;
-      if (ownerUid === uid) throw new Error('ADMIN_MUST_TRANSFER');
+      const ownerUidTx: string = data.ownerUid || data.adminUid;
+      if (ownerUidTx === uid) throw new Error('ADMIN_MUST_TRANSFER');
 
       tx.update(hogarRef, {
         miembros: arrayRemove(uid),
@@ -245,6 +254,20 @@ export class HogarService {
     if (!ownerUid) throw new Error('HOGAR_SIN_OWNER');
     if (ownerUid !== user.uid) throw new Error('NOT_ADMIN');
 
+    // === HISTÓRICO: miembros y nombre del hogar ===
+    const miembros: string[] = (Array.isArray(d.miembros) ? d.miembros : [])
+      .map((m: any) => (typeof m === 'string' ? m : m?.uid))
+      .filter((x: any) => !!x);
+
+    const nombreHogar: string = d?.nombre || 'Tu hogar en ZenHogar';
+
+    try {
+      await this.registrarHistoricoHogar(hogarId, miembros, nombreHogar, ownerUid);
+    } catch (e) {
+      console.warn('No se pudo registrar el histórico del hogar antes de eliminarlo', e);
+      // No lanzamos error: no bloqueamos la eliminación del hogar por esto
+    }
+
     // 1) Borrar tareas del hogar en lotes
     const tareasCol = collection(this.fs, 'tareas');
     let tareasDocs: any[] = [];
@@ -276,20 +299,17 @@ export class HogarService {
     } catch { }
 
     // 2.5) Resetear puntos a 0 de todos los miembros del hogar
-    let miembros: string[] = [];
     try {
-      miembros = (Array.isArray(d.miembros) ? d.miembros : [])
-        .map((m: any) => (typeof m === 'string' ? m : m?.uid))
-        .filter((x: any) => !!x);
-
-      for (let i = 0; i < miembros.length; i += 450) {
-        const slice = miembros.slice(i, i + 450);
-        const batch = writeBatch(this.fs);
-        slice.forEach(uid => {
-          const uref = doc(this.fs, `usuarios/${uid}`);
-          batch.set(uref, { puntos: 0, actualizadoEn: serverTimestamp() }, { merge: true });
-        });
-        await batch.commit();
+      if (miembros.length > 0) {
+        for (let i = 0; i < miembros.length; i += 450) {
+          const slice = miembros.slice(i, i + 450);
+          const batch = writeBatch(this.fs);
+          slice.forEach(uid => {
+            const uref = doc(this.fs, `usuarios/${uid}`);
+            batch.set(uref, { puntos: 0, actualizadoEn: serverTimestamp() }, { merge: true });
+          });
+          await batch.commit();
+        }
       }
     } catch (e) {
       console.warn('No se pudieron resetear puntos de todos los miembros', e);
@@ -306,7 +326,7 @@ export class HogarService {
     // 2.7) NOTIFICAR por email a los miembros (no bloquea el borrado si falla)
     try {
       const adminNombre = this.auth.currentUser?.displayName ?? 'Administrador';
-      await this.notificarEliminacionHogar(d?.nombre || 'Tu hogar en ZenHogar', miembros, adminNombre);
+      await this.notificarEliminacionHogar(nombreHogar, miembros, adminNombre);
     } catch (e) {
       console.warn('Fallo al notificar por email la eliminación del hogar', e);
     }
@@ -378,6 +398,122 @@ export class HogarService {
       }
     } catch (e) {
       console.warn('No se pudieron enviar todos los avisos de eliminación de hogar', e);
+    }
+  }
+
+  private async registrarHistoricoSalidaUsuario(
+    hogarId: string,
+    uid: string,
+    hogarNombre: string,
+    ownerUid: string
+  ): Promise<void> {
+    const tareasCol = collection(this.fs, 'tareas');
+
+    let docs: any[] = [];
+    try {
+      const q = query(tareasCol, where('hogarId', '==', hogarId));
+      const snap = await getDocs(q);
+      docs = snap.docs;
+    } catch {
+      const snapAll = await getDocs(tareasCol as any);
+      docs = snapAll.docs.filter(d => (d.data() as any)?.hogarId === hogarId);
+    }
+
+    let total = 0;
+
+    for (const docSnap of docs) {
+      const t = docSnap.data() as any;
+      const hist = Array.isArray(t.historial) ? t.historial : [];
+
+      for (const ev of hist) {
+        if (!ev || typeof ev !== 'object') continue;
+
+        const evUid: string | undefined = (ev as any).uid;
+        const evHogarId: string | undefined = (ev as any).hogarId || t.hogarId;
+        const evCompletada: boolean = (ev as any).completada === true;
+
+        if (!evUid) continue;
+        if (evUid !== uid) continue;
+        if (evHogarId !== hogarId) continue;
+        if (!evCompletada) continue;
+
+        total++;
+      }
+    }
+
+    const histRef = doc(this.fs, `usuarios/${uid}/historialHogares/${hogarId}`);
+
+    await setDoc(
+      histRef,
+      {
+        hogarId,
+        hogarNombre,
+        tareasRealizadas: total,
+        fechaSalida: serverTimestamp(),
+        fueAdmin: ownerUid === uid,
+      },
+      { merge: true }
+    );
+  }
+
+  private async registrarHistoricoHogar(
+    hogarId: string,
+    miembros: string[],
+    hogarNombre: string,
+    ownerUid: string
+  ): Promise<void> {
+    if (!miembros || miembros.length === 0) return;
+
+    const tareasCol = collection(this.fs, 'tareas');
+
+    let docs: any[] = [];
+    try {
+      const q = query(tareasCol, where('hogarId', '==', hogarId));
+      const snap = await getDocs(q);
+      docs = snap.docs;
+    } catch {
+      const snapAll = await getDocs(tareasCol as any);
+      docs = snapAll.docs.filter(d => (d.data() as any)?.hogarId === hogarId);
+    }
+
+    // Mapa uid -> número de "veces que ha completado una tarea" en este hogar
+    const counts = new Map<string, number>();
+
+    for (const docSnap of docs) {
+      const t = docSnap.data() as any;
+      const hist = Array.isArray(t.historial) ? t.historial : [];
+
+      for (const ev of hist) {
+        if (!ev || typeof ev !== 'object') continue;
+
+        const evUid: string | undefined = (ev as any).uid;
+        const evHogarId: string | undefined = (ev as any).hogarId || t.hogarId;
+        const evCompletada: boolean = (ev as any).completada === true;
+
+        if (!evUid) continue;
+        if (evHogarId !== hogarId) continue;
+        if (!evCompletada) continue;
+
+        counts.set(evUid, (counts.get(evUid) ?? 0) + 1);
+      }
+    }
+
+    // Guardamos histórico por cada miembro
+    for (const uid of miembros) {
+      const total = counts.get(uid) ?? 0;
+
+      const histRef = doc(this.fs, `usuarios/${uid}/historialHogares/${hogarId}`);
+      await setDoc(
+        histRef,
+        {
+          hogarId,
+          hogarNombre,
+          tareasRealizadas: total,
+          fechaSalida: serverTimestamp(),
+          fueAdmin: ownerUid === uid,
+        },
+        { merge: true }
+      );
     }
   }
 

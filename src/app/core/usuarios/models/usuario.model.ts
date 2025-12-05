@@ -4,4 +4,5 @@ export interface Usuario {
   email: string;
   photoURL?: string;
   puntos?: number;
+  totalTareasRealizadas?: number;
 }

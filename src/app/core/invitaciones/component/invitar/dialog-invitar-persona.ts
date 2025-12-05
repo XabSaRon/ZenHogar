@@ -1,4 +1,4 @@
-import { Component, inject, Inject } from '@angular/core';
+import { Component, inject, Inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { FormsModule, NgForm, FormGroupDirective } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -16,6 +16,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { InvitacionesService } from '../../services/invitaciones.service';
 import { EmailService } from '../../../../shared/email/email.service';
@@ -34,6 +35,13 @@ type MiembroVM = {
   fotoURL?: string | null;
   esAdmin: boolean;
   soyYo: boolean;
+};
+
+type TransferData = {
+  uid: string;
+  nombre?: string | null;
+  email?: string | null;
+  fotoURL?: string | null;
 };
 
 @Component({
@@ -68,6 +76,8 @@ export class DialogInvitarPersona {
   private auth = inject(Auth);
   private fs = inject(Firestore);
   private md = inject(MatDialog);
+  private cdr = inject(ChangeDetectorRef);
+  private zone = inject(NgZone);
 
   hogarId: string = inject(MAT_DIALOG_DATA);
 
@@ -156,7 +166,7 @@ export class DialogInvitarPersona {
   }
 
   cancelar() {
-    if (!this.loading) this.ref.close();
+    if (!this.loading && !this.loadingEliminar) this.ref.close();
   }
 
   confirmarSalida() {
@@ -242,86 +252,285 @@ export class DialogInvitarPersona {
 
   private async eliminarHogar() {
     if (this.loading || this.loadingEliminar) return;
+
     this.loadingEliminar = true;
+    this.cdr.detectChanges();
+
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+
     try {
-      await this.hogarSvc.eliminarHogar(this.hogarId);
-      this.snack.open('Hogar eliminado definitivamente', 'Cerrar', { duration: 3500 });
-      this.ref.close({ eliminado: true });
+      await this.zone.runOutsideAngular(async () => {
+        await this.hogarSvc.eliminarHogar(this.hogarId);
+      });
+
+      this.zone.run(() => {
+        this.snack.open('Hogar eliminado definitivamente', 'Cerrar', { duration: 3500 });
+        this.ref.close({ eliminado: true });
+      });
     } catch (err: any) {
       console.error(err);
       const msg = err?.message || 'No se pudo eliminar el hogar';
-      this.snack.open(msg, 'Cerrar', { duration: 4500 });
-    } finally {
+      this.zone.run(() => this.snack.open(msg, 'Cerrar', { duration: 4500 }));
       this.loadingEliminar = false;
+      this.cdr.detectChanges();
     }
   }
-
 }
 
 @Component({
   standalone: true,
   selector: 'app-confirm-transfer-dialog',
+  imports: [CommonModule, FormsModule, MatDialogModule, MatButtonModule, MatIconModule, MatCheckboxModule],
   template: `
-    <div class="confirm-transfer-wrapper">
-      <h3 class="titulo">Transferir administración</h3>
-      <p class="mensaje">
-        ¿Quieres transferir la administración a
-        <strong>{{ data.nombre || data.email || ('usuario ' + (data.uid || '').slice(0,6)) }}</strong>?
-      </p>
+    <div class="dlg">
+      <header class="dlg__header">
+        <span class="pill"><mat-icon fontIcon="supervisor_account"></mat-icon></span>
+        <h3 class="title">Transferir administración</h3>
+      </header>
 
-      <div class="acciones">
-        <button mat-button mat-dialog-close="false">Rechazar</button>
-        <button mat-flat-button color="primary" [mat-dialog-close]="true">Confirmar</button>
+      <section class="target">
+        <div class="avatar" [class.avatar--img]="data.fotoURL">
+          @if (data.fotoURL) {
+            <img [src]="data.fotoURL!" alt="Avatar" (error)="onImgError($event)">
+          } @else {
+            <span>{{ initials() }}</span>
+          }
+        </div>
+        <div class="who">
+          <div class="name">{{ displayName() }}</div>
+          @if (data.email) {
+            <div class="mail">{{ data.email }}</div>
+          }
+          <div class="note">Será el nuevo <strong>administrador del hogar</strong>.</div>
+        </div>
+      </section>
+
+      <div class="info" role="note">
+        <mat-icon fontIcon="info"></mat-icon>
+        <div>
+          Perderás permisos de administración (Expulsar miembros (futuro), editar nombre del hogar y eliminarlo).
+          Seguirás siendo miembro del hogar.
+        </div>
+      </div>
+
+      <mat-checkbox class="consent" [(ngModel)]="consent">
+        Sí, quiero transferir la administración a <strong>{{ shortName() }}</strong>.
+      </mat-checkbox>
+
+      <div class="actions">
+        <button mat-button mat-dialog-close="false" class="btn-cancel">Rechazar</button>
+        <button mat-flat-button color="primary" [disabled]="!consent" [mat-dialog-close]="true">
+          Confirmar
+        </button>
       </div>
     </div>
   `,
   styles: [`
-    .confirm-transfer-wrapper { padding: .75rem 1rem; max-width: 420px; }
-    .titulo { margin: 0 0 .5rem; font-size: 1.05rem; }
-    .mensaje { margin: 0 0 .75rem; }
-    .acciones { display: flex; justify-content: flex-end; gap: .5rem; }
-  `],
-  imports: [MatButtonModule, MatDialogModule, CommonModule]
+    .dlg {
+      padding: 1rem 1.25rem 1rem;
+      max-width: 520px;
+      background: linear-gradient(135deg,#f6fbff,#f8fff6);
+      border-radius: 16px;
+    }
+
+    .dlg__header {
+      display:flex; align-items:center; gap:.65rem; margin-bottom:.35rem;
+    }
+    .title{ margin:0; font-size:1.12rem; line-height:1.2; }
+
+    .pill{
+      width:34px;height:34px; display:inline-grid; place-items:center; border-radius:999px;
+      background:linear-gradient(135deg,#e3f2fd,#e8f5e9);
+      box-shadow:0 3px 10px rgba(0,0,0,.08) inset,0 1px 2px rgba(0,0,0,.06);
+    }
+    .pill .mat-icon{ font-size:18px;width:18px;height:18px;color:#2e7d32; }
+
+    .target{
+      display:grid; grid-template-columns:auto 1fr; gap:.75rem; align-items:center;
+      padding:.75rem .85rem; background:#fff; border:1px solid rgba(0,0,0,.06); border-radius:12px;
+      margin:.25rem 0 .75rem;
+    }
+    .avatar{
+      width:44px;height:44px; border-radius:50%; display:grid; place-items:center;
+      background:linear-gradient(135deg,#e0f2f1,#e3f2fd); color:#245;
+      font-weight:700; letter-spacing:.3px; text-transform:uppercase;
+      overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.06) inset;
+    }
+    .avatar--img{ background:none; }
+    .avatar img{ width:100%; height:100%; object-fit:cover; }
+
+    .who{ display:grid; gap:.15rem; }
+    .name{ font-weight:600; }
+    .mail{ font-size:.9rem; opacity:.8; }
+    .note{ font-size:.88rem; color:#566; }
+
+    .info{
+      display:grid; grid-template-columns:auto 1fr; gap:.5rem; align-items:flex-start;
+      padding:.6rem .75rem; background:rgba(33,150,243,.05); border:1px dashed rgba(33,150,243,.28);
+      border-radius:12px; margin-bottom:.5rem;
+    }
+    .info mat-icon{ color:#1976d2; }
+
+    .consent{
+      margin:.25rem 0 .25rem;
+      --mdc-checkbox-selected-focus-state-layer-color: currentColor;
+    }
+
+    .actions{
+      display:flex; justify-content:flex-end; gap:.5rem; margin-top:.5rem;
+    }
+    .btn-cancel{ font-weight:600; }
+
+    @media (max-width:480px){
+      .dlg{ padding:.9rem; }
+      .title{ font-size:1.06rem; }
+      .avatar{ width:40px; height:40px; }
+    }
+  `]
 })
 export class ConfirmTransferDialog {
-  constructor(@Inject(MAT_DIALOG_DATA) public data: { uid: string; nombre?: string | null; email?: string | null }) { }
+  consent = false;
+
+  constructor(@Inject(MAT_DIALOG_DATA) public data: TransferData) { }
+
+  displayName = () =>
+    (this.data.nombre?.trim()) ||
+    (this.data.email?.trim()) ||
+    ('Usuario ' + (this.data.uid || '').slice(0, 6));
+
+  shortName = () =>
+    (this.data.nombre?.split(' ')[0]) ||
+    (this.data.email?.split('@')[0]) ||
+    (this.data.uid || '').slice(0, 6);
+
+  initials = () => {
+    const src = this.displayName();
+    const parts = src.split(/\s+/).filter(Boolean);
+    const take = (s: string) => s.substring(0, 1).toUpperCase();
+    return parts.length >= 2 ? take(parts[0]) + take(parts[1]) : take(parts[0]);
+  };
+
+  onImgError(ev: Event) {
+    (ev.target as HTMLImageElement).style.display = 'none';
+  }
 }
 
 @Component({
   standalone: true,
   selector: 'app-confirm-delete-home-dialog',
   template: `
-    <div class="confirm-delete-wrapper">
-      <h3 class="titulo">Eliminar hogar</h3>
-      <p class="mensaje">
-        Esta acción <strong>borra definitivamente</strong> el hogar y todo su contenido.<br>
-        Escribe <strong>ELIMINAR</strong> para confirmar.
-      </p>
+    <div class="dlg">
+      <header class="dlg__header">
+        <span class="pill">
+          <mat-icon fontIcon="warning_amber"></mat-icon>
+        </span>
+        <h3 class="title">Eliminar hogar</h3>
+      </header>
 
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Confirmación</mat-label>
-        <input matInput [formControl]="confCtrl" autocomplete="off" />
-        <mat-error>Escribe exactamente: ELIMINAR</mat-error>
-      </mat-form-field>
-
-      <div class="acciones">
-        <button mat-button mat-dialog-close="false">Cancelar</button>
-        <button mat-flat-button color="warn"
-                [disabled]="confCtrl.invalid"
-                [mat-dialog-close]="true">
-          Eliminar definitivamente
-        </button>
+      <div class="danger-box" role="alert">
+        <p class="lead">
+          Esta acción <strong>borra definitivamente</strong> el hogar y todo su contenido.
+        </p>
+        <p class="help">
+          Para confirmar, escribe <span class="badge">ELIMINAR</span> en el campo de abajo.
+        </p>
       </div>
+
+      <form class="form" autocomplete="off" spellcheck="false">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Confirmación</mat-label>
+          <input
+            matInput
+            [formControl]="confCtrl"
+            cdkFocusInitial
+            aria-describedby="confirm-help"
+            inputmode="latin"
+          />
+          <mat-error>Escribe exactamente: ELIMINAR</mat-error>
+          <mat-hint id="confirm-help">Escribe la palabra mostrada arriba.</mat-hint>
+        </mat-form-field>
+
+        <div class="actions">
+          <button mat-button mat-dialog-close="false" class="btn-cancel">Cancelar</button>
+          <button
+            mat-flat-button
+            color="warn"
+            [disabled]="confCtrl.invalid"
+            [mat-dialog-close]="true"
+          >
+            Eliminar definitivamente
+          </button>
+        </div>
+      </form>
     </div>
   `,
   styles: [`
-    .confirm-delete-wrapper { padding: .9rem 1rem; max-width: 520px; }
-    .titulo { margin: 0 0 .5rem; font-size: 1.08rem; }
-    .mensaje { margin: 0 .0 1rem; }
-    .acciones { display: flex; justify-content: flex-end; gap: .5rem; }
+    .dlg {
+      padding: 1rem 1.25rem 1rem;
+      max-width: 520px;
+      background: linear-gradient(135deg, #f6fbff, #fef7f7);
+      border-radius: 16px;
+    }
+
+    .dlg__header {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      margin-bottom: .35rem;
+    }
+    .title {
+      margin: 0;
+      font-size: 1.12rem;
+      line-height: 1.2;
+    }
+
+    .pill {
+      width: 34px; height: 34px;
+      display: inline-grid; place-items: center;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #fff3e0, #ffebee);
+      box-shadow: 0 3px 10px rgba(0,0,0,.08) inset, 0 1px 2px rgba(0,0,0,.06);
+    }
+    .pill .mat-icon { width: 18px; height: 18px; font-size: 18px; color: #e53935; }
+
+    .danger-box {
+      margin: .25rem 0 .75rem;
+      padding: .75rem .85rem;
+      background: rgba(229, 57, 53, .04);
+      border: 1px dashed rgba(229, 57, 53, .28);
+      border-radius: 12px;
+    }
+    .lead { margin: 0 0 .25rem 0; }
+    .help { margin: 0; color: #6b6b6b; }
+    .badge {
+      display: inline-block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-weight: 700;
+      letter-spacing: .5px;
+      padding: .1rem .45rem;
+      border-radius: 999px;
+      background: #ffe0e0;
+      color: #c62828;
+    }
+
+    .form { margin-top: .25rem; }
     .w-100 { width: 100%; }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: .5rem;
+      margin-top: .25rem;
+    }
+    .btn-cancel { font-weight: 600; }
+
+    @media (max-width: 480px) {
+      .dlg { padding: .9rem .9rem .85rem; }
+      .pill { width: 30px; height: 30px; }
+      .title { font-size: 1.06rem; }
+    }
   `],
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatInputModule, ReactiveFormsModule]
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatInputModule, ReactiveFormsModule, MatIconModule]
 })
 export class ConfirmDeleteHomeDialog {
   confCtrl = new FormControl<string>('', [Validators.required, Validators.pattern(/^ELIMINAR$/)]);

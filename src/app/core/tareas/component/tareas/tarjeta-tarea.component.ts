@@ -270,7 +270,10 @@ export class TarjetaTareaComponent implements OnChanges {
 
   abrirDialogoValoracion() {
     this.dialog.open(DialogValorarTarea, {
-      data: { tareaId: this.tarea.id },
+      data: {
+        tareaId: this.tarea.id,
+        nombreTarea: this.tarea.nombre
+      },
       width: '500px',
       panelClass: 'dialog-valorar'
     });

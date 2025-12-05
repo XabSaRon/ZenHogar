@@ -42,7 +42,7 @@ export class DialogValorarTarea {
 
   constructor(
     private dialogRef: MatDialogRef<DialogValorarTarea>,
-    @Inject(MAT_DIALOG_DATA) public data: { tareaId: string },
+    @Inject(MAT_DIALOG_DATA) public data: { tareaId: string; nombreTarea?: string },
     private tareasService: TareasService,
     private authService: AuthService,
     private snackBar: MatSnackBar
