@@ -37,6 +37,6 @@ Si deseas colaborar, distribuir o monetizar este proyecto, contacta conmigo prev
 
 ```bash
 git clone https://github.com/XabSaRon/ZenHogar.git
-cd OrdenaTuCasa
+cd ZenHogar
 npm install
 ng serve
