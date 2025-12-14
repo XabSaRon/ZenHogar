@@ -1,0 +1,31 @@
+<div class="confirm">
+  <h2 mat-dialog-title class="confirm__title">
+    <span class="confirm__icon">
+      <mat-icon aria-hidden="true">{{ icon }}</mat-icon>
+    </span>
+
+    <span class="confirm__title-text">{{ data.title }}</span>
+  </h2>
+
+  <div mat-dialog-content class="confirm__content">
+    @if (data.emphasis) {
+    <div class="confirm__highlight">
+      <span class="confirm__highlight-label">Vas a eliminar</span>
+      <span class="confirm__highlight-value">{{ data.emphasis }}</span>
+    </div>
+    }
+
+    <p class="confirm__message" [innerText]="data.message"></p>
+  </div>
+
+  <div mat-dialog-actions align="end" class="confirm__actions">
+    <button mat-stroked-button type="button" (click)="cancel()">
+      {{ data.cancelLabel || 'Cancelar' }}
+    </button>
+
+    <button mat-flat-button type="button" class="confirm__confirm-btn"
+      [class.confirm__confirm-btn--warn]="confirmColor === 'warn'" [color]="confirmColor" (click)="confirm()">
+      {{ data.confirmLabel || 'Confirmar' }}
+    </button>
+  </div>
+</div>

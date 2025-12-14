@@ -1,0 +1,201 @@
+<mat-dialog-content class="tienda-content">
+
+  <div class="tienda-root">
+    <header class="tienda__header">
+      <div class="tienda__titulo">
+        <mat-icon>storefront</mat-icon>
+        <div>
+          <h2>Tienda ZenHogar</h2>
+          <p>Canjea tus puntos por recompensas épicas</p>
+        </div>
+      </div>
+
+      <div class="tienda__puntos">
+        <span class="label">Tus puntos</span>
+
+        <div class="puntos-row">
+          @if (esZenPrime) {
+          <mat-chip-listbox class="prime-chip">
+            <mat-chip selected>
+              <mat-icon class="prime-icon">bolt</mat-icon>
+              <span>ZenPrime</span>
+            </mat-chip>
+          </mat-chip-listbox>
+          }
+
+          <div class="puntos-chip">
+            <mat-icon>stars</mat-icon>
+            <strong>{{ puntosDisponibles }}</strong>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="tienda__seccion tienda__seccion--predefinidas">
+      <div class="seccion-header">
+        <h3>Recompensas destacadas</h3>
+        <span class="hint">Pensadas para que el hogar sea más divertido</span>
+      </div>
+
+      <div class="cards-grid">
+        @for (r of predefinidas; track r) {
+        <mat-card class="reward-card" [class.reward-card--disabled]="!puedeCanjear(r)"
+          [class.reward-card--has-badge]="!!r.badge">
+          @if (r.badge) {
+          <div class="reward-badge" [class.reward-badge--popular]="r.badge === 'popular'"
+            [class.reward-badge--top]="r.badge === 'top'">
+            <mat-icon>
+              {{ r.badge === 'popular' ? 'star' : 'local_fire_department' }}
+            </mat-icon>
+            <span>
+              {{ r.badge === 'popular' ? 'Popular' : 'Top' }}
+            </span>
+          </div>
+          }
+          <mat-card-header>
+            <div mat-card-avatar class="reward-card__icon">
+              <mat-icon>{{ r.icono }}</mat-icon>
+            </div>
+            <mat-card-title>{{ r.titulo }}</mat-card-title>
+            <mat-card-subtitle>{{ r.coste }} pts</mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>
+            <p>{{ r.descripcion }}</p>
+          </mat-card-content>
+
+          <mat-card-actions align="end">
+            <span [matTooltip]="tooltipCanjear(r)" [matTooltipDisabled]="puedeCanjear(r)">
+              <button mat-raised-button color="primary" (click)="canjear(r)" [disabled]="!puedeCanjear(r)">
+                Canjear
+              </button>
+            </span>
+          </mat-card-actions>
+        </mat-card>
+        }
+      </div>
+    </section>
+
+    <section class="tienda__seccion tienda__seccion--personalizadas">
+      <div class="seccion-header">
+        <div>
+          <h3>Recompensas personalizadas</h3>
+          <span class="hint">
+            Crea tus propias recompensas
+            @if (!esZenPrime) {
+            (máx. {{ LIMITE_PERSONALIZADAS }} sin ZenPrime)
+            }
+          </span>
+        </div>
+
+        <span
+          [matTooltip]="!puedeCrearPersonalizada && !esZenPrime ? 'Límite alcanzado (3/3). Activa ZenPrime para ilimitadas ⚡' : ''"
+          [matTooltipDisabled]="puedeCrearPersonalizada || esZenPrime">
+          <button mat-stroked-button color="primary" type="button" (click)="toggleFormNueva()"
+            [disabled]="!puedeCrearPersonalizada">
+            <mat-icon>{{ mostrarFormNueva ? 'close' : 'add' }}</mat-icon>
+            {{ mostrarFormNueva ? 'Cerrar nueva recompensa' : 'Nueva recompensa' }}
+          </button>
+        </span>
+      </div>
+
+      <!-- formulario inline -->
+      @if (mostrarFormNueva) {
+      <div class="tienda__form-nueva">
+        <form [formGroup]="formNueva" (ngSubmit)="guardarRecompensaPersonalizada()">
+          <div class="form-row">
+            <mat-form-field appearance="fill" class="field-titulo">
+              <mat-label>Título</mat-label>
+              <input matInput formControlName="titulo" maxlength="60">
+              <mat-hint align="end">
+                {{ formNueva.get('titulo')?.value?.length || 0 }}/60
+              </mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="field-coste">
+              <mat-label>Coste en puntos</mat-label>
+              <input matInput type="number" formControlName="coste" min="1">
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="fill" class="field-descripcion">
+            <mat-label>Descripción (opcional)</mat-label>
+            <textarea matInput formControlName="descripcion" rows="2" maxlength="200"></textarea>
+            <mat-hint align="end">
+              {{ formNueva.get('descripcion')?.value?.length || 0 }}/200
+            </mat-hint>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-button type="button" (click)="cancelarForm()">
+              Cancelar
+            </button>
+
+            <button mat-flat-button color="primary" type="submit"
+              [disabled]="formNueva.invalid || guardandoPersonalizada">
+              {{ guardandoPersonalizada ? 'Guardando…' : 'Guardar recompensa' }}
+            </button>
+          </div>
+        </form>
+      </div>
+      }
+
+      @if (personalizadas.length > 0) {
+      <div class="cards-grid cards-grid--personalizadas">
+        @for (r of personalizadas; track r) {
+        <mat-card class="reward-card reward-card--personalizada" [class.reward-card--disabled]="!puedeCanjear(r)">
+
+          <!-- Acciones hover (solo personalizadas) -->
+          @if (esAdmin) {
+          <div class="card-actions-hover" (click)="$event.stopPropagation()">
+            <button mat-icon-button type="button" class="action-btn" matTooltip="Editar recompensa"
+              (click)="editarPersonalizada(r)">
+              <mat-icon>edit</mat-icon>
+            </button>
+
+            <button mat-icon-button type="button" class="action-btn action-btn--danger" matTooltip="Eliminar recompensa"
+              (click)="borrarPersonalizada(r)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+          }
+
+          <mat-card-header>
+            <div mat-card-avatar class="reward-card__icon">
+              <mat-icon>{{ r.icono }}</mat-icon>
+            </div>
+            <mat-card-title>{{ r.titulo }}</mat-card-title>
+            <mat-card-subtitle>{{ r.coste }} pts</mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>
+            <p>{{ r.descripcion }}</p>
+          </mat-card-content>
+
+          <mat-card-actions align="end">
+            <span [matTooltip]="tooltipCanjear(r)" [matTooltipDisabled]="puedeCanjear(r)">
+              <button mat-raised-button color="primary" (click)="canjear(r)" [disabled]="!puedeCanjear(r)">
+                Canjear
+              </button>
+            </span>
+          </mat-card-actions>
+        </mat-card>
+        }
+      </div>
+      } @else {
+      <div class="empty-state">
+        <mat-icon>lightbulb</mat-icon>
+        <p>Aún no tienes recompensas personalizadas.</p>
+        <p class="hint">
+          Empieza creando 1, 2 o 3 y si os gusta… ¡ZenPrime al poder! ⚡
+        </p>
+      </div>
+      }
+    </section>
+  </div>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="tienda__footer">
+  <button mat-button (click)="cerrar()">Cerrar</button>
+</mat-dialog-actions>

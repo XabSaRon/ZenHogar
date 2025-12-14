@@ -39,15 +39,29 @@
     <div class="header-right">
       @if (usuarioCompleto$ | async; as usuario) {
       <div class="user-info">
-        <div class="puntos-usuario-wrapper">
-          <div class="puntos-usuario" [ngClass]="{
-                  'positivo': (usuario?.puntos ?? 0) >= 0,
-                  'negativo': (usuario?.puntos ?? 0) < 0
-                }">
-            {{ usuario?.puntos ?? 0 }}
+        <button class="tienda-trigger" matTooltip="Canjear puntos" type="button"
+          (click)="abrirTienda(usuario, hogarActual)" [class.tienda-con-puntos]="(usuario?.puntos ?? 0) > 0">
+
+          <div class="puntos-usuario-wrapper">
+            <div class="puntos-usuario" [ngClass]="{
+                'positivo': (usuario?.puntos ?? 0) >= 0,
+                'negativo': (usuario?.puntos ?? 0) < 0,
+                'puntos-flash': ultimoCanjeoOk
+              }">
+              {{ puntosAnimados }}
+            </div>
+
+            <img src="assets/coin.png" alt="Moneda" class="moneda-animada" />
+
+            <!-- Confeti -->
+            <div class="confetti" *ngIf="mostrarConfetti">
+              <span class="confetti-piece" *ngFor="let p of confettiPieces; let i = index"></span>
+            </div>
           </div>
-          <img src="assets/coin.png" alt="Moneda" class="moneda-animada" />
-        </div>
+
+          <span class="tienda-icon">🛒</span>
+          <span class="tienda-text">Tienda</span>
+        </button>
 
         <img class="avatar" [src]="usuario?.photoURL || 'assets/default-avatar.png'" (error)="onImageError($event)"
           [alt]="usuario?.nombre" />
@@ -57,10 +71,24 @@
         </button>
       </div>
       } @else {
-      <button class="btn-google" (click)="auth.loginGoogle()">
-        <img src="assets/google-icon.png" class="google-icon" alt="Google" />
-        Iniciar sesión con Google
-      </button>
+      <div class="user-info">
+        <button class="tienda-trigger" matTooltip="Vista previa de la tienda" type="button" (click)="abrirTiendaDemo()">
+          <div class="puntos-usuario-wrapper">
+            <div class="puntos-usuario positivo">
+              120
+            </div>
+            <img src="assets/coin.png" alt="Moneda" class="moneda-animada" />
+          </div>
+
+          <span class="tienda-icon">🛒</span>
+          <span class="tienda-text">Tienda (demo)</span>
+        </button>
+
+        <button class="btn-google" (click)="auth.loginGoogle()">
+          <img src="assets/google-icon.png" class="google-icon" alt="Google" />
+          Iniciar sesión con Google
+        </button>
+      </div>
       }
     </div>
   </header>
@@ -72,7 +100,7 @@
   <footer class="footer">
     <div class="footer-content">
       <span>🧘 ZenHogar — La armonía empieza en casa</span>
-      <span>v1.0 · Hecho con 💚 por Xabi</span>
+      <span>v1.0</span>
 
       <a href="https://instagram.com/appZenHogar" target="_blank" rel="noopener noreferrer" class="instagram-link">
         <img src="assets/instagram.png" alt="Instagram" class="instagram-icon">

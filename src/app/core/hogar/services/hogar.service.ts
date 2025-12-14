@@ -80,10 +80,11 @@ export class HogarService {
   private fs = inject(Firestore);
   private auth = inject(Auth);
   private tareasSvc = inject(TareasService);
-  private emailSvc = inject(EmailService)
+  private emailSvc = inject(EmailService);
+  private authState$ = authState(this.auth);
 
   getHogar$(): Observable<Hogar | null> {
-    return authState(this.auth).pipe(
+    return this.authState$.pipe(
       switchMap(user => {
         if (!user) return of(null);
 

@@ -1,8 +1,9 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { take, combineLatest, map } from 'rxjs';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { take, combineLatest, map, Subscription } from 'rxjs';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { HogarService } from './core/hogar/services/hogar.service';
 import { AuthService } from './core/auth/auth.service';
@@ -13,6 +14,10 @@ import { Auth } from '@angular/fire/auth';
 import { Hogar, TipoHogar } from './core/hogar/models/hogar.model';
 import { ListaTareasComponent } from './core/tareas/component/tareas/lista-tareas.component';
 
+import { DialogTiendaComponent } from './core/tienda/dialog-tienda/dialog-tienda.component';
+import { DialogTiendaData } from './core/tienda/models/tienda.model';
+import { TiendaService } from './core/tienda/services/tienda.service';
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -20,16 +25,25 @@ import { ListaTareasComponent } from './core/tareas/component/tareas/lista-tarea
     CommonModule,
     FormsModule,
     MatDialogModule,
+    MatSnackBarModule,
     ListaTareasComponent
   ],
   templateUrl: './app.html',
   styleUrls: ['./app.scss'],
 })
-export class App {
+export class App implements OnInit, OnDestroy {
   auth = inject(AuthService);
   hogarSvc = inject(HogarService);
   fbAuth = inject(Auth);
   dialog = inject(MatDialog);
+  tiendaSvc = inject(TiendaService);
+  snackBar = inject(MatSnackBar);
+
+  ultimoCanjeoOk = false;
+  mostrarConfetti = false;
+  confettiPieces = Array.from({ length: 18 }).map((_, i) => i);
+  puntosAnimados = 0;
+  private subs = new Subscription();
 
   user$ = this.auth.user$;
   usuarioCompleto$ = this.auth.usuarioCompleto$;
@@ -37,6 +51,25 @@ export class App {
   isAdmin$ = combineLatest([this.user$, this.hogar$]).pipe(
     map(([u, h]) => !!u && !!h && (u.uid === h.ownerUid))
   );
+  hogarActual: Hogar | null = null;
+
+  ngOnInit(): void {
+    const sub = this.usuarioCompleto$.subscribe(usuario => {
+      const nuevos = usuario?.puntos ?? 0;
+      this.puntosAnimados = nuevos;
+    });
+
+    const subHogar = this.hogar$.subscribe(hogar => {
+      this.hogarActual = hogar;
+    });
+
+    this.subs.add(sub);
+    this.subs.add(subHogar);
+  }
+
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+  }
 
   onImageError(e: Event) {
     (e.target as HTMLImageElement).src = 'assets/default-avatar.png';
@@ -98,6 +131,87 @@ export class App {
           )
           .catch(err => console.error('Error creando hogar:', err));
       });
+  }
+
+  abrirTienda(usuario: { puntos?: number } | null, hogar: Hogar | null) {
+    if (!usuario || !hogar) return;
+
+    const fbUser = this.fbAuth.currentUser;
+    const usuarioUid = fbUser?.uid;
+    const hogarId = hogar.id;
+    const esAdmin = hogar.ownerUid === usuarioUid;
+
+    if (!usuarioUid || !hogarId) {
+      console.error('[Tienda] Faltan ids para abrir la tienda', { usuarioUid, hogarId });
+      return;
+    }
+
+    this.tiendaSvc.getRecompensasPersonalizadas(hogarId)
+      .pipe(take(1))
+      .subscribe(personalizadas => {
+        const ref = this.dialog.open(DialogTiendaComponent, {
+          maxWidth: '1320px',
+          panelClass: 'tienda-dialog',
+          autoFocus: false,
+          data: <DialogTiendaData>{
+            puntosDisponibles: usuario.puntos ?? 0,
+            esZenPrime: false,
+            esDemo: false,
+            usuarioUid,
+            hogarId,
+            esAdmin,
+            recompensasPersonalizadas: personalizadas
+          }
+        });
+
+        ref.afterClosed()
+          .pipe(take(1))
+          .subscribe(result => {
+            if (!result || result.accion !== 'canjear') return;
+
+            const { recompensa, puntosGastados } = result;
+
+            this.tiendaSvc
+              .canjearRecompensa(usuarioUid, puntosGastados, recompensa)
+              .then(() => {
+                this.snackBar.open(
+                  `Has canjeado "${recompensa.titulo}" (-${puntosGastados} pts) 🎉`,
+                  'Genial',
+                  { duration: 4000 }
+                );
+                this.dispararAnimacionPuntos();
+              })
+              .catch(err => console.error('Error canjeando recompensa:', err));
+          });
+      });
+  }
+
+  abrirTiendaDemo() {
+    this.dialog.open(DialogTiendaComponent, {
+      maxWidth: '1120px',
+      panelClass: 'tienda-dialog',
+      autoFocus: false,
+      data: <DialogTiendaData>{
+        puntosDisponibles: 120,
+        esZenPrime: true,
+        esDemo: true
+      }
+    });
+  }
+
+  private dispararAnimacionPuntos() {
+    this.ultimoCanjeoOk = false;
+    this.mostrarConfetti = false;
+
+    setTimeout(() => {
+      this.ultimoCanjeoOk = true;
+      this.mostrarConfetti = true;
+
+      setTimeout(() => {
+        this.ultimoCanjeoOk = false;
+        this.mostrarConfetti = false;
+      }, 1900);
+    }, 0);
   }
 
 }

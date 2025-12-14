@@ -152,7 +152,7 @@ body {
   .moneda-animada {
     position: absolute;
     top: -40px;
-    left: 45%;
+    left: 50%;
     transform: translateX(-50%);
     width: 24px;
     opacity: 0;
@@ -176,6 +176,53 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   position: relative;
   z-index: 11;
+  min-width: 20px;
+}
+
+.tienda-trigger {
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #c8e6c9, #81d4fa);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.15s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, #a5d6a7, #4fc3f7);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.24);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(76, 175, 80, 0.9);
+    outline-offset: 2px;
+  }
+}
+
+.tienda-icon {
+  font-size: 1rem;
+  margin-right: 2px;
+  transition: transform 0.2s ease, text-shadow 0.2s ease;
+}
+
+.tienda-trigger:hover .tienda-icon {
+  transform: translateY(-1px) scale(1.08);
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
+}
+
+.tienda-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1f2933;
 }
 
 .positivo {
@@ -219,6 +266,83 @@ body {
     background-color: #f1f1f1;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   }
+}
+
+/* --------------------------
+   Confeti al canjear
+--------------------------- */
+
+.confetti {
+  position: absolute;
+  inset: -8px -12px 0 -12px;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 6px;
+  height: 10px;
+  border-radius: 2px;
+  animation: confettiPop 1.4s ease-out forwards;
+  opacity: 0;
+}
+
+.confetti-piece:nth-child(3n) {
+  background: #f97316;
+}
+
+.confetti-piece:nth-child(3n+1) {
+  background: #22c55e;
+}
+
+.confetti-piece:nth-child(3n+2) {
+  background: #3b82f6;
+}
+
+.confetti-piece:nth-child(1) {
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.confetti-piece:nth-child(2) {
+  left: 25%;
+  animation-delay: 0.03s;
+}
+
+.confetti-piece:nth-child(3) {
+  left: 40%;
+  animation-delay: 0.06s;
+}
+
+.confetti-piece:nth-child(4) {
+  left: 55%;
+  animation-delay: 0.02s;
+}
+
+.confetti-piece:nth-child(5) {
+  left: 70%;
+  animation-delay: 0.05s;
+}
+
+.confetti-piece:nth-child(6) {
+  left: 85%;
+  animation-delay: 0.08s;
+}
+
+.confetti-piece:nth-child(7) {
+  left: 15%;
+  animation-delay: 0.01s;
+}
+
+.confetti-piece:nth-child(8) {
+  left: 35%;
+  animation-delay: 0.07s;
+}
+
+.confetti-piece:nth-child(9) {
+  left: 60%;
+  animation-delay: 0.04s;
 }
 
 /* --------------------------
@@ -408,10 +532,72 @@ body {
   }
 }
 
+@keyframes bounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-2px) scale(1.05);
+  }
+}
+
+@keyframes puntosFlash {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  30% {
+    transform: scale(1.1);
+    box-shadow: 0 6px 14px rgba(76, 175, 80, 0.6);
+  }
+
+  60% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+
+@keyframes confettiPop {
+  0% {
+    transform: translateY(0) scale(0.7) rotate(0deg);
+    opacity: 0;
+  }
+
+  25% {
+    opacity: 1;
+  }
+
+  70% {
+    transform: translateY(-20px) scale(1) rotate(18deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(6px) scale(0.85) rotate(40deg);
+    opacity: 0;
+  }
+}
+
+.puntos-usuario.puntos-flash {
+  animation: puntosFlash 0.9s ease-out;
+}
+
+.tienda-con-puntos .puntos-usuario {
+  animation: bounce 2.5s ease-in-out infinite;
+}
+
 .admin-badge {
   animation: badgeGlow 4s ease-in-out infinite;
 }
-
 
 /* --------------------------
    Responsive
@@ -424,6 +610,10 @@ body {
   .admin-badge::after {
     animation: none;
     opacity: 0.15;
+  }
+
+  .tienda-con-puntos .puntos-usuario {
+    animation: none;
   }
 }
 
