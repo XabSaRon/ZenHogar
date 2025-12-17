@@ -73,4 +73,14 @@ export class TiendaService {
     await deleteDoc(ref);
   }
 
+
+  async actualizarRecompensaPersonalizada(
+    hogarId: string,
+    recompensaId: string,
+    changes: any
+  ): Promise<void> {
+    const ref = doc(this.fs, `hogares/${hogarId}/recompensasPersonalizadas/${recompensaId}`);
+    await updateDoc(ref, changes);
+  }
+
 }

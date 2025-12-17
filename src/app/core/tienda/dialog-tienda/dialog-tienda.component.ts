@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,6 +10,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { firstValueFrom, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -34,7 +35,8 @@ import { ConfirmDialogComponent } from '../../../shared/dialog-confirm/dialog-co
     MatCardModule,
     MatChipsModule,
     MatTooltipModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './dialog-tienda.component.html',
   styleUrls: ['./dialog-tienda.component.scss']
@@ -46,6 +48,8 @@ export class DialogTiendaComponent {
   readonly LIMITE_PERSONALIZADAS = 3;
   mostrarFormNueva = false;
   guardandoPersonalizada = false;
+  editandoId: string | null = null;
+  borrandoPersonalizadas = new Set<string>();
 
   puntosDisponibles: number;
   esZenPrime: boolean;
@@ -65,7 +69,8 @@ export class DialogTiendaComponent {
     private fb: FormBuilder,
     private tiendaSvc: TiendaService,
     private dialog: MatDialog,
-    private auth: AuthService
+    private auth: AuthService,
+    private cdr: ChangeDetectorRef,
   ) {
     this.puntosDisponibles = data?.puntosDisponibles ?? 0;
     this.esZenPrime = data?.esZenPrime ?? false;
@@ -98,11 +103,44 @@ export class DialogTiendaComponent {
     return this.personalizadas.length;
   }
 
-  editarPersonalizada(r: Recompensa) { console.log('Editar personalizada', r); }
+  editarPersonalizada(r: Recompensa) {
+    if (this.guardandoPersonalizada) return;
+    if (!this.esAdmin) return;
+
+    this.mostrarFormNueva = true;
+    this.editandoId = r.id ?? null;
+
+    this.formNueva.setValue({
+      titulo: r.titulo ?? '',
+      descripcion: r.descripcion ?? '',
+      coste: r.coste ?? 50,
+    });
+
+    this.formNueva.markAsPristine();
+    this.formNueva.markAsUntouched();
+  }
+
+  estaBorrando(r: any): boolean {
+    return !!r?.id && this.borrandoPersonalizadas.has(r.id);
+  }
+
+  private marcarBorrando(id: string) {
+    this.borrandoPersonalizadas = new Set([...this.borrandoPersonalizadas, id]);
+    this.cdr.detectChanges();
+  }
+
+  private desmarcarBorrando(id: string) {
+    const next = new Set(this.borrandoPersonalizadas);
+    next.delete(id);
+    this.borrandoPersonalizadas = next;
+    this.cdr.detectChanges();
+  }
 
   async borrarPersonalizada(r: any): Promise<void> {
-    if (!this.esAdmin) return;
     if (!r?.id) return;
+    if (this.borrandoPersonalizadas.has(r.id)) return;
+    if (this.guardandoPersonalizada) return;
+    if (!this.esAdmin) return;
 
     const creador = await this.nombreCreador(r.creadaPor);
 
@@ -112,7 +150,7 @@ export class DialogTiendaComponent {
       panelClass: 'confirm-dialog-panel',
       data: {
         title: 'Eliminar recompensa',
-        emphasis: `"${r.titulo}"`,
+        emphasis: r.titulo,
         message:
           `Creada por: ${creador}\n\n` +
           `Esta acción no se puede deshacer.`,
@@ -126,23 +164,49 @@ export class DialogTiendaComponent {
     const ok = await firstValueFrom(ref.afterClosed());
     if (!ok) return;
 
+    await new Promise<void>(resolve => setTimeout(resolve, 0));
+    this.marcarBorrando(r.id);
+    await new Promise<void>(res => requestAnimationFrame(() => res()));
+
+    const t0 = performance.now();
+    const minMs = 200;
+
     try {
-      // DEMO: solo memoria
       if (this.esDemo) {
+        const dt = performance.now() - t0;
+        if (dt < minMs) await new Promise<void>(res => setTimeout(res, minMs - dt));
+
         this.personalizadas = this.personalizadas.filter(x => x.id !== r.id);
+        this.cdr.detectChanges();
         this.snackBar.open('Recompensa eliminada (demo) 🗑️', 'Ok', { duration: 2500 });
         return;
       }
 
-      if (!this.hogarId) return;
+      if (!this.hogarId) {
+        const dt = performance.now() - t0;
+        if (dt < minMs) await new Promise<void>(res => setTimeout(res, minMs - dt));
+
+        this.snackBar.open('No se pudo completar la acción: falta el hogar.', 'Cerrar', { duration: 3000 });
+        return;
+      }
 
       await this.tiendaSvc.borrarRecompensaPersonalizada(this.hogarId, r.id);
 
+      const dt = performance.now() - t0;
+      if (dt < minMs) await new Promise<void>(res => setTimeout(res, minMs - dt));
+
       this.personalizadas = this.personalizadas.filter(x => x.id !== r.id);
+      this.cdr.detectChanges();
       this.snackBar.open('Recompensa eliminada 🗑️', 'Ok', { duration: 2500 });
     } catch (e) {
       console.error('Error eliminando recompensa', e);
+
+      const dt = performance.now() - t0;
+      if (dt < minMs) await new Promise<void>(res => setTimeout(res, minMs - dt));
+
       this.snackBar.open('No se pudo eliminar. Inténtalo de nuevo.', 'Cerrar', { duration: 3500 });
+    } finally {
+      this.desmarcarBorrando(r.id);
     }
   }
 
@@ -191,51 +255,83 @@ export class DialogTiendaComponent {
   }
 
   async guardarRecompensaPersonalizada(): Promise<void> {
-    if (this.formNueva.invalid || !this.usuarioId) return;
+    if (this.formNueva.invalid) return;
+    if (!this.usuarioId && !this.esDemo) return;
 
     this.guardandoPersonalizada = true;
 
     try {
       const { titulo, descripcion, coste } = this.formNueva.value;
 
-      const nueva: any = {
-        id: `demo-${Date.now()}`,
+      const payload = {
         titulo: (titulo as string).trim(),
         descripcion: (descripcion as string)?.trim() || '',
         coste: Number(coste),
+        actualizadaEn: Date.now()
+      };
+
+      // EDITAR
+      if (this.editandoId) {
+        const id = this.editandoId;
+
+        // Demo
+        if (this.esDemo) {
+          this.personalizadas = this.personalizadas.map(x =>
+            x.id === id ? { ...x, ...payload } : x
+          );
+          this.snackBar.open('Recompensa actualizada (demo) ✏️', 'Ok', { duration: 2500 });
+          this.cancelarForm();
+          return;
+        }
+
+        if (!this.hogarId) {
+          this.snackBar.open('No se pudo completar la acción: falta el hogar.', 'Cerrar', { duration: 3000 });
+          return;
+        }
+
+        await this.tiendaSvc.actualizarRecompensaPersonalizada(this.hogarId, id, payload);
+
+        this.personalizadas = this.personalizadas.map(x =>
+          x.id === id ? { ...x, ...payload } : x
+        );
+
+        this.snackBar.open('Recompensa actualizada ✏️', 'Ok', { duration: 2500 });
+        this.cancelarForm();
+        return;
+      }
+
+      const nueva: any = {
+        id: `rw-${crypto.randomUUID()}`,
+        titulo: payload.titulo,
+        descripcion: payload.descripcion,
+        coste: payload.coste,
         icono: 'emoji_events',
-        creadaPor: this.usuarioId,
+        creadaPor: this.usuarioId ?? 'demo',
         creadaEn: Date.now(),
         tipo: 'personalizada'
       };
 
-      // DEMO: no guardamos en Firestore, solo añadimos a memoria
       if (this.esDemo) {
         this.personalizadas = [...this.personalizadas, nueva];
-
         this.snackBar.open('Recompensa creada en modo demo ✨', 'Ok', { duration: 2500 });
         this.cancelarForm();
         return;
       }
 
-      // REAL: aquí sí exigimos hogarId y persistimos
-      if (!this.hogarId) return;
+      if (!this.hogarId) {
+        this.snackBar.open('No se pudo completar la acción: falta el hogar.', 'Cerrar', { duration: 3000 });
+        return;
+      }
 
       const creada = await this.tiendaSvc.crearRecompensaPersonalizada(this.hogarId, nueva);
-      const recompensaFinal = creada ?? nueva;
+      this.personalizadas = [...this.personalizadas, (creada ?? nueva)];
 
-      this.personalizadas = [...this.personalizadas, recompensaFinal];
-
-      this.snackBar.open('Recompensa personalizada creada 🎉', 'Ok', {
-        duration: 3000
-      });
-
+      this.snackBar.open('Recompensa personalizada creada 🎉', 'Ok', { duration: 3000 });
       this.cancelarForm();
+
     } catch (e) {
-      console.error('Error creando recompensa personalizada', e);
-      this.snackBar.open('No se pudo crear la recompensa. Inténtalo de nuevo.', 'Cerrar', {
-        duration: 3500
-      });
+      console.error('Error guardando recompensa', e);
+      this.snackBar.open('No se pudo guardar. Inténtalo de nuevo.', 'Cerrar', { duration: 3500 });
     } finally {
       this.guardandoPersonalizada = false;
     }
@@ -243,11 +339,20 @@ export class DialogTiendaComponent {
 
   toggleFormNueva(): void {
     if (!this.puedeCrearPersonalizada) return;
-    this.mostrarFormNueva = !this.mostrarFormNueva;
+
+    if (this.mostrarFormNueva) {
+      this.cancelarForm();
+      return;
+    }
+
+    this.editandoId = null;
+    this.mostrarFormNueva = true;
   }
 
   cancelarForm(): void {
     this.mostrarFormNueva = false;
+    this.editandoId = null;
+
     this.formNueva.reset({
       titulo: '',
       descripcion: '',
@@ -261,7 +366,8 @@ export class DialogTiendaComponent {
 
   private async nombreCreador(uid?: string): Promise<string> {
     if (!uid) return 'desconocido';
-    if (uid === this.usuarioId) return 'ti';
+    if (uid === 'demo') return 'demo';
+    if (this.usuarioId && uid === this.usuarioId) return 'ti';
 
     const cached = this.creadorCache.get(uid);
     if (cached) return cached;

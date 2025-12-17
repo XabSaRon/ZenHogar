@@ -11,14 +11,18 @@ import { MatBadge } from '@angular/material/badge';
 
 import { TareasService } from '../../services/tareas.service';
 import { PeticionAsignacionDTO } from '../../models/peticion-asignacion.model';
+import { NotificacionesService } from '../../../hogar/notificaciones/services/notificaciones.service';
+
 
 type NotiVM = {
   id: string;
-  tipo: 'rechazo' | 'aceptada';
-  tareaId: string;
+  tipo: 'rechazo' | 'aceptada' | 'canje';
+  tareaId?: string;
   hogarId: string;
   quien: string;
   fecha: Date | null;
+  recompensaTitulo?: string;
+  coste?: number;
 };
 
 @Component({
@@ -38,6 +42,14 @@ type NotiVM = {
 export class NotificadorComponent {
   private _uidSolicitante = '';
 
+  private _hogarId: string | null = null;
+
+  @Input()
+  set hogarId(v: string | null | undefined) {
+    this._hogarId = v ?? null;
+    this._buildStreams();
+  }
+
   @Input({ required: true })
   set uidSolicitante(v: string) {
     this._uidSolicitante = v ?? '';
@@ -52,7 +64,7 @@ export class NotificadorComponent {
 
   private nombreCache = new Map<string, Observable<string>>();
 
-  constructor(private tareasSrv: TareasService) { }
+  constructor(private tareasSrv: TareasService, private notiSrv: NotificacionesService) { }
 
   private toDate(v: any): Date | null {
     try {
@@ -100,8 +112,24 @@ export class NotificadorComponent {
         })))
     );
 
-    this.notifications$ = combineLatest([rechazadas$, aceptadas$]).pipe(
-      map(([r, a]) => [...r, ...a]
+    const canjes$ = this._hogarId
+      ? this.notiSrv.notificacionesPendientes$(this._hogarId, this._uidSolicitante).pipe(
+        map(list => (list ?? [])
+          .filter(n => n.tipo === 'canje')
+          .map<NotiVM>(n => ({
+            id: n.id!,
+            tipo: 'canje',
+            hogarId: n.hogarId,
+            quien: n.actorNombre ?? 'alguien',
+            fecha: this.toDate(n.createdAt),
+            recompensaTitulo: n.recompensaTitulo,
+            coste: n.coste,
+          })))
+      )
+      : of([] as NotiVM[]);
+
+    this.notifications$ = combineLatest([rechazadas$, aceptadas$, canjes$]).pipe(
+      map(([r, a, c]) => [...r, ...a, ...c]
         .sort((x, y) => (y.fecha?.getTime() ?? 0) - (x.fecha?.getTime() ?? 0))),
       shareReplay({ bufferSize: 1, refCount: true })
     );
@@ -125,11 +153,11 @@ export class NotificadorComponent {
   }
 
   async marcarUnaComoVista(n: NotiVM): Promise<void> {
-    if (n.tipo === 'rechazo') {
-      await this.tareasSrv.marcarRechazoNotificado(n.id);
-    } else {
-      await this.tareasSrv.marcarAceptacionNotificada(n.id);
-    }
+    if (n.tipo === 'rechazo') return this.tareasSrv.marcarRechazoNotificado(n.id);
+    if (n.tipo === 'aceptada') return this.tareasSrv.marcarAceptacionNotificada(n.id);
+
+    if (!this._hogarId) return;
+    return this.notiSrv.marcarComoVista(this._hogarId, n.id, this._uidSolicitante);
   }
 
   async marcarTodoComoVisto(): Promise<void> {

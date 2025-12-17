@@ -17,6 +17,7 @@ import { ListaTareasComponent } from './core/tareas/component/tareas/lista-tarea
 import { DialogTiendaComponent } from './core/tienda/dialog-tienda/dialog-tienda.component';
 import { DialogTiendaData } from './core/tienda/models/tienda.model';
 import { TiendaService } from './core/tienda/services/tienda.service';
+import { NotificacionesService } from './core/hogar/notificaciones/services/notificaciones.service';
 
 @Component({
   selector: 'app-root',
@@ -37,6 +38,7 @@ export class App implements OnInit, OnDestroy {
   fbAuth = inject(Auth);
   dialog = inject(MatDialog);
   tiendaSvc = inject(TiendaService);
+  notificacionesSvc = inject(NotificacionesService);
   snackBar = inject(MatSnackBar);
 
   ultimoCanjeoOk = false;
@@ -173,7 +175,19 @@ export class App implements OnInit, OnDestroy {
 
             this.tiendaSvc
               .canjearRecompensa(usuarioUid, puntosGastados, recompensa)
-              .then(() => {
+              .then(async () => {
+                try {
+                  await this.notificacionesSvc.crearNotificacionCanje(hogarId, {
+                    actorUid: usuarioUid,
+                    actorNombre: fbUser?.displayName ?? 'alguien',
+                    recompensaId: recompensa.id,
+                    recompensaTitulo: recompensa.titulo,
+                    coste: puntosGastados,
+                  });
+                } catch (e) {
+                  console.error('Error creando notificación de canje:', e);
+                }
+
                 this.snackBar.open(
                   `Has canjeado "${recompensa.titulo}" (-${puntosGastados} pts) 🎉`,
                   'Genial',
@@ -194,7 +208,9 @@ export class App implements OnInit, OnDestroy {
       data: <DialogTiendaData>{
         puntosDisponibles: 120,
         esZenPrime: true,
-        esDemo: true
+        esDemo: true,
+        esAdmin: true,
+        usuarioUid: 'demo'
       }
     });
   }

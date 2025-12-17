@@ -24,31 +24,55 @@
     @if (notifications.length > 0) {
     @for (n of notifications; track n.id) {
     <div class="np-item" (click)="$event.stopPropagation()" [class.-aceptada]="n.tipo === 'aceptada'"
-      [class.-rechazo]="n.tipo === 'rechazo'">
+      [class.-rechazo]="n.tipo === 'rechazo'" [class.-canje]="n.tipo === 'canje'">
 
       <div class="np-icon">
-        <mat-icon>{{ n.tipo === 'aceptada' ? 'check_circle' : 'block' }}</mat-icon>
+        <mat-icon>
+          @if (n.tipo === 'aceptada') { check_circle }
+          @else if (n.tipo === 'rechazo') { block }
+          @else { redeem }
+        </mat-icon>
       </div>
 
       <div class="np-content">
         <div class="np-top">
-          <span class="np-pill" [class.-ok]="n.tipo === 'aceptada'" [class.-error]="n.tipo === 'rechazo'">
-            {{ n.tipo === 'aceptada' ? 'Aceptada' : 'Rechazada' }}
+          <span class="np-pill" [class.-ok]="n.tipo === 'aceptada'" [class.-error]="n.tipo === 'rechazo'"
+            [class.-canje]="n.tipo === 'canje'">
+            @if (n.tipo === 'aceptada') { Aceptada }
+            @else if (n.tipo === 'rechazo') { Rechazada }
+            @else { Canje }
           </span>
+
           <span class="np-meta">
             por <strong>{{ n.quien }}</strong>
           </span>
+
           @if (n.fecha) {
           <span class="np-time">{{ n.fecha | date:'dd/MM HH:mm' }}</span>
           }
         </div>
 
+        <!-- CONTENIDO -->
+        @if (n.tipo !== 'canje'&& n.tareaId) {
         <div class="np-task" (click)="$event.stopPropagation()">
           <mat-icon fontIcon="assignment"></mat-icon>
           <span class="np-task-name">
             {{ getTareaNombre$(n.hogarId, n.tareaId) | async }}
           </span>
         </div>
+        } @else {
+        <div class="np-reward" (click)="$event.stopPropagation()">
+          <mat-icon fontIcon="redeem"></mat-icon>
+
+          <span class="np-reward-name">
+            Canjeó <strong>{{ n.recompensaTitulo || 'una recompensa' }}</strong>
+          </span>
+
+          @if (n.coste) {
+          <span class="np-cost">-{{ n.coste }} pts</span>
+          }
+        </div>
+        }
 
         <div class="np-actions" (click)="$event.stopPropagation()">
           <button mat-stroked-button color="primary" (click)="$event.stopPropagation(); marcarUnaComoVista(n)">
@@ -64,6 +88,7 @@
         Marcar todo como visto
       </button>
     </div>
+
     } @else {
     <div class="np-empty" (click)="$event.stopPropagation()">
       <mat-icon fontIcon="celebration"></mat-icon>

@@ -176,8 +176,12 @@
     </span>
   </div>
 
-  <app-notificador [uidSolicitante]="(usuario$ | async)?.uid || ''" (verTarea)="onVerTarea($event)">
+  @if (hogar$ | async; as h) {
+  @if (h?.id) {
+  <app-notificador [hogarId]="h.id" [uidSolicitante]="usuario.uid" (verTarea)="onVerTarea($event)">
   </app-notificador>
+  }
+  }
 
   <div class="selector-filtro">
     <button #triggerEstado class="btn-filtro" (click)="toggleFiltroEstado($event)">

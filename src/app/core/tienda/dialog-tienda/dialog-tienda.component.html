@@ -6,7 +6,7 @@
         <mat-icon>storefront</mat-icon>
         <div>
           <h2>Tienda ZenHogar</h2>
-          <p>Canjea tus puntos por recompensas épicas</p>
+          <p>Convierte tus puntos en premios reales</p>
         </div>
       </div>
 
@@ -93,8 +93,15 @@
           [matTooltipDisabled]="puedeCrearPersonalizada || esZenPrime">
           <button mat-stroked-button color="primary" type="button" (click)="toggleFormNueva()"
             [disabled]="!puedeCrearPersonalizada">
-            <mat-icon>{{ mostrarFormNueva ? 'close' : 'add' }}</mat-icon>
-            {{ mostrarFormNueva ? 'Cerrar nueva recompensa' : 'Nueva recompensa' }}
+            <mat-icon>
+              @if (mostrarFormNueva) { close } @else { add }
+            </mat-icon>
+
+            @if (mostrarFormNueva) {
+            @if (editandoId) { Cancelar edición } @else { Cerrar nueva recompensa }
+            } @else {
+            Nueva recompensa
+            }
           </button>
         </span>
       </div>
@@ -133,7 +140,13 @@
 
             <button mat-flat-button color="primary" type="submit"
               [disabled]="formNueva.invalid || guardandoPersonalizada">
-              {{ guardandoPersonalizada ? 'Guardando…' : 'Guardar recompensa' }}
+              @if (guardandoPersonalizada) {
+              Guardando…
+              } @else if (editandoId) {
+              Guardar cambios
+              } @else {
+              Guardar recompensa
+              }
             </button>
           </div>
         </form>
@@ -142,19 +155,19 @@
 
       @if (personalizadas.length > 0) {
       <div class="cards-grid cards-grid--personalizadas">
-        @for (r of personalizadas; track r) {
-        <mat-card class="reward-card reward-card--personalizada" [class.reward-card--disabled]="!puedeCanjear(r)">
+        @for (r of personalizadas; track r.id) {
+        <mat-card class="reward-card reward-card--personalizada" [class.reward-card--disabled]="!puedeCanjear(r)"
+          [class.reward-card--busy]="borrandoPersonalizadas.has(r.id)">
 
-          <!-- Acciones hover (solo personalizadas) -->
           @if (esAdmin) {
           <div class="card-actions-hover" (click)="$event.stopPropagation()">
             <button mat-icon-button type="button" class="action-btn" matTooltip="Editar recompensa"
-              (click)="editarPersonalizada(r)">
+              [disabled]="borrandoPersonalizadas.has(r.id)" (click)="editarPersonalizada(r)">
               <mat-icon>edit</mat-icon>
             </button>
 
             <button mat-icon-button type="button" class="action-btn action-btn--danger" matTooltip="Eliminar recompensa"
-              (click)="borrarPersonalizada(r)">
+              [disabled]="borrandoPersonalizadas.has(r.id)" (click)="borrarPersonalizada(r)">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
@@ -174,11 +187,27 @@
 
           <mat-card-actions align="end">
             <span [matTooltip]="tooltipCanjear(r)" [matTooltipDisabled]="puedeCanjear(r)">
-              <button mat-raised-button color="primary" (click)="canjear(r)" [disabled]="!puedeCanjear(r)">
+              <button mat-raised-button color="primary" (click)="canjear(r)"
+                [disabled]="!puedeCanjear(r) || borrandoPersonalizadas.has(r.id)">
                 Canjear
               </button>
             </span>
           </mat-card-actions>
+
+          @if (borrandoPersonalizadas.has(r.id)) {
+          <div class="reward-card__overlay" aria-live="polite">
+            <div class="reward-card__overlay-inner">
+              <mat-progress-spinner mode="indeterminate" diameter="22" strokeWidth="3">
+              </mat-progress-spinner>
+
+              <div class="reward-card__overlay-text">
+                <strong>Eliminando…</strong>
+                <span>Aplicando cambios</span>
+              </div>
+            </div>
+          </div>
+          }
+
         </mat-card>
         }
       </div>

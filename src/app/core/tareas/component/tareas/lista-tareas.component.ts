@@ -103,6 +103,7 @@ export class ListaTareasComponent implements OnInit {
   @ViewChild('dropdownEstado') dropdownEstado?: ElementRef<HTMLElement>;
   @ViewChild('triggerEstado') triggerEstado?: ElementRef<HTMLElement>;
 
+  hogar$ = this.hogar.getHogar$();
 
   usuario$: Observable<UsuarioConStats | null> = this.auth.user$.pipe(
     switchMap(usuario => {
