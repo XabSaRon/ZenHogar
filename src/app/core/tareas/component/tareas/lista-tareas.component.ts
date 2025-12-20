@@ -26,6 +26,7 @@ import { PeticionAsignacionDTO } from '../../models/peticion-asignacion.model';
 import { NotificadorComponent } from '../notificaciones/notificador.component';
 import { DialogCrearTareaComponent } from './crear-tarea/dialog-crear-tarea.component';
 import { DialogLimiteTareasComponent } from './limite-tarea/dialog-limite-tareas.component';
+import { ActividadHogarComponent } from '../../../hogar/notificaciones/component/actividad-hogar/actividad-hogar.component';
 
 import { User } from '@angular/fire/auth';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -48,7 +49,7 @@ interface UsuarioConStats extends User {
 @Component({
   selector: 'app-lista-tareas',
   standalone: true,
-  imports: [CommonModule, AsyncPipe, TarjetaTareaComponent, MatIconModule, MatButtonModule, NotificadorComponent],
+  imports: [CommonModule, AsyncPipe, TarjetaTareaComponent, MatIconModule, MatButtonModule, NotificadorComponent, ActividadHogarComponent],
   templateUrl: './lista-tareas.component.html',
   styleUrls: ['./lista-tareas.component.scss'],
 })

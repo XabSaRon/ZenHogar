@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, doc, addDoc, query, orderBy, limit, updateDoc } from '@angular/fire/firestore';
+import { Firestore, collection, doc, addDoc, query, orderBy, limit, updateDoc, where } from '@angular/fire/firestore';
 import { collectionData } from '@angular/fire/firestore';
 import { serverTimestamp } from 'firebase/firestore';
 import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
+import { getCountFromServer } from 'firebase/firestore';
+
 import { NotificacionDTO } from '../model/notificacion.model';
 
 @Injectable({ providedIn: 'root' })
@@ -55,4 +57,33 @@ export class NotificacionesService {
       [`vistoPor.${uid}`]: true
     });
   }
+
+  canjesRecientes$(hogarId: string, take: number = 6): Observable<NotificacionDTO[]> {
+    const colRef = collection(this.firestore, `hogares/${hogarId}/notificaciones`);
+    const q = query(
+      colRef,
+      where('tipo', '==', 'canje'),
+      orderBy('createdAt', 'desc'),
+      limit(take)
+    );
+    return collectionData(q, { idField: 'id' }) as any;
+  }
+
+  canjesCount$(hogarId: string): Observable<number> {
+    const colRef = collection(this.firestore, `hogares/${hogarId}/notificaciones`);
+    const q = query(colRef, where('tipo', '==', 'canje'));
+    return from(getCountFromServer(q)).pipe(map(snap => snap.data().count));
+  }
+
+  canjesHistorial$(hogarId: string, take: number = 50): Observable<NotificacionDTO[]> {
+    const colRef = collection(this.firestore, `hogares/${hogarId}/notificaciones`);
+    const q = query(
+      colRef,
+      where('tipo', '==', 'canje'),
+      orderBy('createdAt', 'desc'),
+      limit(take)
+    );
+    return collectionData(q, { idField: 'id' }) as any;
+  }
+
 }

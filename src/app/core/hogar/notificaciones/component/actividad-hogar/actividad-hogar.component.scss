@@ -1,0 +1,250 @@
+.actividad-pill {
+  margin: 0;
+  padding: 8px 52px 8px 10px;
+  position: relative;
+  padding-right: 52px;
+
+  width: 410px;
+  max-width: 100%;
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border-radius: 999px;
+
+  background: linear-gradient(135deg,
+      rgba(210, 255, 233, 0.35),
+      rgba(214, 232, 255, 0.22));
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(14px);
+
+  overflow: hidden;
+  white-space: nowrap;
+
+  box-sizing: border-box;
+  transition: width 240ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.actividad-pill:not(.disabled) {
+  opacity: 1;
+}
+
+.actividad-pill:not(.disabled):hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.70);
+}
+
+.actividad-pill.expanded {
+  width: calc(100% - 16px);
+  margin-inline: 8px;
+}
+
+.actividad-pill.expanded .chevron {
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.actividad-pill.is-empty {
+  background: rgba(255, 255, 255, .32);
+  border-color: rgba(255, 255, 255, .55);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .04), inset 0 1px 0 rgba(255, 255, 255, .55);
+  width: 360px;
+  opacity: .85;
+}
+
+.actividad-pill.is-empty .pill-chips {
+  border-left-color: rgba(255, 255, 255, .28);
+  transform: translateX(-2px);
+}
+
+.actividad-pill.is-empty .chevron {
+  opacity: .35;
+  pointer-events: none;
+}
+
+.pill-main {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.pill-label {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.pill-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transform: translateX(-6px);
+  transition: opacity 160ms ease, transform 160ms ease;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  padding-left: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.chips-extra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  max-width: 0;
+  opacity: 0;
+  transform: translateX(-6px);
+  overflow: hidden;
+  transition: max-width 220ms ease, opacity 160ms ease, transform 160ms ease;
+}
+
+.actividad-pill.expanded .chips-extra {
+  max-width: 200px;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.actividad-pill.expanded .pill-chips {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.pill-empty {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: .45;
+  letter-spacing: .2px;
+}
+
+.pill-empty-hint {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: .25;
+  margin-left: 6px;
+}
+
+.chevron {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.55);
+
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+
+.chevron.is-disabled {
+  opacity: .35;
+  cursor: default;
+  pointer-events: none;
+}
+
+.chev-ico {
+  transition: transform 200ms ease, opacity 160ms ease;
+  transform: translateZ(0);
+}
+
+.chip {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+
+  font-size: 16px;
+  transition: transform 0.15s ease, background 0.15s ease;
+  flex: 0 0 auto;
+}
+
+button.chip {
+  padding: 0;
+  cursor: pointer;
+}
+
+.chip:hover {
+  transform: scale(1.08);
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.chip mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+}
+
+.chip-more {
+  border-style: dashed;
+  opacity: .95;
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.7);
+  position: relative;
+  overflow: hidden;
+
+  .more-count,
+  .more-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 160ms ease, transform 160ms ease;
+    width: 100%;
+  }
+
+  .more-ico {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: translateY(2px);
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin: auto;
+  }
+
+  &:hover {
+    .more-count {
+      opacity: 0;
+      transform: translateY(-2px);
+    }
+
+    .more-ico {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+
+.actividad-pill.disabled {
+  opacity: 0.6;
+}
+
+.actividad-pill.disabled .pill-main,
+.actividad-pill.disabled .chevron {
+  cursor: default;
+}

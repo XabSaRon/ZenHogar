@@ -38,3 +38,5 @@ export const RECOMPENSAS_PREDEFINIDAS_MOCK: Recompensa[] = [
   }
 ];
 
+export const ICONO_PREDEFINIDA_POR_ID: Record<string, string> =
+  Object.fromEntries(RECOMPENSAS_PREDEFINIDAS_MOCK.map(r => [r.id, r.icono]));

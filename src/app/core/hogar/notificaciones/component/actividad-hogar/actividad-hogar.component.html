@@ -1,0 +1,60 @@
+@if (canjes$ | async; as canjes) {
+@let total = (totalCanjes$ | async) ?? 0;
+
+<section class="actividad-pill" [class.expanded]="expanded && hasOverflow" [class.disabled]="total === 0"
+  [class.is-empty]="total === 0">
+
+  <button class="pill-main" type="button" [disabled]="total === 0"
+    (click)="hasOverflow ? toggleExpanded($event) : null">
+    <span class="pill-label">🎁 Recompensas recientes</span>
+  </button>
+
+  <div class="pill-chips">
+    @if (total === 0) {
+    <span class="pill-empty">Sin recompensas</span>
+    } @else {
+
+    @for (c of canjes | slice:0:3; track c.id) {
+    <div class="chip" [matTooltip]="tooltip(c)">
+      @if (getIconoMaterial(c.recompensaId); as icono) {
+      <mat-icon aria-hidden="true">{{ icono }}</mat-icon>
+      } @else { 🎁 }
+    </div>
+    }
+
+    @if (expanded && hasOverflow) {
+    <div class="chips-extra">
+      @for (c of canjes | slice:3:5; track c.id) {
+      <div class="chip" [matTooltip]="tooltip(c)">
+        @if (getIconoMaterial(c.recompensaId); as icono) {
+        <mat-icon aria-hidden="true">{{ icono }}</mat-icon>
+        } @else { 🎁 }
+      </div>
+      }
+    </div>
+    }
+
+    @if (restantes > 0) {
+    <button class="chip chip-more" type="button" (click)="$event.stopPropagation(); abrirHistorial()"
+      aria-label="Abrir historial de recompensas">
+      <span class="more-count">
+        {{ restantes > 99 ? '99+' : ('+' + restantes) }}
+      </span>
+
+      <mat-icon class="more-ico" aria-hidden="true">history</mat-icon>
+    </button>
+    }
+    }
+  </div>
+
+  <button class="chevron" [class.is-disabled]="!hasOverflow" [attr.aria-disabled]="!hasOverflow"
+    (click)="hasOverflow ? toggleExpanded($event) : null">
+
+    <mat-icon class="chev-ico" aria-hidden="true">
+      {{ (expanded && hasOverflow) ? 'chevron_left' : 'chevron_right' }}
+    </mat-icon>
+
+  </button>
+
+</section>
+}

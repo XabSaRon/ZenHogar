@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { DatePipe, CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -32,6 +32,7 @@ export class HistorialDialogComponent {
   readonly stars = [1, 2, 3, 4, 5];
 
   constructor(
+    private dialogRef: MatDialogRef<HistorialDialogComponent>,
     @Inject(MAT_DIALOG_DATA)
     public data: UltimaAsignacionData
   ) { }
@@ -62,6 +63,10 @@ export class HistorialDialogComponent {
 
   onImageError(event: Event) {
     (event.target as HTMLImageElement).src = 'assets/default-avatar.png';
+  }
+
+  cerrar(): void {
+    this.dialogRef.close();
   }
 }
 

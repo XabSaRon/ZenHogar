@@ -1,0 +1,96 @@
+<h2 mat-dialog-title class="hist__title">
+  <span class="hist__title-left">
+    <span class="hist__icon">
+      <mat-icon>history</mat-icon>
+    </span>
+    <span class="hist__title-text">Histórico de recompensas</span>
+  </span>
+
+  <button mat-icon-button class="hist__close" type="button" (click)="close()" aria-label="Cerrar">
+    <mat-icon>close</mat-icon>
+  </button>
+</h2>
+
+<mat-dialog-content class="hist__content">
+  @if (vm$ | async; as vm) {
+
+  @if (vm.loading) {
+  <div class="hist__loading">
+    <mat-spinner diameter="28"></mat-spinner>
+    <span>Cargando…</span>
+  </div>
+
+  } @else if (vm.list.length === 0) {
+  <div class="hist__empty">
+    <mat-icon>redeem</mat-icon>
+    <p>No hay canjes todavía.</p>
+  </div>
+
+  } @else {
+
+  <div class="hist__list">
+
+    @for (g of vm.groups; track g.key) {
+
+    <div class="hist__day">
+      <span class="hist__day-text">{{ g.label }}</span>
+      <span class="hist__day-line"></span>
+    </div>
+
+    @for (c of g.items; track c.id; let i = $index) {
+    <div class="hist__row" [class.is-other]="!isMine(c)" style="--i: {{ i }};">
+
+      <div class="hist__left">
+        <div class="hist__chip">
+          @if (icono(c.recompensaId); as ic) {
+          <mat-icon aria-hidden="true">{{ ic }}</mat-icon>
+          } @else { 🎁 }
+        </div>
+
+        <div class="hist__meta">
+          <div class="hist__line1">
+            <span class="hist__actor" [class.is-me]="isMine(c)">
+              {{ c.actorNombre || 'Alguien' }}
+
+              @if (!isMine(c)) {
+              <span class="hist__badge" aria-hidden="true">
+                <mat-icon>person</mat-icon>
+              </span>
+              }
+            </span>
+
+            <span class="hist__dot">•</span>
+            <span class="hist__reward">{{ c.recompensaTitulo || 'Recompensa' }}</span>
+          </div>
+
+          <div class="hist__line2">
+            @if (toDate(c.createdAt); as d) {
+            <span class="hist__date">{{ d | date:'dd/MM/yyyy HH:mm' }}</span>
+            } @else {
+            <span class="hist__date">—</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="hist__pts">
+        <span class="hist__pts-pill">−{{ c.coste ?? 0 }} pts</span>
+      </div>
+
+    </div>
+    }
+
+    }
+
+  </div>
+
+  }
+
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="hist__actions">
+  <button mat-stroked-button type="button" class="btn-zen-close" (click)="close()">
+    Cerrar
+  </button>
+</mat-dialog-actions>

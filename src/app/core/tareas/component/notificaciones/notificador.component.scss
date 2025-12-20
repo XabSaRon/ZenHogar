@@ -1,5 +1,40 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+}
+
 .noti-icon {
-  margin-left: .75rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+
+  background: linear-gradient(135deg,
+      rgba(255, 255, 255, .70),
+      rgba(255, 255, 255, .45));
+  border: 1px solid rgba(0, 0, 0, .06);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .06);
+  backdrop-filter: blur(10px);
+
+  display: grid;
+  place-items: center;
+
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.noti-icon:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, .08);
+}
+
+.noti-icon mat-icon {
+  opacity: .85;
+}
+
+:host ::ng-deep .mat-badge-content {
+  transform: translate(6px, -6px);
+  font-weight: 800;
+  border: 2px solid rgba(255, 255, 255, .9);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, .14);
 }
 
 ::ng-deep .mat-mdc-menu-panel.noti-panel {
@@ -29,10 +64,21 @@
   overflow: hidden;
   min-width: 340px;
   max-width: 92vw;
+  max-height: min(72vh, 560px);
+  display: flex;
+  flex-direction: column;
 
   .mat-mdc-menu-content {
     padding: 0;
   }
+}
+
+::ng-deep .mat-mdc-menu-panel.noti-panel .mat-mdc-menu-content {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
 ::ng-deep .noti-panel .np-header {
@@ -65,7 +111,23 @@
 }
 
 ::ng-deep .noti-panel .np-body {
-  padding: 6px 6px 10px;
+  padding: 6px 6px 0px;
+  overflow: auto;
+  min-height: 0;
+  position: relative;
+}
+
+::ng-deep .noti-panel .np-body::after {
+  content: '';
+  position: sticky;
+  bottom: 0;
+  display: block;
+  height: 14px;
+  pointer-events: none;
+
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0.85));
 }
 
 ::ng-deep .noti-panel .np-item {
@@ -202,16 +264,31 @@
   }
 }
 
+::ng-deep .noti-panel .np-item:last-of-type {
+  margin-bottom: 10px;
+}
+
 ::ng-deep .noti-panel .np-footer {
-  padding: 6px 12px 2px;
+  padding: 12px 12px 14px;
   display: flex;
   justify-content: center;
+
+  background: #fff;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
 
   .mdc-button--outlined {
     --mdc-typography-button-font-size: 12px;
     height: 30px;
     border-radius: 10px;
   }
+}
+
+::ng-deep .noti-panel .np-footer .mdc-button--outlined {
+  --mdc-typography-button-font-size: 12px;
+  height: 32px;
+  border-radius: 999px;
+  min-width: 220px;
+  max-width: 92%;
 }
 
 ::ng-deep .noti-panel .np-empty {
