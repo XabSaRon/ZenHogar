@@ -533,7 +533,7 @@ export class ListaTareasComponent implements OnInit {
         width: '520px',
         maxWidth: '92vw',
         panelClass: 'crear-tarea-dialog',
-        scrollStrategy: this.overlay.scrollStrategies.noop(),
+        scrollStrategy: this.overlay.scrollStrategies.block(),
         disableClose: true,
         data: { restantes }
       });

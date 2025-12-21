@@ -239,7 +239,6 @@ button.chip {
   }
 }
 
-
 .actividad-pill.disabled {
   opacity: 0.6;
 }
@@ -247,4 +246,76 @@ button.chip {
 .actividad-pill.disabled .pill-main,
 .actividad-pill.disabled .chevron {
   cursor: default;
+}
+
+
+@media (orientation: landscape) and (min-width: 900px) and (max-width: 1180px) {
+  .actividad-pill {
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .actividad-pill.expanded {
+    width: 100%;
+    margin-inline: 0;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .actividad-pill {
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .actividad-pill.expanded {
+    width: 100%;
+    margin-inline: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .actividad-pill {
+    width: 100%;
+    padding: 7px 10px;
+    gap: 8px;
+  }
+
+  .actividad-pill.expanded {
+    width: 100%;
+    margin-inline: 0;
+  }
+
+  .chevron {
+    display: none !important;
+  }
+
+  .pill-label {
+    font-size: 12px;
+  }
+
+  .pill-chips {
+    gap: 6px;
+    padding-left: 8px;
+    transform: none;
+  }
+
+  .chip {
+    width: 30px;
+    height: 30px;
+  }
+
+  .chip mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+  }
+
+  .pill-chips>.chip:not(.chip-more):nth-of-type(n + 3) {
+    display: none;
+  }
+
+  .chips-extra {
+    display: none !important;
+  }
 }

@@ -260,7 +260,7 @@ export class TarjetaTareaComponent implements OnChanges {
       width,
       height,
       panelClass: 'dialog-historial',
-      scrollStrategy: this.overlay.scrollStrategies.noop()
+      scrollStrategy: this.overlay.scrollStrategies.block()
     });
   }
 
@@ -294,7 +294,8 @@ export class TarjetaTareaComponent implements OnChanges {
       maxHeight: '72dvh',
       panelClass: 'dialog-peticion-asignacion',
       data: { peticion: paraMi, tareaNombre: this.tarea?.nombre || 'Tarea' },
-      scrollStrategy: this.overlay.scrollStrategies.block()
+      scrollStrategy: this.overlay.scrollStrategies.block(),
+      disableClose: true
     });
 
     ref.afterClosed().subscribe(() => this.abriendoDialog = false);

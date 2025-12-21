@@ -102,6 +102,10 @@ export class DialogPeticionAsignacionComponent implements AfterViewInit {
     (ev.target as HTMLImageElement).src = 'assets/default-avatar.png';
   }
 
+  cerrar() {
+    this.dialogRef.close(null);
+  }
+
   get tareaEmoji(): string {
     const n = (this.tareaNombre || '').toLowerCase();
     if (n.includes('regar') || n.includes('plant')) return '🌱';

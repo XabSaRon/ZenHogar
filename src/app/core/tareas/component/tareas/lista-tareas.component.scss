@@ -1,3 +1,6 @@
+/* ===========================
+   Layout tareas
+=========================== */
 .contenedor-tareas {
   display: flex;
   justify-content: center;
@@ -11,46 +14,6 @@
   padding: 2.5rem 1.5rem;
   justify-items: center;
   align-items: start;
-}
-
-@media (max-width: 1920px) {
-  .grid-tareas {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4rem;
-    padding: 2rem 1rem;
-  }
-}
-
-@media (max-width: 1600px) {
-  .grid-tareas {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 3rem;
-    padding: 1.8rem 1rem;
-  }
-}
-
-@media (max-width: 1024px) {
-  .grid-tareas {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2.5rem;
-    padding: 1.5rem .8rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .grid-tareas {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem 1.5rem;
-    padding: 1.2rem .6rem;
-  }
-}
-
-@media (max-width: 640px) {
-  .grid-tareas {
-    grid-template-columns: 1fr;
-    gap: 1.5rem 0;
-    padding: 1rem .5rem;
-  }
 }
 
 .aviso-valoracion {
@@ -311,17 +274,6 @@
       font-weight: 700;
     }
   }
-
-}
-
-@media (min-width: 1200px) {
-  .fila-header {
-    margin-bottom: 28px;
-  }
-
-  .aviso-valoracion {
-    margin-bottom: 1.75rem;
-  }
 }
 
 /* --------------------------
@@ -554,49 +506,9 @@
   }
 }
 
-@media (min-width: 1440px) {
-  .empty-state {
-    margin-top: 3rem;
-  }
-
-  .empty-state .empty-hero {
-    padding-block: 1.8rem;
-  }
-}
-
-@media (max-width: 600px) {
-  .empty-state {
-    margin-top: 3.5rem;
-  }
-}
-
-@media (max-width: 500px) {
-  .empty-state {
-    margin: 3rem auto 2rem;
-
-    .empty-hero {
-      padding: 1.5rem 1rem;
-    }
-
-    .quick-start {
-      padding: 1rem;
-
-      ol {
-        font-size: .9rem;
-      }
-    }
-
-    .soft-preview .preview-card {
-      max-width: 100%;
-      height: 140px;
-    }
-  }
-}
-
 /* --------------------------
    Boton Crear tarea
 --------------------------- */
-
 .btn-add-wrapper {
   position: fixed;
   bottom: 1.8rem;
@@ -687,12 +599,6 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .btn-add-tarea {
-    transition: none !important;
-  }
-}
-
 /* --------------------------
    Animaciones
 --------------------------- */
@@ -722,5 +628,328 @@
 
   100% {
     transform: translateX(100%);
+  }
+}
+
+/* ===========================
+  Responsive
+=========================== */
+
+@media (min-width: 1200px) {
+  .fila-header {
+    margin-bottom: 28px;
+  }
+
+  .aviso-valoracion {
+    margin-bottom: 1.75rem;
+  }
+}
+
+@media (max-width: 1920px) {
+  .grid-tareas {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4rem;
+    padding: 2rem 1rem;
+  }
+}
+
+@media (max-width: 1600px) {
+  .grid-tareas {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+    padding: 1.8rem 1rem;
+  }
+}
+
+@media (min-width: 1440px) {
+  .empty-state {
+    margin-top: 3rem;
+  }
+
+  .empty-state .empty-hero {
+    padding-block: 1.8rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .fila-header {
+    grid-template-columns: 1fr;
+    row-gap: 12px;
+    column-gap: 0;
+    padding: 0 1rem;
+  }
+
+  .fila-left,
+  .fila-mid,
+  .fila-right {
+    width: 100%;
+    max-width: none;
+  }
+
+  .fila-mid {
+    justify-content: flex-start;
+    padding: 0;
+  }
+
+  .grid-tareas {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
+    padding: 1.5rem .8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-tareas {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem 1.5rem;
+    padding: 1.2rem .6rem;
+  }
+}
+
+@media (max-width: 640px) {
+  :host ::ng-deep .actividad-pill {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .fila-header {
+    margin: 14px 0 18px;
+  }
+
+  .fila-left .saludo-card {
+    width: 100%;
+    max-width: none;
+    flex-wrap: wrap;
+    white-space: normal;
+    overflow: visible;
+  }
+
+  .fila-left .texto-bienvenida {
+    max-width: 100%;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: initial;
+    display: inline;
+  }
+
+  .fila-right {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto auto;
+    gap: 10px;
+    align-items: start;
+  }
+
+  .fila-right app-notificador {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+    margin: 0;
+  }
+
+  .fila-right .selector-filtro:nth-of-type(1) {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+  }
+
+  .fila-right .selector-filtro:nth-of-type(2) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+  }
+
+  .fila-right .selector-filtro:nth-of-type(n + 3) {
+    grid-column: 1 / -1;
+  }
+
+  .selector-filtro {
+    width: 100%;
+  }
+
+  .selector-filtro .btn-filtro {
+    width: 100%;
+    min-width: 0;
+    justify-content: space-between;
+    padding: .65rem .9rem;
+    font-size: .95rem;
+  }
+
+  .selector-filtro .dropdown-filtro {
+    left: 0;
+    right: 0;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .fila-mid {
+    justify-content: flex-start;
+    min-width: 0;
+  }
+
+  .actividad-inline .actividad-pill {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding: 8px 46px 8px 10px;
+    gap: 8px;
+
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .actividad-inline .actividad-pill>* {
+    min-width: 0;
+  }
+
+  .actividad-inline .actividad-pill::-webkit-scrollbar {
+    display: none;
+  }
+
+  .grid-tareas {
+    grid-template-columns: 1fr;
+    gap: 1.5rem 0;
+    padding: 1rem .5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .empty-state {
+    margin-top: 3.5rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .empty-state {
+    margin: 3rem auto 2rem;
+
+    .empty-hero {
+      padding: 1.5rem 1rem;
+    }
+
+    .quick-start {
+      padding: 1rem;
+
+      ol {
+        font-size: .9rem;
+      }
+    }
+
+    .soft-preview .preview-card {
+      max-width: 100%;
+      height: 140px;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-add-tarea {
+    transition: none !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 900px) {
+  .contenedor-tareas {
+    width: 100%;
+    padding: 0 18px;
+    box-sizing: border-box;
+  }
+
+  .grid-tareas {
+    width: 100%;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 18px 0;
+    justify-items: center;
+    align-items: start;
+  }
+
+  :host ::ng-deep .tarjeta-tarea {
+    width: min(520px, 100%);
+    max-width: none;
+    height: auto;
+  }
+}
+
+@media (orientation: landscape) and (min-width: 900px) and (max-width: 1180px) {
+  .grid-tareas {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.2rem;
+    padding: 1.4rem 1rem;
+  }
+}
+
+@media (orientation: landscape) and (min-width: 1181px) and (max-width: 1366px) {
+  .grid-tareas {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.2rem;
+    padding: 1.4rem 1rem;
+  }
+}
+
+/* ===========================
+   Tablets
+=========================== */
+@media (min-width: 641px) and (max-width: 1366px) {
+
+  .fila-header {
+    grid-template-columns: 1fr;
+    row-gap: 12px;
+    column-gap: 0;
+    padding: 0 1rem;
+    margin: 16px 0 20px;
+  }
+
+  .fila-left,
+  .fila-mid,
+  .fila-right {
+    width: 100%;
+    max-width: none;
+  }
+
+  .fila-mid {
+    justify-content: flex-start;
+    padding: 0;
+  }
+
+  .fila-right {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .fila-right app-notificador {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+    margin: 0;
+  }
+
+  .fila-right .selector-filtro:nth-of-type(1) {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+  }
+
+  .fila-right .selector-filtro:nth-of-type(2) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+  }
+
+  .selector-filtro .btn-filtro {
+    min-width: 0;
+    padding: .62rem .9rem;
+    font-size: .98rem;
+  }
+
+  :host ::ng-deep .actividad-pill {
+    width: 100% !important;
+    max-width: 560px !important;
   }
 }

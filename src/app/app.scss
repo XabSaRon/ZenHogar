@@ -143,6 +143,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
+  min-width: 0;
 }
 
 .puntos-usuario-wrapper {
@@ -261,6 +262,13 @@ body {
   cursor: pointer;
   transition: background-color 0.2s, box-shadow 0.2s;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  min-width: 0;
+  max-width: 100%;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   &:hover {
     background-color: #f1f1f1;
@@ -617,14 +625,46 @@ body {
   }
 }
 
-@media (max-width: 1024px) {
-  .header {
-    width: min(1100px, 96%);
-    padding: 0.9rem 1.2rem;
+@media (max-width: 1023px) {
+
+  .header-left {
+    display: none;
   }
 
-  .brand {
-    font-size: 1.6rem;
+  .header {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "center"
+      "right";
+    gap: 12px;
+  }
+
+  .header-center {
+    grid-area: center;
+    justify-self: center;
+    justify-content: center;
+  }
+
+  .header-right {
+    grid-area: right;
+    justify-self: stretch;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .user-info {
+    width: 100%;
+    min-width: 0;
+    justify-content: flex-end;
+  }
+
+  .btn-google {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .tienda-text {
+    display: none;
   }
 }
 
@@ -645,6 +685,12 @@ body {
     justify-content: center;
     flex-wrap: wrap;
     gap: .6rem;
+    position: static;
+    transform: none;
+  }
+
+  .header-left {
+    display: none;
   }
 
   .hogar-titulo,
@@ -675,5 +721,31 @@ body {
   .footer {
     font-size: 0.85rem;
     padding: 1rem;
+  }
+}
+
+/* Móvil en landscape */
+@media (max-width: 935px) and (orientation: landscape) {
+  .header-right {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .user-info {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.6rem 0.8rem;
+  }
+
+  .btn-google {
+    flex: 0 1 auto;
+    width: auto;
+    max-width: min(520px, 92vw);
+    text-align: center;
+  }
+
+  .tienda-trigger {
+    flex: 0 0 auto;
   }
 }
