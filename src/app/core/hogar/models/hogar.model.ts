@@ -10,6 +10,7 @@ export interface Hogar {
   provinciaCode: string;
   ownerUid: string;
   miembros: string[];
+  adminUid: string;
   createdAt: Timestamp | null;
   tipoHogar?: TipoHogar;
 }

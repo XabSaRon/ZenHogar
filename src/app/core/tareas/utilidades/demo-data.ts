@@ -35,6 +35,9 @@ export function generarTareasDemo(): TareaDTO[] {
       valoraciones: [],
       valoracionesPendientes: [],
       bloqueadaHastaValoracion: false,
+      creadorUid: 'demo',
+      creadorNombre: 'ZenHogar',
+      creadorFotoURL: null,
     };
 
     if (i === 0) {

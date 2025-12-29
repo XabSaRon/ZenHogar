@@ -1,4 +1,3 @@
-import { serverTimestamp } from '@angular/fire/firestore';
 import { Tarea } from '../models/tarea.model';
 
 export const TAREAS_POR_DEFECTO: Omit<Tarea, 'id'>[] = [
@@ -8,7 +7,10 @@ export const TAREAS_POR_DEFECTO: Omit<Tarea, 'id'>[] = [
     completada: false,
     asignadA: '',
     hogarId: '',
-    peso: 2
+    peso: 2,
+    creadorUid: 'system',
+    creadorNombre: 'ZenHogar',
+    creadorFotoURL: null,
   },
   {
     nombre: 'Fregar',
@@ -16,7 +18,10 @@ export const TAREAS_POR_DEFECTO: Omit<Tarea, 'id'>[] = [
     completada: false,
     asignadA: '',
     hogarId: '',
-    peso: 3
+    peso: 3,
+    creadorUid: 'system',
+    creadorNombre: 'ZenHogar',
+    creadorFotoURL: null,
   },
   {
     nombre: 'Cocinar comida',
@@ -24,7 +29,10 @@ export const TAREAS_POR_DEFECTO: Omit<Tarea, 'id'>[] = [
     completada: false,
     asignadA: '',
     hogarId: '',
-    peso: 3
+    peso: 3,
+    creadorUid: 'system',
+    creadorNombre: 'ZenHogar',
+    creadorFotoURL: null,
   },
   {
     nombre: 'Lavar la ropa',
@@ -32,7 +40,10 @@ export const TAREAS_POR_DEFECTO: Omit<Tarea, 'id'>[] = [
     completada: false,
     asignadA: '',
     hogarId: '',
-    peso: 2
+    peso: 2,
+    creadorUid: 'system',
+    creadorNombre: 'ZenHogar',
+    creadorFotoURL: null,
   },
   {
     nombre: 'Limpiar baño',
@@ -40,7 +51,10 @@ export const TAREAS_POR_DEFECTO: Omit<Tarea, 'id'>[] = [
     completada: false,
     asignadA: '',
     hogarId: '',
-    peso: 2
+    peso: 2,
+    creadorUid: 'system',
+    creadorNombre: 'ZenHogar',
+    creadorFotoURL: null,
   },
   {
     nombre: 'Sacar basura',
@@ -48,7 +62,10 @@ export const TAREAS_POR_DEFECTO: Omit<Tarea, 'id'>[] = [
     completada: false,
     asignadA: '',
     hogarId: '',
-    peso: 1
+    peso: 1,
+    creadorUid: 'system',
+    creadorNombre: 'ZenHogar',
+    creadorFotoURL: null,
   },
   {
     nombre: 'Limpiar polvo',
@@ -56,7 +73,10 @@ export const TAREAS_POR_DEFECTO: Omit<Tarea, 'id'>[] = [
     completada: false,
     asignadA: '',
     hogarId: '',
-    peso: 2
+    peso: 2,
+    creadorUid: 'system',
+    creadorNombre: 'ZenHogar',
+    creadorFotoURL: null,
   },
   {
     nombre: 'Hacer la cama',
@@ -64,7 +84,10 @@ export const TAREAS_POR_DEFECTO: Omit<Tarea, 'id'>[] = [
     completada: false,
     asignadA: '',
     hogarId: '',
-    peso: 1
+    peso: 1,
+    creadorUid: 'system',
+    creadorNombre: 'ZenHogar',
+    creadorFotoURL: null,
   },
   {
     nombre: 'Hacer la compra',
@@ -72,7 +95,10 @@ export const TAREAS_POR_DEFECTO: Omit<Tarea, 'id'>[] = [
     completada: false,
     asignadA: '',
     hogarId: '',
-    peso: 1
+    peso: 1,
+    creadorUid: 'system',
+    creadorNombre: 'ZenHogar',
+    creadorFotoURL: null,
   },
   {
     nombre: 'Regar',
@@ -80,7 +106,10 @@ export const TAREAS_POR_DEFECTO: Omit<Tarea, 'id'>[] = [
     completada: false,
     asignadA: '',
     hogarId: '',
-    peso: 2
+    peso: 2,
+    creadorUid: 'system',
+    creadorNombre: 'ZenHogar',
+    creadorFotoURL: null,
   }
 ];
 

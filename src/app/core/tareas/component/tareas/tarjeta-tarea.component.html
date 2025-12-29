@@ -6,16 +6,32 @@
     <div class="emoji-icon">{{ emoji }}</div>
     <h3 class="titulo-tarea">{{ tarea.nombre }}</h3>
 
-    @if ((peticionesPendientes$ | async)?.length) {
-    <span class="peticion-campana-wrapper">
+    <div class="acciones-top">
+      @if (esPersonalizada && puedeGestionarTarea) {
+      <span class="tooltip-wrapper" [matTooltip]="tooltipEditar" matTooltipPosition="above"
+        [matTooltipDisabled]="puedeEditar">
+
+        <button class="edit-btn" mat-icon-button (click)="editarTarea($event)" [disabled]="!puedeEditar"
+          aria-label="Editar tarea">
+          <mat-icon fontIcon="edit"></mat-icon>
+        </button>
+
+      </span>
+      }
+
+      @if (esPersonalizada && ((peticionesPendientes$ | async)?.length)) {
+      <span class="divider-v"></span>
+      }
+
+      @if ((peticionesPendientes$ | async)?.length) {
       <button class="peticion-campana" mat-icon-button (click)="onClickCampana($event)"
         [ngClass]="{ 'es-mia': (peticionParaMi$ | async) }" aria-label="Petición de asignación"
         [matTooltip]="(tooltipCampana$ | async) || ''" matTooltipPosition="above" matTooltipShowDelay="250"
         matTooltipHideDelay="0">
         <mat-icon>{{ (peticionParaMi$ | async) ? 'notifications_active' : 'notifications' }}</mat-icon>
       </button>
-    </span>
-    }
+      }
+    </div>
   </div>
 
   <hr class="divider" />

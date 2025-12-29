@@ -2,17 +2,27 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { MatOptionModule } from '@angular/material/core'; //
+import { MatOptionModule } from '@angular/material/core';
 
-type CrearTareaPayload = {
+type TareaFormPayload = {
   nombre: string;
   descripcion?: string;
+  peso: number;
+};
+
+type DialogCrearTareaData = {
+  modo?: 'crear' | 'editar';
+  tarea?: {
+    nombre: string;
+    descripcion?: string;
+    peso?: number;
+  };
 };
 
 @Component({
@@ -33,9 +43,15 @@ type CrearTareaPayload = {
   styleUrls: ['./dialog-crear-tarea.component.scss'],
 })
 export class DialogCrearTareaComponent {
-  private dialogRef = inject(MatDialogRef<DialogCrearTareaComponent, CrearTareaPayload | undefined>);
+  private dialogRef = inject(MatDialogRef<DialogCrearTareaComponent, TareaFormPayload | undefined>);
+  private data = inject<DialogCrearTareaData | null>(MAT_DIALOG_DATA, { optional: true });
 
   creando = signal(false);
+
+  readonly isEdit = (this.data?.modo ?? 'crear') === 'editar';
+  readonly titulo = this.isEdit ? 'Editar tarea' : 'Nueva tarea';
+  readonly icono = this.isEdit ? 'edit' : 'add_task';
+  readonly cta = this.isEdit ? 'Guardar' : 'Crear';
 
   form = new FormGroup({
     nombre: new FormControl<string>('', {
@@ -52,6 +68,17 @@ export class DialogCrearTareaComponent {
     }),
   });
 
+  constructor() {
+    const t = this.data?.tarea;
+    if (t) {
+      this.form.patchValue({
+        nombre: (t.nombre ?? '').trim(),
+        descripcion: (t.descripcion ?? '').trim(),
+        peso: t.peso ?? 1,
+      });
+    }
+  }
+
   get nombreCtrl() { return this.form.controls.nombre; }
   get descripcionCtrl() { return this.form.controls.descripcion; }
 
@@ -60,7 +87,7 @@ export class DialogCrearTareaComponent {
     this.dialogRef.close(undefined);
   }
 
-  onCrear() {
+  onSubmit() {
     const nombre = (this.nombreCtrl.value || '').trim();
     const descripcion = (this.descripcionCtrl.value || '').trim();
     const peso = this.form.controls.peso.value;
@@ -82,12 +109,5 @@ export class DialogCrearTareaComponent {
         peso,
       });
     }, 0);
-  }
-
-  onKeydownEnter(event: KeyboardEvent) {
-    if (!this.creando() && this.form.valid) {
-      event.preventDefault();
-      this.onCrear();
-    }
   }
 }

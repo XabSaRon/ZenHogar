@@ -23,9 +23,9 @@
   }
 
   .peticion-campana {
-    position: absolute;
-    top: 12px;
-    right: 12px;
+    position: relative;
+    top: auto;
+    right: auto;
     background: white;
     border-radius: 50%;
     padding: 0.4rem;
@@ -146,6 +146,29 @@
       font-family: 'Poppins', sans-serif;
       overflow-wrap: anywhere;
       flex: 1;
+      padding-right: 84px;
+    }
+
+    .edit-btn {
+      background: white;
+      border-radius: 999px;
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
+      transition: transform .2s ease, background-color .2s ease;
+
+      mat-icon {
+        font-size: 20px;
+        color: #616161;
+      }
+
+      &:hover {
+        background-color: #f1f1f1;
+        transform: scale(1.05);
+      }
     }
   }
 
@@ -280,6 +303,29 @@
     margin-right: 0.5rem;
     border-radius: 50%;
     object-fit: cover;
+  }
+
+  .acciones-top {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 5;
+
+    .divider-v {
+      width: 1px;
+      height: 22px;
+      background: rgba(0, 0, 0, 0.12);
+      border-radius: 999px;
+      margin: 0 2px;
+    }
+
+    .tooltip-wrapper {
+      display: inline-flex;
+    }
+
   }
 }
 

@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { combineLatest, of, BehaviorSubject, take, EMPTY, Observable } from 'rxjs';
+import { combineLatest, of, BehaviorSubject, take, EMPTY, Observable, catchError } from 'rxjs';
 import { switchMap, map, filter } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -130,6 +130,10 @@ export class ListaTareasComponent implements OnInit {
     map(([u, h]) => !!u && !h)
   );
 
+  adminUid$ = this.hogar.getHogar$().pipe(
+    map(h => h?.adminUid ?? null)
+  );
+
   private tieneValoracionPendiente(t: TareaDTO): boolean {
     return !!t.bloqueadaHastaValoracion || (t.valoracionesPendientes?.length ?? 0) > 0;
   }
@@ -194,11 +198,14 @@ export class ListaTareasComponent implements OnInit {
           if (!hogar?.miembros?.length) return of([]);
           const miembros$ = hogar.miembros.map((uid) =>
             docData(doc(this.fs, 'usuarios', uid)).pipe(
-              filter((usuario): usuario is DocumentData => !!usuario),
-              map((usuario) => ({
+              catchError(err => {
+                console.error('[Miembros] No se pudo leer usuario', uid, err);
+                return of({ nombre: 'Desconocido', displayName: null, photoURL: '' } as any);
+              }),
+              map((usuario: any) => ({
                 uid,
-                nombre: usuario['nombre'] || usuario['displayName'] || 'Desconocido',
-                fotoURL: usuario['photoURL'] || '',
+                nombre: usuario?.nombre || usuario?.displayName || 'Desconocido',
+                fotoURL: usuario?.photoURL || '',
               }))
             )
           );
@@ -325,6 +332,11 @@ export class ListaTareasComponent implements OnInit {
   filtrarPorEstado(estado: EstadoFiltro) {
     this.estadoSeleccionado$.next(estado);
     this.mostrarFiltroEstado = false;
+  }
+
+  getDestinatarioNombre(tareaId: string | null | undefined): string {
+    if (!tareaId) return '';
+    return this.peticionesPorTareaMap?.[tareaId]?.destinatarioNombre ?? '';
   }
 
   loginConGoogle() { this.auth.loginGoogle(); }
@@ -541,6 +553,12 @@ export class ListaTareasComponent implements OnInit {
       ref.afterClosed().pipe(take(1)).subscribe((result?: { nombre: string; descripcion?: string; peso: number }) => {
         if (!result) return;
 
+        const user = this.usuarioActual;
+        if (!user) {
+          this.invitaALogin();
+          return;
+        }
+
         this.tareas.crearTarea({
           nombre: result.nombre.trim(),
           descripcion: (result.descripcion || '').trim() || undefined,
@@ -548,6 +566,9 @@ export class ListaTareasComponent implements OnInit {
           asignadA: null,
           personalizada: true,
           peso: result.peso,
+          creadorUid: user.uid,
+          creadorNombre: user.displayName || 'Usuario',
+          creadorFotoURL: user.photoURL || '',
         })
           .then(() => this.snackBar.open('✅ Tarea creada con éxito', 'Cerrar', { duration: 3000 }))
           .catch(() => this.snackBar.open('❌ Error al crear la tarea', 'Cerrar', { duration: 3000 }));

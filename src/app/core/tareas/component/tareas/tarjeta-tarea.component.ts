@@ -1,13 +1,8 @@
-import {
-  Component, EventEmitter, Input, Output, OnChanges
-} from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-import {
-  Firestore, collection, query, where, collectionData
-} from '@angular/fire/firestore';
+import { Firestore, collection, query, where, collectionData } from '@angular/fire/firestore';
 import { Observable, of, firstValueFrom } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
+import { switchMap, map, shareReplay, startWith, catchError } from 'rxjs/operators';
 
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -16,14 +11,20 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { Overlay } from '@angular/cdk/overlay';
 
+import { Auth, authState } from '@angular/fire/auth';
+
+import { TareasService } from '../../services/tareas.service';
 import { TareaDTO } from '../../models/tarea.model';
 import { HistorialDialogComponent } from '../historial/historial-dialog.component';
 import { DialogValorarTarea } from '../valoraciones/dialog-valorar-tarea';
 import { PENALIZACION_ABANDONO } from '../../utilidades/tareas.constants';
 import { PeticionAsignacionDTO } from '../../models/peticion-asignacion.model';
 import { DialogPeticionAsignacionComponent } from './peticiones/dialog-peticion-asignacion.component';
+import { DialogCrearTareaComponent } from './crear-tarea/dialog-crear-tarea.component';
 
 @Component({
   selector: 'app-tarjeta-tarea',
@@ -36,7 +37,8 @@ import { DialogPeticionAsignacionComponent } from './peticiones/dialog-peticion-
     MatMenuModule,
     MatTooltipModule,
     MatButtonModule,
-    MatDialogModule
+    MatDialogModule,
+    MatSnackBarModule
   ],
   templateUrl: './tarjeta-tarea.component.html',
   styleUrls: ['./tarjeta-tarea.component.scss'],
@@ -48,10 +50,14 @@ export class TarjetaTareaComponent implements OnChanges {
   @Input() delay = 0;
   @Input() penalizacionAbandono = PENALIZACION_ABANDONO;
   @Input() destinatarioNombre?: string;
+  @Input() adminUid: string | null = null;
 
   @Output() asignadoCambio = new EventEmitter<string>();
   @Output() penalizarAbandono = new EventEmitter<{ tareaId: string; uid: string; puntos: number }>();
   @Output() tareaCompletada = new EventEmitter<void>();
+
+  private auth = inject(Auth);
+  private lastTareaId: string | null = null;
 
   peticionesPendientes$!: Observable<PeticionAsignacionDTO[]>;
   hayPeticionPendiente$!: Observable<boolean>;
@@ -70,7 +76,9 @@ export class TarjetaTareaComponent implements OnChanges {
   constructor(
     private fs: Firestore,
     private dialog: MatDialog,
-    private overlay: Overlay
+    private overlay: Overlay,
+    private tareasService: TareasService,
+    private snack: MatSnackBar
   ) { }
 
   ngOnChanges(): void {
@@ -79,7 +87,12 @@ export class TarjetaTareaComponent implements OnChanges {
     } else {
       this.ultimaPersonaHistorial = null;
     }
-    this.crearStreamsPeticiones();
+
+    const id = this.tarea?.id ?? null;
+    if (id !== this.lastTareaId) {
+      this.lastTareaId = id;
+      this.crearStreamsPeticiones();
+    }
   }
 
   private abriendoDialog = false;
@@ -94,38 +107,56 @@ export class TarjetaTareaComponent implements OnChanges {
       return;
     }
 
-    const col = collection(this.fs, 'peticionesAsignacion');
-    const q = query(
-      col,
-      where('tareaId', '==', this.tarea.id),
-      where('estado', '==', 'pendiente')
-    );
+    const base$ = authState(this.auth).pipe(
+      startWith(null),
+      switchMap(user => {
+        if (!user) return of([] as PeticionAsignacionDTO[]);
 
-    const base$ = collectionData(q, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>;
-    this.peticionesPendientes$ = base$.pipe(shareReplay({ bufferSize: 1, refCount: true }));
-
-    this.hayPeticionPendiente$ = this.peticionesPendientes$.pipe(
-      map(pets => (pets?.length ?? 0) > 0),
-      shareReplay({ bufferSize: 1, refCount: true })
-    );
-
-    this.peticionParaMi$ = this.peticionesPendientes$.pipe(
-      map(pets => pets?.some(p => p.paraUid === this.uidActual) ?? false),
-      shareReplay({ bufferSize: 1, refCount: true })
-    );
-
-    this.destinatarioNombre$ = this.peticionesPendientes$.pipe(
-      map(pets => {
-        if (!pets || pets.length === 0) return 'usuario';
-        const mia = pets.find(p => p.paraUid === this.uidActual);
-        const targetUid = mia ? this.uidActual : pets[0].paraUid;
-        const nombre = this.miembros.find(m => m.uid === targetUid)?.nombre;
-        return nombre || 'usuario';
+        const col = collection(this.fs, 'peticionesAsignacion');
+        const q = query(
+          col,
+          where('hogarId', '==', this.tarea.hogarId),
+          where('tareaId', '==', this.tarea.id),
+          where('estado', '==', 'pendiente')
+        );
+        return collectionData(q, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>;
+      }),
+      catchError(err => {
+        console.error('🔥 peticionesPendientes$ error', this.tarea?.id, err);
+        return of([] as PeticionAsignacionDTO[]);
       }),
       shareReplay({ bufferSize: 1, refCount: true })
     );
 
-    this.tooltipCampana$ = this.peticionesPendientes$.pipe(
+    this.peticionesPendientes$ = base$;
+
+    this.hayPeticionPendiente$ = base$.pipe(
+      map(pets => (pets?.length ?? 0) > 0),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+
+    this.peticionParaMi$ = authState(this.auth).pipe(
+      startWith(null),
+      switchMap(user => {
+        if (!user) return of(false);
+        return base$.pipe(
+          map(pets => pets?.some(p => p.paraUid === user.uid) ?? false)
+        );
+      }),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+
+    this.destinatarioNombre$ = base$.pipe(
+      map(pets => {
+        if (!pets || pets.length === 0) return 'usuario';
+        const mia = pets.find(p => p.paraUid === this.uidActual);
+        const targetUid = mia ? this.uidActual : pets[0].paraUid;
+        return this.miembros.find(m => m.uid === targetUid)?.nombre || 'usuario';
+      }),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+
+    this.tooltipCampana$ = base$.pipe(
       map(pets => {
         const esMia = pets?.some(p => p.paraUid === this.uidActual) ?? false;
         if (esMia) return 'Tienes una petición de asignación';
@@ -260,7 +291,9 @@ export class TarjetaTareaComponent implements OnChanges {
       width,
       height,
       panelClass: 'dialog-historial',
-      scrollStrategy: this.overlay.scrollStrategies.block()
+      scrollStrategy: this.overlay.scrollStrategies.block(),
+      autoFocus: true,
+      restoreFocus: true
     });
   }
 
@@ -275,8 +308,94 @@ export class TarjetaTareaComponent implements OnChanges {
         nombreTarea: this.tarea.nombre
       },
       width: '500px',
-      panelClass: 'dialog-valorar'
+      panelClass: 'dialog-valorar',
+      autoFocus: true,
+      restoreFocus: true
     });
+  }
+
+  get estaAsignada(): boolean {
+    return !!this.tarea?.asignadA;
+  }
+
+  get esPersonalizada(): boolean {
+    return this.tarea?.personalizada === true;
+  }
+
+  get esAdmin(): boolean {
+    return !!this.adminUid && this.uidActual === this.adminUid;
+  }
+
+  get esCreador(): boolean {
+    return !!this.tarea?.creadorUid && this.uidActual === this.tarea.creadorUid;
+  }
+
+  get puedeGestionarTarea(): boolean {
+    return this.esAdmin || this.esCreador;
+  }
+
+  get puedeEditar(): boolean {
+    if (!this.esPersonalizada) return false;
+    if (!this.puedeGestionarTarea) return false;
+    if (this.estaAsignada) return false;
+    if (this.tieneValoracionPendiente) return false;
+    if (this.tarea?.completada) return false;
+    return true;
+  }
+
+  get tooltipEditar(): string {
+    if (!this.esPersonalizada) return 'Solo se pueden editar tareas personalizadas';
+    if (this.estaAsignada) return 'No se puede editar mientras está asignada';
+    if (this.tieneValoracionPendiente) return 'No se puede editar mientras esté pendiente de valoración';
+    if (this.tarea?.completada) return 'No se puede editar una tarea completada';
+    return 'Editar tarea';
+  }
+
+  async editarTarea(ev: MouseEvent) {
+    ev.stopPropagation();
+    if (!this.puedeEditar) return;
+    if (!this.tarea?.id) return;
+
+    const ref = this.dialog.open(DialogCrearTareaComponent, {
+      width: '520px',
+      panelClass: 'crear-tarea-dialog',
+      data: {
+        modo: 'editar',
+        tarea: {
+          nombre: this.tarea.nombre,
+          descripcion: this.tarea.descripcion ?? '',
+          peso: this.tarea.peso ?? 1,
+        },
+      },
+    });
+
+    const res = await firstValueFrom(ref.afterClosed());
+    if (!res) return;
+
+    try {
+      this.snack.dismiss();
+
+      await this.tareasService.actualizarTarea(this.tarea.id, {
+        nombre: res.nombre,
+        descripcion: res.descripcion,
+        peso: res.peso,
+      });
+
+      this.snack.open('✅ Tarea actualizada', 'OK', {
+        duration: 2200,
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom',
+      });
+    } catch (e) {
+      console.error(e);
+
+      this.snack.dismiss();
+      this.snack.open('❌ No se pudo actualizar la tarea', 'OK', {
+        duration: 2800,
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom',
+      });
+    }
   }
 
   async onClickCampana(ev: MouseEvent) {
@@ -284,8 +403,11 @@ export class TarjetaTareaComponent implements OnChanges {
     if (this.abriendoDialog) return;
     this.abriendoDialog = true;
 
+    const user = await firstValueFrom(authState(this.auth));
+    if (!user) { this.abriendoDialog = false; return; }
+
     const lista = await firstValueFrom(this.peticionesPendientes$);
-    const paraMi = lista.find(p => p.paraUid === this.uidActual);
+    const paraMi = lista.find(p => p.paraUid === user.uid);
     if (!paraMi) { this.abriendoDialog = false; return; }
 
     const ref = this.dialog.open(DialogPeticionAsignacionComponent, {

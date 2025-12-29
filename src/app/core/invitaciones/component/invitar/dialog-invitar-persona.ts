@@ -1,4 +1,4 @@
-import { Component, inject, Inject, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, inject, Inject, ChangeDetectorRef, NgZone, OnInit } from '@angular/core';
 import { FormsModule, NgForm, FormGroupDirective } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -62,7 +62,7 @@ type TransferData = {
     MatDividerModule,
   ],
 })
-export class DialogInvitarPersona {
+export class DialogInvitarPersona implements OnInit {
   email = '';
   loading = false;
   confirmando = false;
@@ -89,7 +89,7 @@ export class DialogInvitarPersona {
   loadingTransfer: Record<string, boolean> = {};
   loadingEliminar = false;
 
-  constructor() {
+  ngOnInit(): void {
     this.miUid = this.auth.currentUser?.uid ?? null;
 
     this.hogarSvc.getHogar$()
@@ -98,13 +98,18 @@ export class DialogInvitarPersona {
         if (!h) {
           this.esAdmin = false;
           this.miembros = [];
+          this.cdr.markForCheck();
           return;
         }
 
         this.ownerUid = h.ownerUid ?? null;
         this.esAdmin = !!this.miUid && !!this.ownerUid && this.miUid === this.ownerUid;
 
-        this.miembros = await this.cargarMiembrosConPerfil(h);
+        const miembros = await this.cargarMiembrosConPerfil(h);
+        queueMicrotask(() => {
+          this.miembros = miembros;
+          this.cdr.markForCheck();
+        });
       });
   }
 
@@ -161,7 +166,10 @@ export class DialogInvitarPersona {
       console.error(err);
       this.snack.open('Error al enviar invitación 😕', 'Cerrar', { duration: 5000 });
     } finally {
-      this.loading = false;
+      this.zone.run(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      });
     }
   }
 
@@ -254,7 +262,7 @@ export class DialogInvitarPersona {
     if (this.loading || this.loadingEliminar) return;
 
     this.loadingEliminar = true;
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
 
     await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
 
@@ -272,7 +280,7 @@ export class DialogInvitarPersona {
       const msg = err?.message || 'No se pudo eliminar el hogar';
       this.zone.run(() => this.snack.open(msg, 'Cerrar', { duration: 4500 }));
       this.loadingEliminar = false;
-      this.cdr.detectChanges();
+      this.cdr.markForCheck();
     }
   }
 }

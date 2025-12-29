@@ -5,9 +5,9 @@
 
   <h1 class="titulo-modal">
     <span class="icon-pill">
-      <mat-icon fontIcon="add_task"></mat-icon>
+      <mat-icon [fontIcon]="icono"></mat-icon>
     </span>
-    Nueva tarea
+    {{ titulo }}
   </h1>
 
   <div class="dialog-body">
@@ -15,8 +15,7 @@
 
       <mat-form-field appearance="outline" class="w100">
         <mat-label>Nombre de la tarea</mat-label>
-        <input matInput formControlName="nombre" maxlength="60" (keydown.enter)="onCrear()"
-          placeholder="Ej. Fregar platos" autocomplete="off" />
+        <input matInput formControlName="nombre" maxlength="60" placeholder="Ej. Fregar platos" autocomplete="off" />
         <mat-hint align="end">{{ nombreCtrl.value.length }}/60</mat-hint>
 
         @if (nombreCtrl.touched && nombreCtrl.hasError('required')) {
@@ -54,11 +53,12 @@
   </div>
 
   <div class="acciones">
-    <button class="btn-rechazar" mat-button (click)="onCancelar()" [disabled]="creando()">Cancelar</button>
-    <button class="btn-crear" mat-flat-button color="primary" (click)="onCrear()"
+    <button type="button" class="btn-rechazar" mat-button (click)="onCancelar()"
+      [disabled]="creando()">Cancelar</button>
+    <button type="button" class="btn-crear" mat-flat-button color="primary" (click)="onSubmit()"
       [disabled]="form.invalid || creando()">
-      <mat-icon fontIcon="add"></mat-icon>
-      Crear
+      <mat-icon [fontIcon]="isEdit ? 'save' : 'add'"></mat-icon>
+      {{ cta }}
     </button>
   </div>
 </div>

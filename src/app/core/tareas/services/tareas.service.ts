@@ -16,8 +16,8 @@ import {
   addDoc,
 } from '@angular/fire/firestore';
 import { inject, Injectable } from '@angular/core';
-import { Observable, combineLatest, of } from 'rxjs';
-import { switchMap, map } from 'rxjs/operators';
+import { Observable, combineLatest, of, EMPTY } from 'rxjs';
+import { switchMap, map, catchError } from 'rxjs/operators';
 import { Tarea, TareaDTO } from '../models/tarea.model';
 import { tareaConverter } from '../utilidades/tarea.converter';
 import { TAREAS_POR_DEFECTO } from '../utilidades/tareas-default';
@@ -26,10 +26,13 @@ import { AuthService } from '../../auth/auth.service';
 import { PUNTOS_POR_VALORACION, PENALIZACION_ABANDONO } from '../utilidades/tareas.constants';
 import { PeticionAsignacionDTO } from '../models/peticion-asignacion.model';
 
+import { Auth, authState } from '@angular/fire/auth';
+
 @Injectable({ providedIn: 'root' })
 export class TareasService {
   private fs = inject(Firestore);
   private authService = inject(AuthService);
+  private auth = inject(Auth);
 
   private getWeekStart(d = new Date()): Date {
     const weekStart = new Date(d);
@@ -143,6 +146,7 @@ export class TareasService {
       batch.set(ref, {
         ...t,
         hogarId,
+        creadorUid: adminUid,
         createdAt: serverTimestamp(),
       });
     });
@@ -357,15 +361,36 @@ export class TareasService {
 
   peticionesPendientesPara$(uid: string): Observable<PeticionAsignacionDTO[]> {
     if (!uid) return of([]);
-    const colRef = collection(this.fs, 'peticionesAsignacion');
-    const qy = query(colRef, where('paraUid', '==', uid), where('estado', '==', 'pendiente'));
-    return collectionData(qy, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>;
+
+    return authState(this.auth).pipe(
+      switchMap(user => {
+        if (!user) return of([]);
+        const colRef = collection(this.fs, 'peticionesAsignacion');
+        const qy = query(colRef,
+          where('paraUid', '==', uid),
+          where('estado', '==', 'pendiente')
+        );
+        return collectionData(qy, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>;
+      }),
+      catchError(() => of([]))
+    );
   }
 
   peticionesPendientesEnHogar$(hogarId: string): Observable<PeticionAsignacionDTO[]> {
-    const colRef = collection(this.fs, 'peticionesAsignacion');
-    const qy = query(colRef, where('hogarId', '==', hogarId), where('estado', '==', 'pendiente'));
-    return collectionData(qy, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>;
+    if (!hogarId) return of([]);
+
+    return authState(this.auth).pipe(
+      switchMap(user => {
+        if (!user) return of([]); // demo => nada de Firestore
+        const colRef = collection(this.fs, 'peticionesAsignacion');
+        const qy = query(colRef,
+          where('hogarId', '==', hogarId),
+          where('estado', '==', 'pendiente')
+        );
+        return collectionData(qy, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>;
+      }),
+      catchError(() => of([]))
+    );
   }
 
   async aceptarPeticion(peticionId: string): Promise<void> {
@@ -492,6 +517,9 @@ export class TareasService {
     personalizada: boolean;
     asignadA?: string | null;
     peso?: number;
+    creadorUid: string;
+    creadorNombre?: string;
+    creadorFotoURL?: string;
   }): Promise<string> {
     const colRef = collection(this.fs, 'tareas').withConverter(tareaConverter);
 
@@ -510,10 +538,36 @@ export class TareasService {
       valoracionesPendientes: [],
       bloqueadaHastaValoracion: false,
       personalizada: data.personalizada,
+      creadorUid: data.creadorUid,
+      creadorNombre: data.creadorNombre ?? null,
+      creadorFotoURL: data.creadorFotoURL ?? null,
     };
 
     const ref = await addDoc(colRef, payload);
     return ref.id;
+  }
+
+  async actualizarTarea(tareaId: string, data: { nombre: string; descripcion?: string; peso?: number }): Promise<void> {
+    const currentUser = this.authService.currentUser;
+    if (!currentUser) {
+      throw new Error('Modo demo: no se puede editar tarea.');
+    }
+
+    if (!tareaId) throw new Error('tareaId requerido');
+
+    const tareaRef = doc(this.fs, 'tareas', tareaId);
+
+    const nombre = (data.nombre ?? '').trim();
+    const descripcion = (data.descripcion ?? '').trim();
+
+    if (!nombre || nombre.length < 2) throw new Error('Nombre inválido');
+
+    await updateDoc(tareaRef, {
+      nombre,
+      descripcion: descripcion || '',
+      peso: data.peso ?? 1,
+      updatedAt: serverTimestamp(),
+    } as any);
   }
 
   private async incrementarTotalTareasUsuario(uid: string): Promise<void> {

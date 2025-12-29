@@ -56,13 +56,19 @@ export class App implements OnInit, OnDestroy {
   hogarActual: Hogar | null = null;
 
   ngOnInit(): void {
-    const sub = this.usuarioCompleto$.subscribe(usuario => {
-      const nuevos = usuario?.puntos ?? 0;
-      this.puntosAnimados = nuevos;
+    const sub = this.usuarioCompleto$.subscribe({
+      next: usuario => {
+        const nuevos = usuario?.puntos ?? 0;
+        this.puntosAnimados = nuevos;
+      },
+      error: err => console.error('[App.usuarioCompleto$]', err),
     });
 
-    const subHogar = this.hogar$.subscribe(hogar => {
-      this.hogarActual = hogar;
+    const subHogar = this.hogar$.subscribe({
+      next: hogar => {
+        this.hogarActual = hogar;
+      },
+      error: err => console.error('[App.hogar$]', err),
     });
 
     this.subs.add(sub);
@@ -216,18 +222,20 @@ export class App implements OnInit, OnDestroy {
   }
 
   private dispararAnimacionPuntos() {
-    this.ultimoCanjeoOk = false;
-    this.mostrarConfetti = false;
-
-    setTimeout(() => {
-      this.ultimoCanjeoOk = true;
-      this.mostrarConfetti = true;
+    queueMicrotask(() => {
+      this.ultimoCanjeoOk = false;
+      this.mostrarConfetti = false;
 
       setTimeout(() => {
-        this.ultimoCanjeoOk = false;
-        this.mostrarConfetti = false;
-      }, 1900);
-    }, 0);
+        this.ultimoCanjeoOk = true;
+        this.mostrarConfetti = true;
+
+        setTimeout(() => {
+          this.ultimoCanjeoOk = false;
+          this.mostrarConfetti = false;
+        }, 1900);
+      }, 0);
+    });
   }
 
 }

@@ -18,13 +18,14 @@
 .dialog-container {
   @include base.dialog-base;
 
-  position: relative;
-  overflow: visible;
-  background: linear-gradient(135deg, var(--dlg-grad-1), var(--dlg-grad-2));
-  box-shadow: var(--dlg-shadow);
-  border: var(--dlg-border);
-
-  animation: slideFadeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  & {
+    position: relative;
+    overflow: visible;
+    background: linear-gradient(135deg, var(--dlg-grad-1), var(--dlg-grad-2));
+    box-shadow: var(--dlg-shadow);
+    border: var(--dlg-border);
+    animation: slideFadeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
 
   @media (max-width: 480px) {
     padding: 1rem 1rem .9rem 1rem;

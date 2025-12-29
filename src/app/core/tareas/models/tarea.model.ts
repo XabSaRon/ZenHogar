@@ -12,6 +12,9 @@ export interface Tarea {
   asignadoFotoURL?: string | null;
   peso?: number;
   personalizada?: boolean;
+  creadorUid: string;
+  creadorNombre?: string | null;
+  creadorFotoURL?: string | null;
 
   historial?: {
     uid: string;

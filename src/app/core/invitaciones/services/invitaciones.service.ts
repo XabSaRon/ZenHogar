@@ -31,6 +31,7 @@ export class InvitacionesService {
     return codigo;
   }
 
+  /*
   async validarCodigo(codigo: string): Promise<Invitacion | null> {
     const q = query(
       collection(this.fs, 'invitaciones'),
@@ -41,6 +42,22 @@ export class InvitacionesService {
     return snap.empty
       ? null
       : { id: snap.docs[0].id, ...(snap.docs[0].data() as Invitacion) };
+  }
+  */
+
+  async validarCodigo(codigo: string): Promise<Invitacion | null> {
+    const user = this.auth.currentUser;
+    if (!user?.email) throw new Error('Tu cuenta no tiene email');
+
+    const q = query(
+      collection(this.fs, 'invitaciones'),
+      where('codigo', '==', codigo),
+      where('usado', '==', false),
+      where('email', '==', user.email)
+    );
+
+    const snap = await getDocs(q);
+    return snap.empty ? null : { id: snap.docs[0].id, ...(snap.docs[0].data() as Invitacion) };
   }
 
   async aceptarCodigo(codigo: string): Promise<void> {

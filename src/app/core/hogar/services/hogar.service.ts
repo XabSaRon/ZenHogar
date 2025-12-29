@@ -23,7 +23,7 @@ import {
 } from '@angular/fire/firestore';
 
 import { Auth, authState, User } from '@angular/fire/auth';
-import { Observable, of, switchMap, map } from 'rxjs';
+import { Observable, of, switchMap, map, catchError } from 'rxjs';
 import { TareasService } from '../../tareas/services/tareas.service';
 
 import {
@@ -86,7 +86,7 @@ export class HogarService {
   getHogar$(): Observable<Hogar | null> {
     return this.authState$.pipe(
       switchMap(user => {
-        if (!user) return of(null);
+        if (!user?.uid) return of(null);
 
         const q = query(
           collection(this.fs, 'hogares').withConverter(hogarConverter),
@@ -95,7 +95,11 @@ export class HogarService {
         );
 
         return collectionData<Hogar>(q).pipe(
-          map(arr => arr[0] ?? null)
+          map(arr => arr[0] ?? null),
+          catchError(err => {
+            console.error('[HogarService.getHogar$] Firestore:', err);
+            return of(null);
+          })
         );
       })
     );
@@ -118,6 +122,7 @@ export class HogarService {
       provincia,
       provinciaCode: code,
       ownerUid: user.uid,
+      adminUid: user.uid,
       miembros: [user.uid],
       createdAt: serverTimestamp() as any,
       tipoHogar: tipoHogar ?? 'Familiar',

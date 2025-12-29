@@ -1,4 +1,5 @@
 @if (usuarioSinHogar$ | async) {
+
 <section class="empty-state">
   <div class="empty-hero">
     <div class="emoji">🏡</div>
@@ -64,6 +65,7 @@
     <div class="preview-card shimmer delay2"></div>
   </div>
 </section>
+
 } @else {
 
 @if (tareasParaValorar$ | async; as porValorar) {
@@ -76,6 +78,7 @@
 }
 
 @if (isGuest$ | async) {
+
 @if (miembros$ | async; as miembros) {
 
 <div class="fila-header">
@@ -88,8 +91,7 @@
     </div>
   </div>
 
-  <div class="fila-mid">
-  </div>
+  <div class="fila-mid"></div>
 
   <div class="fila-right">
     <div class="selector-filtro">
@@ -155,9 +157,14 @@
 </div>
 
 }
+
 } @else {
 
 @if (usuario$ | async; as usuario) {
+
+<!-- ✅ GUARDIA: evita NG0100 cuando auth “parpadea” y usuario.uid pasa a null -->
+@if (usuario?.uid) {
+
 @if (tareas$ | async; as tareas) {
 
 <!-- HEADER -->
@@ -256,12 +263,14 @@
   </div>
 </div>
 
+@if (hogar$ | async; as h) {
 @if (miembros$ | async; as miembros) {
+
 <div class="contenedor-tareas">
   <div class="grid-tareas">
     @for (tarea of tareas; track tarea.id; let i = $index) {
-    <app-tarjeta-tarea [tarea]="tarea" [uidActual]="usuario?.uid || ''" [miembros]="miembros" [delay]="i"
-      [destinatarioNombre]="peticionesPorTareaMap[tarea.id!]?.destinatarioNombre"
+    <app-tarjeta-tarea [tarea]="tarea" [uidActual]="usuario.uid" [miembros]="miembros" [delay]="i"
+      [adminUid]="h?.adminUid ?? h?.ownerUid ?? null" [destinatarioNombre]="getDestinatarioNombre(tarea.id)"
       (asignadoCambio)="onAsignadoCambio(tarea, $event)" (penalizarAbandono)="onPenalizarAbandono($event)"
       (tareaCompletada)="onTareaCompletada(tarea)">
     </app-tarjeta-tarea>
@@ -269,15 +278,27 @@
   </div>
 </div>
 
+@if (h?.id) {
 <div class="btn-add-wrapper">
   <button mat-fab class="btn-add-tarea" (click)="abrirDialogCrearTarea()" [class.limited]="personalizadasCount >= 2">
     <mat-icon>add</mat-icon>
   </button>
   <div class="label">{{ personalizadasCount }}/2</div>
 </div>
+}
 
 }
 }
+
 }
+
+} @else {
+<!-- Si quieres, aquí puedes poner un mini loader mientras auth estabiliza -->
+<!-- <div class="mini-loading">Cargando...</div> -->
 }
+
+}
+
+}
+
 }

@@ -3,8 +3,10 @@
 .dialog-container {
   @include base.dialog-base;
 
-  position: relative;
-  overflow: visible;
+  & {
+    position: relative;
+    overflow: visible;
+  }
 }
 
 .titulo-modal {

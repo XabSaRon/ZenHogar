@@ -91,7 +91,9 @@ export class DialogPeticionAsignacionComponent implements AfterViewInit {
     try {
       await this.tareas.rechazarPeticion(this.peticion.id!);
       this.snack.open('👌 Petición rechazada.', 'Cerrar', { duration: 2000 });
-      this.dialogRef.close(false);
+
+      queueMicrotask(() => this.dialogRef.close(false));
+
     } catch (e) {
       console.error(e);
       this.snack.open('❌ No se pudo rechazar la petición', 'Cerrar', { duration: 3000 });

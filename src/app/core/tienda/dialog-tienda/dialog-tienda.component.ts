@@ -333,7 +333,10 @@ export class DialogTiendaComponent {
       console.error('Error guardando recompensa', e);
       this.snackBar.open('No se pudo guardar. Inténtalo de nuevo.', 'Cerrar', { duration: 3500 });
     } finally {
-      this.guardandoPersonalizada = false;
+      queueMicrotask(() => {
+        this.guardandoPersonalizada = false;
+        this.cdr.detectChanges();
+      });
     }
   }
 
