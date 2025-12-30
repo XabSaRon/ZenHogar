@@ -271,8 +271,7 @@
     @for (tarea of tareas; track tarea.id; let i = $index) {
     <app-tarjeta-tarea [tarea]="tarea" [uidActual]="usuario.uid" [miembros]="miembros" [delay]="i"
       [adminUid]="h?.adminUid ?? h?.ownerUid ?? null" [destinatarioNombre]="getDestinatarioNombre(tarea.id)"
-      (asignadoCambio)="onAsignadoCambio(tarea, $event)" (penalizarAbandono)="onPenalizarAbandono($event)"
-      (tareaCompletada)="onTareaCompletada(tarea)">
+      (asignadoCambio)="onAsignadoCambio(tarea, $event)" (tareaCompletada)="onTareaCompletada(tarea)">
     </app-tarjeta-tarea>
     }
   </div>
@@ -293,7 +292,7 @@
 }
 
 } @else {
-<!-- Si quieres, aquí puedes poner un mini loader mientras auth estabiliza -->
+<!-- TODO -> Se podria poner un mini loader mientras auth estabiliza -->
 <!-- <div class="mini-loading">Cargando...</div> -->
 }
 

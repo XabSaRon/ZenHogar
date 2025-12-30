@@ -1,4 +1,4 @@
-export const PENALIZACION_ABANDONO = -100;
+export const PENALIZACION_ABANDONO = -150;
 
 export const PUNTOS_POR_VALORACION: Record<number, number> = {
   5: 10,

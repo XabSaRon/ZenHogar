@@ -1,7 +1,7 @@
 .tarjeta-tarea {
   width: 370px;
-  height: 215px;
-  min-height: 215px;
+  height: 220px;
+  min-height: 220px;
   max-width: 380px;
   background: #f1f9f3;
   border: 1px solid rgba(0, 0, 0, .05);
@@ -17,9 +17,12 @@
   animation: fadeInStaggeredBase 0.4s ease-out both;
   animation-delay: calc(var(--i) * 80ms);
 
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px) translateZ(0);
   }
 
   .peticion-campana {
@@ -226,7 +229,7 @@
   }
 
   .boton-asignar {
-    margin-top: 0.75rem;
+    margin-top: auto;
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -327,6 +330,360 @@
     }
 
   }
+}
+
+/* FLIP */
+.flip-scene {
+  width: 370px;
+  height: 215px;
+  max-width: 380px;
+  display: block;
+  perspective: 1200px;
+}
+
+.flip-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.flip-card.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.flip-face {
+  position: absolute;
+  inset: 0;
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  transform-style: preserve-3d;
+  transform: translateZ(0);
+}
+
+.flip-face.front {
+  transform: rotateY(0deg) translateZ(0);
+}
+
+.flip-face.back {
+  transform: rotateY(180deg) translateZ(0);
+}
+
+.flip-face .tarjeta-tarea {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  transform: translateZ(0);
+}
+
+.flip-card.is-flipped .tarjeta-tarea:hover {
+  transform: translateZ(0);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+}
+
+.emoji-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-btn {
+  position: absolute;
+  left: 70%;
+  top: 70%;
+  transform: translate(-50%, -50%) scale(0.92);
+
+  width: 24px;
+  height: 24px;
+  min-width: 24px !important;
+  min-height: 24px !important;
+
+  padding: 0 !important;
+  line-height: 24px;
+
+  opacity: 0;
+  pointer-events: none;
+  z-index: 30;
+
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  border-radius: 999px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
+
+  transition: opacity .16s ease, transform .16s ease;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    color: #0f3d91;
+  }
+}
+
+.emoji-wrap:hover .info-btn,
+.emoji-wrap:focus-within .info-btn {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+}
+
+/* BACK CARD */
+.back-card {
+  // misma base pero más “premium”
+  background:
+    radial-gradient(1200px 400px at -10% -40%, rgba(46, 125, 50, 0.18), transparent 55%),
+    radial-gradient(900px 380px at 110% 0%, rgba(15, 61, 145, 0.14), transparent 55%),
+    #f6fbf7;
+
+  border: 1px solid rgba(0, 0, 0, 0.05);
+
+  .divider {
+    margin: 0.85rem 0 0.95rem;
+    background: rgba(0, 0, 0, 0.08);
+  }
+}
+
+.back-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+
+  .back-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+
+    .back-emoji {
+      font-size: 1.65rem;
+      width: 42px;
+      height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .back-name {
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: #1e2d3b;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .back-close {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    border-radius: 999px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.10);
+  }
+}
+
+.back-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.back-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 0.82rem;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.06);
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      line-height: 16px;
+      opacity: 0.85;
+    }
+
+    .chip-emoji {
+      font-size: 0.95rem;
+      line-height: 1;
+    }
+  }
+
+  /* Estado */
+  .st-free {
+    color: #2e7d32;
+  }
+
+  .st-assigned {
+    color: #0f3d91;
+  }
+
+  .st-progress {
+    color: #0f3d91;
+    background: rgba(230, 240, 255, 0.75);
+  }
+
+  .st-pending {
+    color: #b28900;
+    background: rgba(255, 249, 196, 0.85);
+  }
+
+  /* Dificultad */
+  .dif-easy {
+    color: #2e7d32;
+  }
+
+  .dif-med {
+    color: #ef6c00;
+  }
+
+  .dif-hard {
+    color: #c62828;
+  }
+
+  .rating-chip {
+    align-items: center;
+    gap: 8px;
+
+    .stars {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+
+      .s {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        line-height: 16px;
+        opacity: 0.18;
+        color: #f9a825;
+
+        &.on {
+          opacity: 0.95;
+        }
+      }
+    }
+
+    .rating-num {
+      font-weight: 900;
+      color: #1e2d3b;
+    }
+
+    .rating-count {
+      font-weight: 800;
+      color: rgba(30, 45, 59, 0.55);
+      font-weight: 700;
+      font-size: 0.82rem;
+    }
+
+    &.rating-empty {
+      opacity: 0.75;
+
+      .s-empty {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        color: rgba(30, 45, 59, 0.45);
+      }
+    }
+  }
+}
+
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-item {
+  display: flex;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+
+  .ii {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    margin-top: 2px;
+    color: rgba(30, 45, 59, 0.75);
+  }
+
+  .txt {
+    min-width: 0;
+  }
+
+  .k {
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.2px;
+    color: rgba(30, 45, 59, 0.70);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .v {
+    font-size: 0.92rem;
+    font-weight: 650;
+    color: #1e2d3b;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+
+    &.is-placeholder {
+      color: rgba(30, 45, 59, 0.55);
+      font-weight: 600;
+      font-style: italic;
+    }
+  }
+}
+
+.back-card .info-item .v {
+  overflow: hidden;
+  line-clamp: 2;
+  box-orient: vertical;
+  display: box;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.back-card .info-item .v.clamp-fade {
+  -webkit-mask-image: linear-gradient(90deg, #000 86%, transparent);
+  mask-image: linear-gradient(90deg, #000 86%, transparent);
+}
+
+.back-card .info-item .v.is-placeholder {
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 
 /* estados */
@@ -441,6 +798,51 @@ button[disabled] mat-icon {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+/* Responsive */
+
+@media (max-width: 1024px) {
+
+  .flip-card {
+    transform-style: flat !important;
+    will-change: auto !important;
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .flip-face {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    backface-visibility: visible !important;
+    -webkit-backface-visibility: visible !important;
+  }
+
+  .flip-face.back {
+    display: none;
+  }
+
+  .flip-card.is-flipped .flip-face.front {
+    display: none;
+  }
+
+  .flip-card.is-flipped .flip-face.back {
+    display: block;
+  }
+
+  .tarjeta-tarea,
+  .flip-face .tarjeta-tarea {
+    transform: none !important;
+    backface-visibility: visible !important;
+    -webkit-backface-visibility: visible !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .flip-card {
+    transform-style: flat;
   }
 }
 

@@ -9,11 +9,14 @@
 
 .grid-tareas {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, 370px);
   gap: 5rem;
-  padding: 2.5rem 1.5rem;
+  justify-content: center;
   justify-items: center;
   align-items: start;
+  padding: 2.5rem 1.5rem;
+  column-gap: 6rem !important;
+  row-gap: 5.5rem !important;
 }
 
 .aviso-valoracion {
@@ -635,6 +638,16 @@
   Responsive
 =========================== */
 
+@media (max-width: 1920px) {
+  .grid-tareas {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4rem;
+    padding: 2rem 1rem;
+    column-gap: 6rem;
+    row-gap: 5rem;
+  }
+}
+
 @media (min-width: 1200px) {
   .fila-header {
     margin-bottom: 28px;
@@ -645,19 +658,13 @@
   }
 }
 
-@media (max-width: 1920px) {
-  .grid-tareas {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4rem;
-    padding: 2rem 1rem;
-  }
-}
-
 @media (max-width: 1600px) {
   .grid-tareas {
     grid-template-columns: repeat(3, 1fr);
     gap: 3rem;
     padding: 1.8rem 1rem;
+    column-gap: 5rem;
+    row-gap: 4rem;
   }
 }
 
@@ -695,6 +702,8 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 2.5rem;
     padding: 1.5rem .8rem;
+    column-gap: 3rem;
+    row-gap: 2.5rem;
   }
 }
 
@@ -812,6 +821,8 @@
     grid-template-columns: 1fr;
     gap: 1.5rem 0;
     padding: 1rem .5rem;
+    column-gap: 0;
+    row-gap: 1.5rem;
   }
 }
 

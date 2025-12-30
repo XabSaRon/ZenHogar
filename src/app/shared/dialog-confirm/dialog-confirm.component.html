@@ -10,7 +10,9 @@
   <div mat-dialog-content class="confirm__content">
     @if (data.emphasis) {
     <div class="confirm__highlight">
-      <span class="confirm__highlight-label">Vas a eliminar</span>
+      <span class="confirm__highlight-label">
+        {{ data.emphasisLabel || 'Detalle' }}
+      </span>
       <span class="confirm__highlight-value">{{ data.emphasis }}</span>
     </div>
     }

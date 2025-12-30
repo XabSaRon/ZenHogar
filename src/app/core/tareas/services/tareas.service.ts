@@ -1,19 +1,6 @@
 import {
-  Firestore,
-  collection,
-  query,
-  where,
-  collectionData,
-  doc,
-  docData,
-  DocumentData,
-  updateDoc,
-  getDoc,
-  writeBatch,
-  serverTimestamp,
-  deleteField,
-  increment,
-  addDoc,
+  Firestore, collection, query, where, collectionData, doc, docData, DocumentData, updateDoc, getDoc, getDocs, writeBatch,
+  serverTimestamp, deleteField, increment, addDoc, setDoc
 } from '@angular/fire/firestore';
 import { inject, Injectable } from '@angular/core';
 import { Observable, combineLatest, of, EMPTY } from 'rxjs';
@@ -352,7 +339,12 @@ export class TareasService {
     };
 
     try {
-      await addDoc(colRef, payload);
+      const ref = doc(this.fs, 'peticionesAsignacion', tareaId);
+
+      await setDoc(ref, {
+        ...payload,
+        fecha: serverTimestamp(),
+      });
     } catch (e: any) {
       console.error('Error creando petición:', e?.code, e?.message, payload);
       throw e;
@@ -476,14 +468,24 @@ export class TareasService {
 
   rechazosParaSolicitante$(uidSolicitante: string): Observable<PeticionAsignacionDTO[]> {
     if (!uidSolicitante) return of([]);
-    const colRef = collection(this.fs, 'peticionesAsignacion');
-    const qy = query(
-      colRef,
-      where('deUid', '==', uidSolicitante),
-      where('estado', '==', 'rechazada'),
-      where('rechazoNotificadoSolicitante', '==', false)
+
+    return authState(this.auth).pipe(
+      switchMap(user => {
+        if (!user) return of([]);
+        const colRef = collection(this.fs, 'peticionesAsignacion');
+        const qy = query(
+          colRef,
+          where('deUid', '==', uidSolicitante),
+          where('estado', '==', 'rechazada'),
+          where('rechazoNotificadoSolicitante', '==', false)
+        );
+        return collectionData(qy, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>;
+      }),
+      catchError((e) => {
+        console.error('rechazosParaSolicitante$ error', e?.code, e?.message);
+        return of([]);
+      })
     );
-    return collectionData(qy, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>;
   }
 
   async marcarRechazoNotificado(peticionId: string): Promise<void> {
@@ -496,10 +498,24 @@ export class TareasService {
 
   aceptadasParaSolicitante$(uidSolicitante: string): Observable<PeticionAsignacionDTO[]> {
     if (!uidSolicitante) return of([]);
-    const colRef = collection(this.fs, 'peticionesAsignacion');
-    const qy = query(colRef, where('deUid', '==', uidSolicitante), where('estado', '==', 'aceptada'));
-    return (collectionData(qy, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>)
-      .pipe(map(list => (list ?? []).filter(p => p.aceptacionNotificadaSolicitante !== true)));
+
+    return authState(this.auth).pipe(
+      switchMap(user => {
+        if (!user) return of([]);
+        const colRef = collection(this.fs, 'peticionesAsignacion');
+        const qy = query(
+          colRef,
+          where('deUid', '==', uidSolicitante),
+          where('estado', '==', 'aceptada')
+        );
+        return collectionData(qy, { idField: 'id' }) as Observable<PeticionAsignacionDTO[]>;
+      }),
+      map(list => (list ?? []).filter(p => p.aceptacionNotificadaSolicitante !== true)),
+      catchError((e) => {
+        console.error('aceptadasParaSolicitante$ error', e?.code, e?.message);
+        return of([]);
+      })
+    );
   }
 
   async marcarAceptacionNotificada(peticionId: string): Promise<void> {
@@ -568,6 +584,232 @@ export class TareasService {
       peso: data.peso ?? 1,
       updatedAt: serverTimestamp(),
     } as any);
+  }
+
+  async finalizarTareaConCancelacion(
+    tarea: TareaDTO,
+    usuarioActual: { uid: string; displayName?: string | null; photoURL?: string | null },
+    miembros: { uid: string }[]
+  ): Promise<void> {
+    if (!tarea?.id) throw new Error('Tarea sin id');
+
+    const ahoraIso = new Date().toISOString();
+    const tareaRef = doc(this.fs, 'tareas', tarea.id);
+    const petRef = doc(this.fs, 'peticionesAsignacion', tarea.id);
+
+    const valoracionesPendientes = miembros
+      .filter(m => m.uid !== tarea.asignadA)
+      .map(m => m.uid);
+
+    const historialItem = {
+      uid: usuarioActual.uid,
+      nombre: usuarioActual.displayName || 'Usuario desconocido',
+      fotoURL: usuarioActual.photoURL || '',
+      fecha: ahoraIso,
+      completada: true,
+      hogarId: tarea.hogarId,
+    };
+
+    const batch = writeBatch(this.fs);
+
+    // 1) Actualizar tarea
+    batch.update(tareaRef, {
+      completada: true,
+      historial: [...(tarea.historial || []), historialItem],
+      asignadA: null,
+      asignadoNombre: null,
+      asignadoFotoURL: null,
+      valoraciones: [],
+      valoracionesPendientes,
+      bloqueadaHastaValoracion: true,
+    });
+
+    // 2) Cancelar petición si existe y está pendiente
+    const petSnap = await getDoc(petRef);
+    if (petSnap.exists()) {
+      const pet = petSnap.data() as PeticionAsignacionDTO;
+
+      if (pet.estado === 'pendiente') {
+        batch.update(petRef, {
+          estado: 'cancelada',
+          canceladaEn: serverTimestamp(),
+          canceladaPorUid: usuarioActual.uid,
+          canceladaPorNombre: usuarioActual.displayName || null,
+          cancelacionMotivo: 'tarea_completada',
+        } as any);
+      }
+    }
+
+    await batch.commit();
+  }
+
+  async liberarTareasDeUsuarioQueSale(hogarId: string, uid: string): Promise<number> {
+    const colT = collection(this.fs, 'tareas').withConverter(tareaConverter);
+    const qT = query(colT,
+      where('hogarId', '==', hogarId),
+      where('asignadA', '==', uid),
+    );
+
+    const snap = await getDocs(qT);
+
+    const batch = writeBatch(this.fs);
+    let count = 0;
+
+    snap.forEach(docu => {
+      const t = docu.data() as Tarea;
+
+      // si está pendiente de valoración, no tocamos (normalmente asignadA ya debería estar null)
+      const pendienteValoracion =
+        !!t.bloqueadaHastaValoracion || (t.valoracionesPendientes?.length ?? 0) > 0;
+
+      if (pendienteValoracion) return;
+
+      const ref = doc(this.fs, 'tareas', docu.id);
+
+      // opcional: dejar rastro en historial
+      const historial = [...(t.historial ?? [])];
+      historial.push({
+        uid,
+        nombre: t.asignadoNombre ?? 'Usuario',
+        fotoURL: t.asignadoFotoURL ?? '',
+        fecha: new Date().toISOString(),
+        completada: false,
+        hogarId,
+        motivo: 'usuario_salio_hogar',
+      } as any);
+
+      batch.update(ref, {
+        asignadA: null,
+        asignadoNombre: null,
+        asignadoFotoURL: null,
+        historial,
+      } as any);
+
+      count++;
+    });
+
+    if (count > 0) await batch.commit();
+    return count;
+  }
+
+  async cancelarPeticionesPendientesDeUsuarioQueSale(hogarId: string, uid: string): Promise<number> {
+    const colP = collection(this.fs, 'peticionesAsignacion');
+
+    const qPara = query(colP,
+      where('hogarId', '==', hogarId),
+      where('paraUid', '==', uid),
+      where('estado', '==', 'pendiente')
+    );
+
+    const qDe = query(colP,
+      where('hogarId', '==', hogarId),
+      where('deUid', '==', uid),
+      where('estado', '==', 'pendiente')
+    );
+
+    const [snapPara, snapDe] = await Promise.all([getDocs(qPara), getDocs(qDe)]);
+
+    const batch = writeBatch(this.fs);
+    let count = 0;
+
+    const tocar = (s: any) => {
+      s.forEach((d: any) => {
+        batch.update(d.ref, {
+          estado: 'cancelada',
+          canceladaEn: serverTimestamp(),
+          cancelacionMotivo: 'usuario_fuera_hogar',
+        } as any);
+        count++;
+      });
+    };
+
+    tocar(snapPara);
+
+    snapDe.forEach(d => {
+      if (!snapPara.docs.some(x => x.id === d.id)) {
+        batch.update(d.ref, {
+          estado: 'cancelada',
+          canceladaEn: serverTimestamp(),
+          cancelacionMotivo: 'usuario_fuera_hogar',
+        } as any);
+        count++;
+      }
+    });
+
+    if (count > 0) await batch.commit();
+    return count;
+  }
+
+  async limpiarValoracionesPendientesDeUsuarioQueSale(hogarId: string, uid: string): Promise<number> {
+    const colT = collection(this.fs, 'tareas').withConverter(tareaConverter);
+    const qT = query(colT, where('hogarId', '==', hogarId));
+
+    const snap = await getDocs(qT);
+
+    const batch = writeBatch(this.fs);
+    let count = 0;
+
+    snap.forEach(docu => {
+      const t = docu.data() as Tarea;
+
+      const pendientes = Array.isArray(t.valoracionesPendientes) ? t.valoracionesPendientes : [];
+      if (!pendientes.includes(uid)) return;
+
+      const nuevasPendientes = pendientes.filter(x => x !== uid);
+      const ref = doc(this.fs, 'tareas', docu.id);
+
+      batch.update(ref, {
+        valoracionesPendientes: nuevasPendientes,
+        bloqueadaHastaValoracion: nuevasPendientes.length > 0,
+      } as any);
+
+      count++;
+    });
+
+    if (count > 0) await batch.commit();
+    return count;
+  }
+
+  async cancelarValoracionesDeTareasHechasPorUsuarioQueSale(hogarId: string, uid: string): Promise<number> {
+    const colT = collection(this.fs, 'tareas').withConverter(tareaConverter);
+    const qT = query(colT, where('hogarId', '==', hogarId));
+
+    const snap = await getDocs(qT);
+
+    const batch = writeBatch(this.fs);
+    let count = 0;
+
+    snap.forEach(docu => {
+      const t = docu.data() as Tarea;
+
+      // Solo si está en "pendiente de valoración"
+      const pendienteValoracion =
+        t.completada === true &&
+        (t.bloqueadaHastaValoracion === true || (t.valoracionesPendientes?.length ?? 0) > 0);
+
+      if (!pendienteValoracion) return;
+
+      const hist = Array.isArray(t.historial) ? t.historial : [];
+      const ultimo = hist.length ? (hist[hist.length - 1] as any) : null;
+
+      // Si la completó el usuario que se va => cancelamos todo el proceso de valoración
+      const laCompletoElQueSale = ultimo?.completada === true && ultimo?.uid === uid;
+      if (!laCompletoElQueSale) return;
+
+      const ref = doc(this.fs, 'tareas', docu.id);
+
+      batch.update(ref, {
+        valoraciones: [],
+        valoracionesPendientes: [],
+        bloqueadaHastaValoracion: false,
+        completada: false,
+      } as any);
+
+      count++;
+    });
+
+    if (count > 0) await batch.commit();
+    return count;
   }
 
   private async incrementarTotalTareasUsuario(uid: string): Promise<void> {

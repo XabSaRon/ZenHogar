@@ -151,6 +151,7 @@ export class DialogTiendaComponent {
       data: {
         title: 'Eliminar recompensa',
         emphasis: r.titulo,
+        emphasisLabel: 'Vas a eliminar',
         message:
           `Creada por: ${creador}\n\n` +
           `Esta acción no se puede deshacer.`,

@@ -346,7 +346,7 @@ export class ListaTareasComponent implements OnInit {
       .onAction().subscribe(() => this.loginConGoogle());
   }
 
-  reasignarTarea(tarea: TareaDTO, nuevoUid: string) {
+  async reasignarTarea(tarea: TareaDTO, nuevoUid: string) {
     if (!tarea?.id) return;
 
     if (!this.usuarioActual) {
@@ -354,28 +354,39 @@ export class ListaTareasComponent implements OnInit {
       return;
     }
 
-    if (nuevoUid === this.usuarioActual.uid) {
-      this.tareas.asignarTarea(tarea.id, nuevoUid);
-      return;
-    }
+    try {
+      // 1) LIBERAR (sin asignar) => NO HAY PETICIÓN
+      if (!nuevoUid) {
+        await this.tareas.asignarTarea(tarea.id, '');
+        return;
+      }
 
-    const hogarId = tarea.hogarId;
-    if (!hogarId) {
-      this.snackBar.open('❌ No se pudo determinar el hogar de la tarea', 'Cerrar', { duration: 3000 });
-      return;
-    }
+      // 2) Asignarme a mí mismo => asignación directa
+      if (nuevoUid === this.usuarioActual.uid) {
+        await this.tareas.asignarTarea(tarea.id, nuevoUid);
+        return;
+      }
 
-    this.tareas.crearPeticionAsignacion({
-      tareaId: tarea.id,
-      hogarId,
-      deUid: this.usuarioActual.uid,
-      paraUid: nuevoUid,
-    }).then(() => {
+      const hogarId = tarea.hogarId;
+      if (!hogarId) {
+        this.snackBar.open('❌ No se pudo determinar el hogar de la tarea', 'Cerrar', { duration: 3000 });
+        return;
+      }
+
+      // 3) Asignar a otro => petición
+      await this.tareas.crearPeticionAsignacion({
+        tareaId: tarea.id,
+        hogarId,
+        deUid: this.usuarioActual.uid,
+        paraUid: nuevoUid,
+      });
+
       this.snackBar.open('📩 Petición enviada al usuario', 'Cerrar', { duration: 3000 });
-    }).catch(err => {
+
+    } catch (err) {
       console.error(err);
-      this.snackBar.open('❌ Error al enviar petición', 'Cerrar', { duration: 3000 });
-    });
+      this.snackBar.open('❌ Error al reasignar la tarea', 'Cerrar', { duration: 3000 });
+    }
   }
 
   tareasAsignadas$ = this.usuario$.pipe(
@@ -406,37 +417,16 @@ export class ListaTareasComponent implements OnInit {
       return;
     }
 
-    const ahora = new Date().toISOString();
-
-    const historialItem = {
-      uid: this.usuarioActual.uid,
-      nombre: this.usuarioActual.displayName || 'Usuario desconocido',
-      fotoURL: this.usuarioActual.photoURL || '',
-      fecha: ahora,
-      completada: true,
-      hogarId: tarea.hogarId,
-    };
-
-    const tareaRef = doc(this.fs, 'tareas', tarea.id!);
-
-    const valoracionesPendientes = this.miembros
-      .filter(m => m.uid !== tarea.asignadA)
-      .map(m => m.uid);
-
     try {
-      await updateDoc(tareaRef, {
-        completada: true,
-        historial: [...(tarea.historial || []), historialItem],
-        asignadA: null,
-        asignadoNombre: null,
-        asignadoFotoURL: null,
-        valoraciones: [],
-        valoracionesPendientes,
-        bloqueadaHastaValoracion: true,
-      });
+      await this.tareas.finalizarTareaConCancelacion(
+        tarea,
+        this.usuarioActual,
+        this.miembros
+      );
 
       this.snackBar.open('✅ Tarea completada, pendiente de valoración', 'Cerrar', { duration: 3000 });
-    } catch {
+    } catch (e) {
+      console.error(e);
       this.snackBar.open('❌ Error al marcar como completada', 'Cerrar', { duration: 3000 });
     }
   }
@@ -458,10 +448,6 @@ export class ListaTareasComponent implements OnInit {
     }
 
     this.reasignarTarea(tarea, nuevoUid);
-  }
-
-  onPenalizarAbandono(ev: { tareaId: string; uid: string; puntos: number }) {
-    this.snackBar.open(`-${Math.abs(ev.puntos)} puntos por abandonar la tarea`, 'Cerrar', { duration: 3000 });
   }
 
   onTareaCompletada(tarea: TareaDTO) {

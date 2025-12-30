@@ -25,6 +25,7 @@ import { PENALIZACION_ABANDONO } from '../../utilidades/tareas.constants';
 import { PeticionAsignacionDTO } from '../../models/peticion-asignacion.model';
 import { DialogPeticionAsignacionComponent } from './peticiones/dialog-peticion-asignacion.component';
 import { DialogCrearTareaComponent } from './crear-tarea/dialog-crear-tarea.component';
+import { ConfirmDialogComponent } from '../../../../shared/dialog-confirm/dialog-confirm.component';
 
 @Component({
   selector: 'app-tarjeta-tarea',
@@ -72,6 +73,8 @@ export class TarjetaTareaComponent implements OnChanges {
     fecha: any;
     completada: boolean;
   } | null = null;
+
+  infoAbierta = false;
 
   constructor(
     private fs: Firestore,
@@ -173,6 +176,11 @@ export class TarjetaTareaComponent implements OnChanges {
     (event.target as HTMLImageElement).src = 'assets/default-avatar.png';
   }
 
+  toggleInfo(ev?: Event) {
+    ev?.stopPropagation();
+    this.infoAbierta = !this.infoAbierta;
+  }
+
   get emoji(): string {
     const nombre = this.tarea.nombre.toLowerCase();
     if (nombre.includes('barrer')) return '🧹';
@@ -263,18 +271,46 @@ export class TarjetaTareaComponent implements OnChanges {
     return isNaN(d.getTime()) ? null : d;
   }
 
-  asignarAMiembro(uid: string) {
+  async asignarAMiembro(uid: string) {
     if (!this.puedeGestionarAsignacion) return;
 
     const esLiberacion = uid === '';
     const soyElAsignado = this.tarea?.asignadA === this.uidActual;
 
     if (esLiberacion && this.isEnCurso && soyElAsignado) {
-      this.penalizarAbandono.emit({
-        tareaId: this.tarea.id!,
-        uid: this.uidActual,
-        puntos: this.penalizacionAbandono,
+      const abs = Math.abs(this.penalizacionAbandono);
+
+      const ref = this.dialog.open(ConfirmDialogComponent, {
+        width: '460px',
+        maxWidth: '92vw',
+        panelClass: 'dialog-confirm',
+        disableClose: true,
+        autoFocus: true,
+        restoreFocus: true,
+        data: {
+          title: 'Abandonar tarea',
+          message: `Si te quitas esta tarea, quedará sin asignar y perderás ${abs} puntos.`,
+          confirmLabel: `Sí, abandonar (-${abs})`,
+          cancelLabel: 'Cancelar',
+          icon: 'warning_amber',
+          emphasis: this.tarea?.nombre || '',
+          emphasisLabel: 'Vas a abandonar',
+          tone: 'warn',
+        }
       });
+
+      const ok = await firstValueFrom(ref.afterClosed());
+      if (!ok) return;
+
+      this.snack.dismiss();
+      this.snack.open(`⚠️ Tarea abandonada (-${abs} pts)`, 'OK', {
+        duration: 2300,
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom',
+      });
+
+      this.asignadoCambio.emit('');
+      return;
     }
 
     this.asignadoCambio.emit(uid);
@@ -349,6 +385,72 @@ export class TarjetaTareaComponent implements OnChanges {
     if (this.tieneValoracionPendiente) return 'No se puede editar mientras esté pendiente de valoración';
     if (this.tarea?.completada) return 'No se puede editar una tarea completada';
     return 'Editar tarea';
+  }
+
+  get dificultadValue(): 1 | 2 | 3 {
+    const p = Number(this.tarea.peso ?? 1);
+    if (p <= 1) return 1;
+    if (p === 2) return 2;
+    return 3;
+  }
+
+  get dificultadLabel(): string {
+    return this.dificultadValue === 1 ? 'Fácil' : this.dificultadValue === 2 ? 'Media' : 'Difícil';
+  }
+
+  get dificultadEmoji(): string {
+    return this.dificultadValue === 1 ? '🟢' : this.dificultadValue === 2 ? '🟠' : '🔴';
+  }
+
+  get dificultadClass(): string {
+    return this.dificultadValue === 1 ? 'dif-easy' : this.dificultadValue === 2 ? 'dif-med' : 'dif-hard';
+  }
+
+  get estadoLabel(): string {
+    if (this.tieneValoracionPendiente) return 'Pendiente de valorar';
+    if (this.isEnCurso) return 'En curso';
+    if (this.tarea.asignadA) return 'Asignada';
+    return 'Sin asignar';
+  }
+
+  get estadoClass(): string {
+    if (this.tieneValoracionPendiente) return 'st-pending';
+    if (this.isEnCurso) return 'st-progress';
+    if (this.tarea.asignadA) return 'st-assigned';
+    return 'st-free';
+  }
+
+  get estadoIcon(): string {
+    if (this.tieneValoracionPendiente) return 'star_rate';
+    if (this.isEnCurso) return 'hourglass_top';
+    if (this.tarea.asignadA) return 'person';
+    return 'lock_open';
+  }
+
+  get descEsLarga(): boolean {
+    const d = (this.tarea.descripcion ?? '').trim();
+    return d.length >= 70;
+  }
+
+  get valoracionesFinales(): number[] {
+    return (this.tarea.historial ?? [])
+      .map(h => Number(h?.puntuacionFinal))
+      .filter(n => Number.isFinite(n) && n >= 1 && n <= 5);
+  }
+
+  get mediaEstrellas(): number | null {
+    const vals = this.valoracionesFinales;
+    if (!vals.length) return null;
+    const sum = vals.reduce((a, b) => a + b, 0);
+    return Math.round((sum / vals.length) * 10) / 10;
+  }
+
+  get numValoraciones(): number {
+    return this.valoracionesFinales.length;
+  }
+
+  get estrellasPintadas(): number {
+    return Math.round((this.mediaEstrellas ?? 0));
   }
 
   async editarTarea(ev: MouseEvent) {

@@ -2,15 +2,15 @@ import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { take, combineLatest, map, Subscription } from 'rxjs';
+import { take, combineLatest, map, Subscription, startWith, shareReplay } from 'rxjs';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Auth, User } from '@angular/fire/auth';
 
 import { HogarService } from './core/hogar/services/hogar.service';
 import { AuthService } from './core/auth/auth.service';
 import { DialogCrearHogarComponent } from './core/hogar/component/crear/dialog-crear-hogar';
 import { DialogInvitarPersona } from './core/invitaciones/component/invitar/dialog-invitar-persona';
 import { DialogUnirseCodigo } from './core/invitaciones/component/unirse/dialog-unirse-codigo';
-import { Auth } from '@angular/fire/auth';
 import { Hogar, TipoHogar } from './core/hogar/models/hogar.model';
 import { ListaTareasComponent } from './core/tareas/component/tareas/lista-tareas.component';
 
@@ -49,10 +49,15 @@ export class App implements OnInit, OnDestroy {
 
   user$ = this.auth.user$;
   usuarioCompleto$ = this.auth.usuarioCompleto$;
-  hogar$ = this.hogarSvc.getHogar$();
+  hogar$ = this.hogarSvc.getHogarState$();
   isAdmin$ = combineLatest([this.user$, this.hogar$]).pipe(
     map(([u, h]) => !!u && !!h && (u.uid === h.ownerUid))
   );
+  userState$ = this.user$.pipe(
+    startWith(undefined as unknown as User | null | undefined),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
+
   hogarActual: Hogar | null = null;
 
   ngOnInit(): void {
@@ -66,10 +71,10 @@ export class App implements OnInit, OnDestroy {
 
     const subHogar = this.hogar$.subscribe({
       next: hogar => {
-        this.hogarActual = hogar;
+        this.hogarActual = hogar ?? null;
       },
       error: err => console.error('[App.hogar$]', err),
-    });
+    })
 
     this.subs.add(sub);
     this.subs.add(subHogar);
@@ -94,6 +99,7 @@ export class App implements OnInit, OnDestroy {
   }
 
   abrirUnirme() {
+    if (this.hogarActual) return;
     this.dialog.open(DialogUnirseCodigo, {
       width: '500px',
       maxWidth: '92vw',
@@ -103,6 +109,7 @@ export class App implements OnInit, OnDestroy {
   }
 
   abrirCrearHogar() {
+    if (this.hogarActual) return;
     const ref = this.dialog.open(DialogCrearHogarComponent, {
       disableClose: true,
       width: '560px',
@@ -207,6 +214,7 @@ export class App implements OnInit, OnDestroy {
   }
 
   abrirTiendaDemo() {
+    if (this.fbAuth.currentUser) return;
     this.dialog.open(DialogTiendaComponent, {
       maxWidth: '1120px',
       panelClass: 'tienda-dialog',

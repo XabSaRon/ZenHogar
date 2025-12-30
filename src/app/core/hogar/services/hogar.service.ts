@@ -1,30 +1,16 @@
 import { Injectable, inject } from '@angular/core';
-import { Hogar, TipoHogar } from '../models/hogar.model';
-import { EmailService } from '../../../shared/email/email.service';
 
 import {
-  Firestore,
-  collection,
-  query,
-  where,
-  addDoc,
-  serverTimestamp,
-  collectionData,
-  limit,
-  FirestoreDataConverter,
-  DocumentData,
-  doc,
-  setDoc,
-  getDoc,
-  runTransaction,
-  arrayRemove,
-  getDocs,
-  writeBatch,
+  Firestore, collection, query, where, addDoc, serverTimestamp, collectionData, limit, FirestoreDataConverter, DocumentData, doc, setDoc,
+  getDoc, runTransaction, arrayRemove, getDocs, writeBatch, docData
 } from '@angular/fire/firestore';
 
 import { Auth, authState, User } from '@angular/fire/auth';
-import { Observable, of, switchMap, map, catchError } from 'rxjs';
+import { Observable, of, switchMap, map, catchError, startWith, shareReplay } from 'rxjs';
+
 import { TareasService } from '../../tareas/services/tareas.service';
+import { Hogar, TipoHogar } from '../models/hogar.model';
+import { EmailService } from '../../../shared/email/email.service';
 
 import {
   SUBDIVISIONS,
@@ -83,19 +69,29 @@ export class HogarService {
   private emailSvc = inject(EmailService);
   private authState$ = authState(this.auth);
 
+  getHogarState$(): Observable<Hogar | null | undefined> {
+    return this.getHogar$().pipe(
+      startWith(undefined),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+  }
+
   getHogar$(): Observable<Hogar | null> {
     return this.authState$.pipe(
       switchMap(user => {
         if (!user?.uid) return of(null);
 
-        const q = query(
-          collection(this.fs, 'hogares').withConverter(hogarConverter),
-          where('miembros', 'array-contains', user.uid),
-          limit(1)
-        );
+        const userRef = doc(this.fs, `usuarios/${user.uid}`);
+        return docData(userRef).pipe(
+          switchMap((u: any) => {
+            const hogarId = u?.hogarId;
+            if (!hogarId) return of(null);
 
-        return collectionData<Hogar>(q).pipe(
-          map(arr => arr[0] ?? null),
+            const hogarRef = doc(this.fs, `hogares/${hogarId}`).withConverter(hogarConverter);
+            return docData(hogarRef).pipe(
+              map(h => (h ? ({ ...h, id: hogarId } as any) : null))
+            );
+          }),
           catchError(err => {
             console.error('[HogarService.getHogar$] Firestore:', err);
             return of(null);
@@ -129,6 +125,13 @@ export class HogarService {
     };
 
     const ref = await addDoc(collection(this.fs, 'hogares'), docData);
+
+    await setDoc(
+      doc(this.fs, `usuarios/${user.uid}`),
+      { hogarId: ref.id, actualizadoEn: serverTimestamp() },
+      { merge: true }
+    );
+
     await this.tareasSvc.crearTareasPorDefecto(ref.id, user.uid);
     return { id: ref.id };
   }
@@ -154,39 +157,15 @@ export class HogarService {
       await this.registrarHistoricoSalidaUsuario(hogarId, uid, nombreHogar, ownerUid);
     } catch (e) {
       console.warn('No se pudo registrar el histórico al salir del hogar', e);
-      // No lanzamos error para no bloquear la salida
     }
 
-    const tareasCol = collection(this.fs, 'tareas');
-    let tareasDocs: any[] = [];
-    try {
-      const q = query(tareasCol, where('hogarId', '==', hogarId), where('asignadA', '==', uid));
-      const snap = await getDocs(q);
-      tareasDocs = snap.docs;
-    } catch {
-      const q1 = query(tareasCol, where('asignadA', '==', uid));
-      const s1 = await getDocs(q1);
-      tareasDocs = s1.docs.filter(d => (d.data() as any)?.hogarId === hogarId);
-    }
-    if (tareasDocs.length > 0) {
-      for (let i = 0; i < tareasDocs.length; i += 450) {
-        const slice = tareasDocs.slice(i, i + 450);
-        const batch = writeBatch(this.fs);
-        slice.forEach(d => {
-          batch.update(d.ref, {
-            asignadA: null,
-            asignadoNombre: null,
-            asignadoFotoURL: null,
-            completada: false,
-            valoracionesPendientes: []
-          });
-        });
-        await batch.commit();
-      }
-    }
+    await this.tareasSvc.liberarTareasDeUsuarioQueSale(hogarId, uid);
+    await this.tareasSvc.cancelarPeticionesPendientesDeUsuarioQueSale(hogarId, uid);
+    await this.tareasSvc.limpiarValoracionesPendientesDeUsuarioQueSale(hogarId, uid);
+    await this.tareasSvc.cancelarValoracionesDeTareasHechasPorUsuarioQueSale(hogarId, uid);
 
     const userRef = doc(this.fs, `usuarios/${uid}`);
-    await setDoc(userRef, { puntos: 0, actualizadoEn: serverTimestamp() }, { merge: true });
+    await setDoc(userRef, { puntos: 0, hogarId: null, actualizadoEn: serverTimestamp() }, { merge: true });
 
     await runTransaction(this.fs, async (tx) => {
       const snap = await tx.get(hogarRef);
@@ -312,7 +291,7 @@ export class HogarService {
           const batch = writeBatch(this.fs);
           slice.forEach(uid => {
             const uref = doc(this.fs, `usuarios/${uid}`);
-            batch.set(uref, { puntos: 0, actualizadoEn: serverTimestamp() }, { merge: true });
+            batch.set(uref, { puntos: 0, hogarId: null, actualizadoEn: serverTimestamp() }, { merge: true });
           });
           await batch.commit();
         }

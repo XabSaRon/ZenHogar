@@ -4,8 +4,9 @@
       <img src="assets/home-icon.png" class="logo" alt="Logo" />
     </div>
 
-    @if (user$ | async; as usuario) {
+    @if (userState$ | async; as usuario) {
     @if (hogar$ | async; as hogar) {
+
     <div class="header-center">
       <button class="hogar-titulo" type="button" (click)="abrirInvitar(hogar)">
         🏠 {{ hogar.nombre }}
@@ -18,9 +19,11 @@
         <span class="shimmer" aria-hidden="true"></span>
       </span>
       }
-
     </div>
+
     } @else {
+
+    @if ((hogar$ | async) === null) {
     <div class="header-center sin-hogar-botones">
       <button class="boton-hogar crear" type="button" (click)="abrirCrearHogar()">
         Crear hogar
@@ -29,19 +32,33 @@
         Unirme
       </button>
     </div>
-    }
     } @else {
     <div class="header-center">
-      <span class="hogar-titulo demo">🏠 Demo Hogar</span>
+      <span class="hogar-titulo demo" style="opacity:0">Cargando…</span>
     </div>
     }
 
+    }
+
+    } @else {
+
+    @if ((userState$ | async) === null) {
+    <div class="header-center">
+      <span class="hogar-titulo demo">🏠 Demo Hogar</span>
+    </div>
+    } @else {
+    <div class="header-center">
+      <span class="hogar-titulo demo" style="opacity:0">Cargando…</span>
+    </div>
+    }
+    }
+
     <div class="header-right">
+      @if (userState$ | async; as u) {
       @if (usuarioCompleto$ | async; as usuario) {
       <div class="user-info">
         <button class="tienda-trigger" matTooltip="Canjear puntos" type="button"
           (click)="abrirTienda(usuario, hogarActual)" [class.tienda-con-puntos]="(usuario?.puntos ?? 0) > 0">
-
           <div class="puntos-usuario-wrapper">
             <div class="puntos-usuario" [ngClass]="{
                 'positivo': (usuario?.puntos ?? 0) >= 0,
@@ -53,7 +70,6 @@
 
             <img src="assets/coin.png" alt="Moneda" class="moneda-animada" />
 
-            <!-- Confeti -->
             <div class="confetti" *ngIf="mostrarConfetti">
               <span class="confetti-piece" *ngFor="let p of confettiPieces; let i = index"></span>
             </div>
@@ -71,12 +87,26 @@
         </button>
       </div>
       } @else {
+      <!-- Usuario logueado pero perfil aún cargando: placeholder -->
+      <div class="user-info">
+        <button class="tienda-trigger" type="button" disabled style="opacity:0">
+          <span class="tienda-icon">🛒</span>
+          <span class="tienda-text">Tienda</span>
+        </button>
+        <button class="btn-google" type="button" disabled style="opacity:0">
+          Cargando…
+        </button>
+      </div>
+      }
+
+      } @else {
+
+      @if ((userState$ | async) === null) {
+      <!-- No logueado: demo + login -->
       <div class="user-info">
         <button class="tienda-trigger" matTooltip="Vista previa de la tienda" type="button" (click)="abrirTiendaDemo()">
           <div class="puntos-usuario-wrapper">
-            <div class="puntos-usuario positivo">
-              120
-            </div>
+            <div class="puntos-usuario positivo">120</div>
             <img src="assets/coin.png" alt="Moneda" class="moneda-animada" />
           </div>
 
@@ -89,7 +119,21 @@
           Iniciar sesión con Google
         </button>
       </div>
+      } @else {
+      <!-- Auth cargando: NO mostrar demo ni login -->
+      <div class="user-info">
+        <button class="tienda-trigger" type="button" disabled style="opacity:0">
+          <span class="tienda-icon">🛒</span>
+          <span class="tienda-text">Tienda</span>
+        </button>
+
+        <button class="btn-google" type="button" disabled style="opacity:0">
+          Iniciar sesión con Google
+        </button>
+      </div>
       }
+      }
+
     </div>
   </header>
 

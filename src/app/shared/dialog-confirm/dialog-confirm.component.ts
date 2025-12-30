@@ -11,6 +11,7 @@ export interface ConfirmDialogData {
   cancelLabel?: string;
   icon?: string;
   emphasis?: string;
+  emphasisLabel?: string;
   tone?: 'warn' | 'primary' | 'accent';
 }
 

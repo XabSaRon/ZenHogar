@@ -1,111 +1,193 @@
-<div class="tarjeta-tarea" [ngStyle]="styleDelay" [ngClass]="{
-    'valoracion-pendiente': tieneValoracionPendiente,
-    'tarea-en-curso': isEnCurso
-  }">
-  <div class="tarea-header">
-    <div class="emoji-icon">{{ emoji }}</div>
-    <h3 class="titulo-tarea">{{ tarea.nombre }}</h3>
+<div class="flip-scene" [ngStyle]="styleDelay">
+  <div class="flip-card" [class.is-flipped]="infoAbierta">
 
-    <div class="acciones-top">
-      @if (esPersonalizada && puedeGestionarTarea) {
-      <span class="tooltip-wrapper" [matTooltip]="tooltipEditar" matTooltipPosition="above"
-        [matTooltipDisabled]="puedeEditar">
+    <!-- FRONT -->
+    <div class="flip-face front">
+      <div class="tarjeta-tarea" [ngClass]="{
+          'valoracion-pendiente': tieneValoracionPendiente,
+          'tarea-en-curso': isEnCurso
+        }">
 
-        <button class="edit-btn" mat-icon-button (click)="editarTarea($event)" [disabled]="!puedeEditar"
-          aria-label="Editar tarea">
-          <mat-icon fontIcon="edit"></mat-icon>
-        </button>
+        <div class="tarea-header">
+          <div class="emoji-wrap">
+            <div class="emoji-icon">{{ emoji }}</div>
 
-      </span>
-      }
+            <button class="info-btn" mat-icon-button type="button" (click)="toggleInfo($event)"
+              matTooltip="Info de la tarea" aria-label="Info de la tarea">
+              <mat-icon>info</mat-icon>
+            </button>
+          </div>
 
-      @if (esPersonalizada && ((peticionesPendientes$ | async)?.length)) {
-      <span class="divider-v"></span>
-      }
+          <h3 class="titulo-tarea">{{ tarea.nombre }}</h3>
 
-      @if ((peticionesPendientes$ | async)?.length) {
-      <button class="peticion-campana" mat-icon-button (click)="onClickCampana($event)"
-        [ngClass]="{ 'es-mia': (peticionParaMi$ | async) }" aria-label="Petición de asignación"
-        [matTooltip]="(tooltipCampana$ | async) || ''" matTooltipPosition="above" matTooltipShowDelay="250"
-        matTooltipHideDelay="0">
-        <mat-icon>{{ (peticionParaMi$ | async) ? 'notifications_active' : 'notifications' }}</mat-icon>
-      </button>
-      }
+          <div class="acciones-top">
+            @if (esPersonalizada && puedeGestionarTarea) {
+            <span class="tooltip-wrapper" [matTooltip]="tooltipEditar" matTooltipPosition="above"
+              [matTooltipDisabled]="puedeEditar">
+
+              <button class="edit-btn" mat-icon-button (click)="editarTarea($event)" [disabled]="!puedeEditar"
+                aria-label="Editar tarea">
+                <mat-icon fontIcon="edit"></mat-icon>
+              </button>
+
+            </span>
+            }
+
+            @if (esPersonalizada && ((peticionesPendientes$ | async)?.length)) {
+            <span class="divider-v"></span>
+            }
+
+            @if ((peticionesPendientes$ | async)?.length) {
+            <button class="peticion-campana" mat-icon-button (click)="onClickCampana($event)"
+              [ngClass]="{ 'es-mia': (peticionParaMi$ | async) }" aria-label="Petición de asignación"
+              [matTooltip]="(tooltipCampana$ | async) || ''" matTooltipPosition="above" matTooltipShowDelay="250"
+              matTooltipHideDelay="0">
+              <mat-icon>{{ (peticionParaMi$ | async) ? 'notifications_active' : 'notifications' }}</mat-icon>
+            </button>
+            }
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="asignacion">
+          @if (tarea.asignadA) {
+          <img class="avatar-small" [src]="tarea.asignadoFotoURL || 'assets/default-avatar.png'" alt="Avatar"
+            (error)="onImageError($event)" />
+          <span>Asignada a <strong>{{ tarea.asignadoNombre }}</strong></span>
+          } @else {
+          @if (tieneValoracionPendiente && ultimaPersonaHistorial) {
+          <div class="info-ultimo-completador">
+            🧹 Realizada por <strong>{{ ultimaPersonaHistorial.nombre }}</strong>
+            el {{ ultimaPersonaHistorial.fecha | date: 'dd/MM/yyyy HH:mm' }}
+          </div>
+          } @else {
+          <span class="no-asignada">🔓 Sin asignar</span>
+          }
+          }
+        </div>
+
+        <hr class="divider" />
+
+        <div class="boton-asignar">
+          <button mat-icon-button [matMenuTriggerFor]="menu"
+            [matTooltip]="(hayPeticionPendiente$ | async) ? 'Bloqueada: hay una petición pendiente' : tooltipAsignacion"
+            [disabled]="!puedeAbrirMenu || (hayPeticionPendiente$ | async)">
+            <mat-icon [fontIcon]="'person_add'"></mat-icon>
+          </button>
+
+          @if (tarea.historial?.length) {
+          <button mat-icon-button class="historial-btn" (click)="verHistorial()" matTooltip="Ver historial">
+            <mat-icon [fontIcon]="'history'"></mat-icon>
+          </button>
+          }
+
+          @if (isEnCurso && tarea.asignadA === uidActual) {
+          <button class="boton-realizada-lateral" mat-icon-button color="primary" (click)="marcarComoRealizada()"
+            matTooltip="Marcar como realizada">
+            <mat-icon [fontIcon]="'check_circle'"></mat-icon>
+          </button>
+          }
+
+          @if (tieneValoracionPendiente && ultimaPersonaHistorial?.uid !== uidActual) {
+          <button mat-icon-button class="boton-valorar-lateral boton-realizada-lateral"
+            (click)="abrirDialogoValoracion()" matTooltip="Valorar tarea">
+            <mat-icon [fontIcon]="'star_rate'"></mat-icon>
+          </button>
+          }
+        </div>
+
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="asignarAMiembro('')" [disabled]="!puedeGestionarAsignacion">
+            <span class="mdc-list-item__primary-text item-row">
+              <mat-icon fontIcon="lock_open" class="item-ico"></mat-icon>
+              <span>Sin asignar</span>
+            </span>
+          </button>
+
+          @for (miembro of miembros; track miembro.uid) {
+          <button mat-menu-item (click)="asignarAMiembro(miembro.uid)" [disabled]="!puedeGestionarAsignacion">
+            <span class="mdc-list-item__primary-text item-row">
+              <img class="avatar-inline item-ico" [src]="miembro.fotoURL || 'assets/default-avatar.png'"
+                alt="Avatar de {{ miembro.nombre }}" (error)="onImageError($event)" />
+              <span>{{ miembro.nombre }}</span>
+            </span>
+          </button>
+          }
+        </mat-menu>
+
+        @if (isEnCurso) {
+        <div class="hover-loader">⏳ En curso</div>
+        }
+        @if (tieneValoracionPendiente) {
+        <div class="hover-loader">⭐ Pendiente de valorar</div>
+        }
+      </div>
+    </div>
+
+    <!-- BACK -->
+    <div class="flip-face back">
+      <div class="tarjeta-tarea back-card">
+        <div class="back-header">
+          <div class="back-title">
+            <span class="back-emoji">{{ emoji }}</span>
+            <span class="back-name">{{ tarea.nombre }}</span>
+          </div>
+
+          <button class="back-close" mat-icon-button type="button" (click)="toggleInfo($event)" aria-label="Cerrar info"
+            matTooltip="Volver">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="back-body">
+          <div class="back-chips">
+            <span class="chip" [ngClass]="estadoClass">
+              <mat-icon>{{ estadoIcon }}</mat-icon>
+              {{ estadoLabel }}
+            </span>
+
+            <span class="chip" [ngClass]="dificultadClass">
+              <span class="chip-emoji">{{ dificultadEmoji }}</span>
+              Dificultad: {{ dificultadLabel }}
+            </span>
+
+            @if (mediaEstrellas !== null) {
+            <span class="chip rating-chip" matTooltip="Media de valoraciones">
+              <span class="stars" aria-hidden="true">
+                @for (i of [1,2,3,4,5]; track i) {
+                <mat-icon class="s" [class.on]="i <= estrellasPintadas">star</mat-icon>
+                }
+              </span>
+
+              <span class="rating-num">{{ mediaEstrellas }}</span>
+              <span class="rating-count">({{ numValoraciones }})</span>
+            </span>
+            } @else {
+            <span class="chip rating-chip rating-empty" matTooltip="Aún no hay valoraciones">
+              <mat-icon class="s-empty">star_outline</mat-icon>
+              <span>Sin valoraciones</span>
+            </span>
+            }
+
+          </div>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <mat-icon class="ii">description</mat-icon>
+              <div class="txt">
+                <div class="k">Descripción</div>
+                <div class="v" [class.is-placeholder]="!tarea.descripcion"
+                  [class.clamp-fade]="descEsLarga && !!tarea.descripcion">
+                  {{ tarea.descripcion || 'Añade una descripción para que cualquiera entienda la tarea ✍️'}}</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </div>
-
-  <hr class="divider" />
-
-  <div class="asignacion">
-    @if (tarea.asignadA) {
-    <img class="avatar-small" [src]="tarea.asignadoFotoURL || 'assets/default-avatar.png'" alt="Avatar"
-      (error)="onImageError($event)" />
-    <span>Asignada a <strong>{{ tarea.asignadoNombre }}</strong></span>
-    } @else {
-    @if (tieneValoracionPendiente && ultimaPersonaHistorial) {
-    <div class="info-ultimo-completador">
-      🧹 Realizada por <strong>{{ ultimaPersonaHistorial.nombre }}</strong>
-      el {{ ultimaPersonaHistorial.fecha | date: 'dd/MM/yyyy HH:mm' }}
-    </div>
-    } @else {
-    <span class="no-asignada">🔓 Sin asignar</span>
-    }
-    }
-  </div>
-
-  <hr class="divider" />
-
-  <div class="boton-asignar">
-    <button mat-icon-button [matMenuTriggerFor]="menu"
-      [matTooltip]="(hayPeticionPendiente$ | async) ? 'Bloqueada: hay una petición pendiente' : tooltipAsignacion"
-      [disabled]="!puedeAbrirMenu || (hayPeticionPendiente$ | async)">
-      <mat-icon [fontIcon]="'person_add'"></mat-icon>
-    </button>
-
-    @if (tarea.historial?.length) {
-    <button mat-icon-button class="historial-btn" (click)="verHistorial()" matTooltip="Ver historial">
-      <mat-icon [fontIcon]="'history'"></mat-icon>
-    </button>
-    }
-
-    @if (isEnCurso && tarea.asignadA === uidActual) {
-    <button class="boton-realizada-lateral" mat-icon-button color="primary" (click)="marcarComoRealizada()"
-      matTooltip="Marcar como realizada">
-      <mat-icon [fontIcon]="'check_circle'"></mat-icon>
-    </button>
-    }
-
-    @if (tieneValoracionPendiente && ultimaPersonaHistorial?.uid !== uidActual) {
-    <button mat-icon-button class="boton-valorar-lateral boton-realizada-lateral" (click)="abrirDialogoValoracion()"
-      matTooltip="Valorar tarea">
-      <mat-icon [fontIcon]="'star_rate'"></mat-icon>
-    </button>
-    }
-  </div>
-
-  <mat-menu #menu="matMenu">
-    <button mat-menu-item (click)="asignarAMiembro('')" [disabled]="!puedeGestionarAsignacion">
-      <span class="mdc-list-item__primary-text item-row">
-        <mat-icon fontIcon="lock_open" class="item-ico"></mat-icon>
-        <span>Sin asignar</span>
-      </span>
-    </button>
-
-    @for (miembro of miembros; track miembro.uid) {
-    <button mat-menu-item (click)="asignarAMiembro(miembro.uid)" [disabled]="!puedeGestionarAsignacion">
-      <span class="mdc-list-item__primary-text item-row">
-        <img class="avatar-inline item-ico" [src]="miembro.fotoURL || 'assets/default-avatar.png'"
-          alt="Avatar de {{ miembro.nombre }}" (error)="onImageError($event)" />
-        <span>{{ miembro.nombre }}</span>
-      </span>
-    </button>
-    }
-  </mat-menu>
-
-  @if (isEnCurso) {
-  <div class="hover-loader">⏳ En curso</div>
-  }
-  @if (tieneValoracionPendiente) {
-  <div class="hover-loader">⭐ Pendiente de valorar</div>
-  }
-</div>

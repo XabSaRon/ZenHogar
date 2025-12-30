@@ -1,4 +1,8 @@
-html,
+html {
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
+}
+
 body {
   margin: 0;
   height: auto;
