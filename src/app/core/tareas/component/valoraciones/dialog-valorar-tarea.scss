@@ -4,14 +4,30 @@
   display: block;
 }
 
-/* Contenido interno */
+/* =========================================================
+   Layout base del dialog
+   ========================================================= */
 .dialog-container {
   position: relative;
   padding: 2rem;
   animation: slideFadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
-/* Botón X flotante */
+.dialog-body {
+  margin-top: .5rem;
+
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* =========================================================
+   Botón X flotante
+   ========================================================= */
 .close-fab {
   position: absolute;
   top: -16px;
@@ -66,7 +82,9 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
-/* Header */
+/* =========================================================
+   Header
+   ========================================================= */
 .titulo-modal {
   display: flex;
   align-items: center;
@@ -117,10 +135,9 @@
   gap: 0.4rem;
 }
 
-.dialog-body {
-  margin-top: .5rem;
-}
-
+/* =========================================================
+   Estrellas
+   ========================================================= */
 .valoracion-bloque {
   margin: 0 0 1.25rem;
   padding: .9rem 1rem 1rem;
@@ -198,6 +215,139 @@
   }
 }
 
+/* =========================================================
+   Details “¿Cómo se puntúa?”
+   ========================================================= */
+.puntos-details {
+  margin: .6rem 0 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.45);
+  overflow: hidden;
+}
+
+.puntos-details>summary {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+
+  padding: .75rem .9rem;
+  font-weight: 800;
+  color: rgba(46, 125, 50, 0.92);
+
+  &:hover {
+    background: rgba(46, 125, 50, 0.06);
+  }
+}
+
+.puntos-details>summary::-webkit-details-marker {
+  display: none;
+}
+
+.sum-ico {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  opacity: .9;
+}
+
+.sum-spacer {
+  flex: 1;
+}
+
+.sum-hint {
+  font-weight: 700;
+  font-size: .85rem;
+  opacity: .55;
+}
+
+.puntos-body {
+  padding: .75rem .9rem .9rem;
+  color: rgba(0, 0, 0, 0.72);
+
+  p {
+    margin: 0 0 .6rem;
+    font-size: .92rem;
+    line-height: 1.35;
+  }
+
+  .ej {
+    margin-top: .55rem;
+    opacity: .9;
+  }
+}
+
+.formula {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+
+  padding: .35rem .6rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(46, 125, 50, 0.14);
+
+  font-size: .88rem;
+  font-weight: 700;
+  color: rgba(46, 125, 50, 0.95);
+}
+
+.equiv-details {
+  margin-top: .35rem;
+  border-top: 1px dashed rgba(0, 0, 0, .08);
+  padding-top: .35rem;
+}
+
+.equiv-details>summary {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .2rem 0;
+  font-size: .84rem;
+  font-weight: 700;
+  color: rgba(46, 125, 50, .92);
+}
+
+.equiv-details>summary::-webkit-details-marker {
+  display: none;
+}
+
+.eq-spacer {
+  flex: 1;
+}
+
+.eq-hint {
+  font-weight: 700;
+  font-size: .78rem;
+  opacity: .55;
+}
+
+.equivalencias {
+  margin: .35rem 0 0;
+  font-size: .82rem;
+  opacity: .72;
+  line-height: 1.25;
+}
+
+
+/* =========================================================
+   Comentario
+   ========================================================= */
+mat-form-field {
+  margin-top: 1rem;
+}
+
+:host ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
 textarea {
   resize: none;
   overflow-y: auto;
@@ -215,11 +365,15 @@ textarea::-webkit-scrollbar-thumb {
   border-radius: 3px;
 }
 
+/* =========================================================
+   Acciones
+   ========================================================= */
 .acciones-dialogo {
   margin-top: .75rem;
   display: flex;
   justify-content: flex-end;
   gap: .5rem;
+  flex: 0 0 auto;
 
   .btn-guardar[disabled] {
     opacity: .6;
@@ -233,6 +387,9 @@ textarea::-webkit-scrollbar-thumb {
   }
 }
 
+/* =========================================================
+   Panel / surface
+   ========================================================= */
 ::ng-deep .cdk-overlay-pane.dialog-valorar {
   overflow: visible !important;
 }
@@ -240,7 +397,7 @@ textarea::-webkit-scrollbar-thumb {
 ::ng-deep .cdk-overlay-pane.dialog-valorar .mat-mdc-dialog-surface {
   overflow: visible !important;
   padding: 0 !important;
-
+  max-height: min(92dvh, 820px) !important;
   @include base.dialog-base;
 }
 

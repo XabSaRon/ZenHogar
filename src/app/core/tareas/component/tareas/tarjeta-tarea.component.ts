@@ -343,7 +343,7 @@ export class TarjetaTareaComponent implements OnChanges {
         tareaId: this.tarea.id,
         nombreTarea: this.tarea.nombre
       },
-      width: '500px',
+      width: '600px',
       panelClass: 'dialog-valorar',
       autoFocus: true,
       restoreFocus: true

@@ -49,6 +49,46 @@
       </div>
     </div>
 
+    <details class="puntos-details">
+      <summary>
+        <mat-icon class="sum-ico">help_outline</mat-icon>
+        <span>¿Cómo se puntúa?</span>
+        <span class="sum-spacer"></span>
+        <span class="sum-hint">Ver</span>
+      </summary>
+
+      <div class="puntos-body">
+        <p>
+          Cuando <b>todos</b> valoran, calculamos la <b>media</b> de estrellas y la <b>redondeamos</b>.
+          Esa puntuación se convierte en puntos y se suma a <b>quien realizó la tarea</b>.
+        </p>
+
+        <div class="formula">
+          <span>Puntos</span>
+          <span>=</span>
+          <span>base(★)</span>
+          <span>×</span>
+          <span>dificultad</span>
+        </div>
+
+        <p class="ej">
+          Ejemplo: media <b>4★</b> → base <b>+5</b> → con dificultad <b>x2</b> = <b>+10</b>.
+        </p>
+
+        <details class="equiv-details">
+          <summary>
+            <span class="eq-toggle">Ver equivalencias de estrellas</span>
+            <span class="eq-spacer"></span>
+            <span class="eq-hint">5★…1★</span>
+          </summary>
+
+          <p class="equivalencias">
+            5★ = +10 | 4★ = +5 | 3★ = +2 | 2★ = −5 | 1★ = −10
+          </p>
+        </details>
+      </div>
+    </details>
+
     <mat-form-field appearance="outline">
       <mat-label>Comentario (opcional)</mat-label>
       <textarea matInput name="comentario" [(ngModel)]="comentario" rows="3"

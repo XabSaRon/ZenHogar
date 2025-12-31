@@ -758,11 +758,17 @@ export class TareasService {
       const nuevasPendientes = pendientes.filter(x => x !== uid);
       const ref = doc(this.fs, 'tareas', docu.id);
 
-      batch.update(ref, {
+      const patch: any = {
         valoracionesPendientes: nuevasPendientes,
         bloqueadaHastaValoracion: nuevasPendientes.length > 0,
-      } as any);
+      };
 
+      if (nuevasPendientes.length === 0) {
+        patch.completada = false;
+        patch.bloqueadaHastaValoracion = false;
+      }
+
+      batch.update(ref, patch);
       count++;
     });
 

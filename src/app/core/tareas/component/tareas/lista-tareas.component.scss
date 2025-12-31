@@ -707,11 +707,104 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (min-width: 641px) and (max-width: 1366px) {
+  .fila-header {
+    grid-template-columns: 1fr;
+    row-gap: 12px;
+    padding: 0 1rem;
+    margin: 16px 0 20px;
+  }
+
+  .fila-left,
+  .fila-mid,
+  .fila-right {
+    width: 100%;
+    max-width: none;
+  }
+
+  .fila-mid {
+    justify-content: flex-start;
+    padding: 0;
+  }
+
+  .fila-right {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    column-gap: 12px;
+    row-gap: 10px;
+    align-items: start;
+    justify-content: start;
+  }
+
+  .fila-right app-notificador {
+    grid-column: 4;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+    margin: 0;
+  }
+
+  .fila-right .selector-filtro:nth-of-type(1),
+  .fila-right .selector-filtro:nth-of-type(2) {
+    grid-row: 1;
+    width: auto !important;
+  }
+
+  .fila-right .selector-filtro:nth-of-type(1) {
+    grid-column: 1;
+  }
+
+  .fila-right .selector-filtro:nth-of-type(2) {
+    grid-column: 2;
+  }
+
+  .fila-right .selector-filtro {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .fila-right .selector-filtro .btn-filtro {
+    width: clamp(190px, 20vw, 260px);
+    min-width: 180px;
+    padding: .66rem .95rem;
+    font-size: .98rem;
+    justify-content: space-between;
+  }
+
+  .fila-right .selector-filtro .dropdown-filtro {
+    left: 0;
+    right: auto;
+    min-width: clamp(200px, 20vw, 260px);
+    max-width: 320px;
+    width: auto;
+  }
+
+  :host ::ng-deep .actividad-pill {
+    width: 100% !important;
+    max-width: 560px !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 900px) {
+  .contenedor-tareas {
+    width: 100%;
+    padding: 0 18px;
+    box-sizing: border-box;
+  }
+
   .grid-tareas {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem 1.5rem;
-    padding: 1.2rem .6rem;
+    width: 100%;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 18px 0;
+    justify-items: center;
+    align-items: start;
+  }
+
+  :host ::ng-deep .tarjeta-tarea {
+    width: min(520px, 100%);
+    max-width: none;
+    height: auto;
   }
 }
 
@@ -721,8 +814,13 @@
     max-width: 100% !important;
   }
 
+  .contenedor-tareas {
+    display: block;
+  }
+
   .fila-header {
     margin: 14px 0 18px;
+    padding: 0 !important;
   }
 
   .fila-left .saludo-card {
@@ -824,9 +922,7 @@
     column-gap: 0;
     row-gap: 1.5rem;
   }
-}
 
-@media (max-width: 600px) {
   .empty-state {
     margin-top: 3.5rem;
   }
@@ -855,35 +951,6 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .btn-add-tarea {
-    transition: none !important;
-  }
-}
-
-@media (min-width: 641px) and (max-width: 900px) {
-  .contenedor-tareas {
-    width: 100%;
-    padding: 0 18px;
-    box-sizing: border-box;
-  }
-
-  .grid-tareas {
-    width: 100%;
-    grid-template-columns: 1fr;
-    gap: 18px;
-    padding: 18px 0;
-    justify-items: center;
-    align-items: start;
-  }
-
-  :host ::ng-deep .tarjeta-tarea {
-    width: min(520px, 100%);
-    max-width: none;
-    height: auto;
-  }
-}
-
 @media (orientation: landscape) and (min-width: 900px) and (max-width: 1180px) {
   .grid-tareas {
     grid-template-columns: repeat(2, 1fr);
@@ -900,67 +967,8 @@
   }
 }
 
-/* ===========================
-   Tablets
-=========================== */
-@media (min-width: 641px) and (max-width: 1366px) {
-
-  .fila-header {
-    grid-template-columns: 1fr;
-    row-gap: 12px;
-    column-gap: 0;
-    padding: 0 1rem;
-    margin: 16px 0 20px;
-  }
-
-  .fila-left,
-  .fila-mid,
-  .fila-right {
-    width: 100%;
-    max-width: none;
-  }
-
-  .fila-mid {
-    justify-content: flex-start;
-    padding: 0;
-  }
-
-  .fila-right {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-rows: auto auto;
-    gap: 12px;
-    align-items: start;
-  }
-
-  .fila-right app-notificador {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
-    align-self: start;
-    margin: 0;
-  }
-
-  .fila-right .selector-filtro:nth-of-type(1) {
-    grid-column: 1;
-    grid-row: 1;
-    width: 100%;
-  }
-
-  .fila-right .selector-filtro:nth-of-type(2) {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    width: 100%;
-  }
-
-  .selector-filtro .btn-filtro {
-    min-width: 0;
-    padding: .62rem .9rem;
-    font-size: .98rem;
-  }
-
-  :host ::ng-deep .actividad-pill {
-    width: 100% !important;
-    max-width: 560px !important;
+@media (prefers-reduced-motion: reduce) {
+  .btn-add-tarea {
+    transition: none !important;
   }
 }

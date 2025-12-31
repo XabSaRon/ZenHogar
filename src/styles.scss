@@ -547,6 +547,45 @@ body.cdk-global-scrollblock {
   }
 }
 
+/* Responsive */
+
+@media (max-width: 640px) {
+  .grid-tareas {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    gap: 1.25rem !important;
+    column-gap: 0 !important;
+    row-gap: 1.25rem !important;
+    grid-template-columns: 1fr !important;
+    justify-content: start !important;
+    justify-items: start !important;
+  }
+
+  .flip-scene {
+    width: 320px !important;
+    max-width: 320px !important;
+  }
+}
+
+@media (max-width: 400px) {
+
+  .grid-tareas {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    gap: 1.25rem !important;
+    column-gap: 0 !important;
+    row-gap: 1.25rem !important;
+    grid-template-columns: 1fr !important;
+    justify-content: start !important;
+    justify-items: start !important;
+  }
+
+  .flip-scene {
+    width: 285px !important;
+    max-width: 285px !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .confirm-dialog-panel .mat-mdc-dialog-surface {
     animation: none;
